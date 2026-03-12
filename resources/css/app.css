@@ -1,0 +1,260 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    @apply min-h-screen bg-base-200 text-base-content antialiased;
+    background-image:
+      radial-gradient(circle at top left, rgba(134, 239, 172, 0.22), transparent 28rem),
+      radial-gradient(circle at top right, rgba(74, 222, 128, 0.16), transparent 24rem),
+      linear-gradient(180deg, #f7fcf8 0%, #eef7f0 52%, #e7f2e8 100%);
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-base-content;
+  }
+
+  [x-cloak] {
+    display: none !important;
+  }
+
+  input[type='checkbox'] {
+    @apply h-4 w-4 rounded border-slate-300 text-primary shadow-sm focus:ring-primary/30;
+  }
+}
+
+@layer components {
+  .panel-shell {
+    @apply min-h-screen;
+  }
+
+  .navbar {
+    @apply flex items-center justify-between gap-4 py-2;
+  }
+
+  .card {
+    @apply rounded-3xl border border-base-300 bg-base-100 p-4 shadow-card sm:p-6;
+  }
+
+  .card-body {
+    @apply p-0;
+  }
+
+  .menu-link {
+    @apply block rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition duration-150 hover:bg-primary/10 hover:text-primary;
+  }
+
+  .menu-link-active {
+    @apply bg-primary text-primary-content shadow-sm hover:bg-primary hover:text-primary-content;
+  }
+
+  .stat-card {
+    @apply rounded-2xl border border-primary/10 bg-primary/5 p-5 shadow-sm;
+  }
+
+  .stat-title {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-slate-500;
+  }
+
+  .stat-value {
+    @apply mt-3 text-3xl font-extrabold tracking-tight text-slate-900;
+  }
+
+  .table-wrap {
+    @apply overflow-x-auto rounded-3xl border border-base-300 bg-base-100 shadow-card;
+  }
+
+  .table-base {
+    @apply min-w-full divide-y divide-slate-200 text-left text-sm text-slate-700;
+  }
+
+  .table-base thead th {
+    @apply bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500;
+  }
+
+  .table-base tbody td {
+    @apply px-4 py-3 align-top;
+  }
+
+  .table-base tbody tr {
+    @apply transition hover:bg-primary/5;
+  }
+
+  .table-base tbody tr:nth-child(even) {
+    @apply bg-slate-50/70;
+  }
+
+  .label-base {
+    @apply text-sm font-semibold text-slate-700;
+  }
+
+  .input-base,
+  .input,
+  .file-input,
+  textarea.input-base,
+  select.input-base {
+    @apply mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition duration-150 placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10;
+  }
+
+  .checkbox {
+    @apply h-4 w-4 rounded border-slate-300 text-primary shadow-sm focus:ring-primary/30;
+  }
+
+  .checkbox-sm {
+    @apply h-4 w-4;
+  }
+
+  .file-input::file-selector-button {
+    @apply mr-4 rounded-xl border-0 bg-primary px-4 py-2 text-sm font-semibold text-primary-content transition hover:bg-primary-dark;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-transparent px-4 py-2.5 text-sm font-semibold transition duration-150 focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-sm {
+    @apply rounded-xl px-3 py-2 text-xs;
+  }
+
+  .btn-xs {
+    @apply rounded-lg px-2.5 py-1.5 text-xs;
+  }
+
+  .btn-square {
+    @apply h-10 w-10 px-0 py-0;
+  }
+
+  .btn-circle {
+    @apply h-10 w-10 rounded-full px-0 py-0;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-content shadow-sm hover:bg-primary-dark;
+  }
+
+  .btn-outline {
+    @apply border-slate-200 bg-white text-slate-700 hover:border-primary/40 hover:bg-primary/5 hover:text-primary;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-slate-600 hover:bg-primary/10 hover:text-primary;
+  }
+
+  .btn-error {
+    @apply bg-error text-white shadow-sm hover:bg-red-700;
+  }
+
+  .btn-link {
+    @apply border-0 bg-transparent px-0 py-0 text-primary underline-offset-4 hover:text-primary-dark hover:underline;
+  }
+
+  .badge {
+    @apply inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold;
+  }
+
+  .badge-xs {
+    @apply min-h-[1.1rem] min-w-[1.1rem] px-1 text-[10px];
+  }
+
+  .badge-primary {
+    @apply bg-primary text-primary-content;
+  }
+
+  .badge-error {
+    @apply bg-error text-white;
+  }
+
+  .alert {
+    @apply rounded-2xl border px-4 py-3 text-sm shadow-sm;
+  }
+
+  .alert-success {
+    @apply border-green-200 bg-green-50 text-green-800;
+  }
+
+  .alert-error {
+    @apply border-red-200 bg-red-50 text-red-800;
+  }
+
+  .alert-info {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-900;
+  }
+
+  .admin-form-shell {
+    @apply mx-auto max-w-5xl;
+  }
+
+  .admin-form-header {
+    @apply flex flex-wrap items-start justify-between gap-4;
+  }
+
+  .admin-form-eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.22em] text-primary;
+  }
+
+  .admin-form-title {
+    @apply mt-1 text-2xl font-extrabold tracking-tight text-slate-900;
+  }
+
+  .admin-form-subtitle {
+    @apply mt-1 text-sm text-slate-500;
+  }
+
+  .admin-form-panel {
+    @apply rounded-[2rem] border border-primary/20 bg-white p-6 shadow-card md:p-8;
+  }
+
+  .admin-form-note {
+    @apply mb-7 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900;
+  }
+
+  .admin-form-note-icon {
+    @apply mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-extrabold text-white;
+  }
+
+  .admin-form-section {
+    @apply space-y-4 rounded-3xl border border-slate-200 bg-slate-50/70 p-5 md:p-6;
+  }
+
+  .admin-form-section-title {
+    @apply text-sm font-bold uppercase tracking-[0.16em] text-slate-500;
+  }
+
+  .admin-field {
+    @apply space-y-2;
+  }
+
+  .admin-field-label {
+    @apply flex items-center gap-2 text-sm font-semibold text-slate-700;
+  }
+
+  .admin-field-label-sub {
+    @apply rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary;
+  }
+
+  .admin-field-input {
+    @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition duration-150 focus:border-primary focus:ring-4 focus:ring-primary/10;
+  }
+
+  .admin-select-multi {
+    @apply h-52 w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-800 shadow-sm outline-none transition duration-150 focus:border-primary focus:ring-4 focus:ring-primary/10;
+  }
+
+  .admin-field-hint {
+    @apply text-xs font-medium text-slate-500;
+  }
+
+  .admin-field-error {
+    @apply text-xs font-semibold text-error;
+  }
+
+  .admin-form-actions {
+    @apply flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 pt-5;
+  }
+}

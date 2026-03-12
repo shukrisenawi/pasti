@@ -1,0 +1,85 @@
+<?php
+
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminMessageController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GuruController;
+use App\Http\Controllers\KawasanController;
+use App\Http\Controllers\KelasController;
+use App\Http\Controllers\KpiController;
+use App\Http\Controllers\LeaveNoticeController;
+use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PemarkahanController;
+use App\Http\Controllers\PastiController;
+use App\Http\Controllers\PastiInformationController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\ProgramParticipationController;
+use App\Http\Controllers\ProgramTitleOptionController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', fn () => redirect()->route('dashboard'));
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
+
+    Route::middleware('role:master_admin')->group(function () {
+        Route::resource('/users/admins', AdminUserController::class)
+            ->except(['show'])
+            ->names('users.admins')
+            ->parameters(['admins' => 'users_admin']);
+        Route::post('/program-title-options', [ProgramTitleOptionController::class, 'store'])->name('program-title-options.store');
+        Route::post('/pemarkahan/title-options', [PemarkahanController::class, 'storeTitleOption'])->name('pemarkahan.title-options.store');
+    });
+
+    Route::middleware('role:master_admin|admin')->group(function () {
+        Route::resource('/users/gurus', GuruController::class)
+            ->except(['show'])
+            ->names('users.gurus')
+            ->parameters(['gurus' => 'users_guru']);
+        Route::resource('/kawasan', KawasanController::class)->except(['show']);
+        Route::resource('/pasti', PastiController::class)->except(['show']);
+        Route::resource('/kelas', KelasController::class)->except(['show']);
+        Route::post('/kelas/{kela}/student-count', [KelasController::class, 'updateStudentCount'])->name('kelas.student-count.update');
+        Route::post('/maklumat-pasti/request-all', [PastiInformationController::class, 'requestAllUpdates'])->name('pasti-information.request-all');
+        Route::resource('/programs', ProgramController::class)->except(['index', 'show']);
+        Route::get('/kpi/gurus', [KpiController::class, 'index'])->name('kpi.gurus.index');
+        Route::get('/messages/create', [AdminMessageController::class, 'create'])->name('messages.create');
+        Route::post('/messages', [AdminMessageController::class, 'store'])->name('messages.store');
+    });
+
+    Route::middleware('role:guru')->group(function () {
+        Route::get('/kpi/saya', fn () => redirect()->route('kpi.guru.show', auth()->user()->guru))->name('kpi.mine');
+        Route::get('/pasti-saya', [PastiController::class, 'editOwn'])->name('pasti.self.edit');
+        Route::put('/pasti-saya', [PastiController::class, 'updateOwn'])->name('pasti.self.update');
+        Route::get('/leave-notices/create', [LeaveNoticeController::class, 'create'])->name('leave-notices.create');
+        Route::post('/leave-notices', [LeaveNoticeController::class, 'store'])->name('leave-notices.store');
+        Route::get('/maklumat-pasti/{pastiInformationRequest}/isi', [PastiInformationController::class, 'edit'])->name('pasti-information.edit');
+        Route::post('/maklumat-pasti/{pastiInformationRequest}/isi', [PastiInformationController::class, 'update'])->name('pasti-information.update');
+    });
+
+    Route::middleware('role:master_admin|admin|guru')->group(function () {
+        Route::get('/pemarkahan', [PemarkahanController::class, 'index'])->name('pemarkahan.index');
+        Route::post('/pemarkahan', [PemarkahanController::class, 'store'])->name('pemarkahan.store');
+        Route::get('/maklumat-pasti', [PastiInformationController::class, 'index'])->name('pasti-information.index');
+        Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
+        Route::get('/programs/{program}', [ProgramController::class, 'show'])->name('programs.show');
+        Route::post('/programs/{program}/teachers/{guruId}/status', [ProgramParticipationController::class, 'updateStatus'])
+            ->name('programs.teachers.status.update');
+        Route::get('/kpi/guru/{guru}', [KpiController::class, 'show'])->name('kpi.guru.show');
+        Route::get('/leave-notices', [LeaveNoticeController::class, 'index'])->name('leave-notices.index');
+        Route::delete('/leave-notices/{leaveNotice}', [LeaveNoticeController::class, 'destroy'])->name('leave-notices.destroy');
+        Route::get('/messages', [AdminMessageController::class, 'index'])->name('messages.index');
+        Route::get('/messages/{message}', [AdminMessageController::class, 'show'])->name('messages.show');
+        Route::post('/messages/{message}/reply', [AdminMessageController::class, 'reply'])->name('messages.reply');
+    });
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+});
+
+require __DIR__.'/auth.php';
