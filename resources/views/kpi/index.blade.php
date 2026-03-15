@@ -14,7 +14,7 @@
                 <tr>
                     <td>{{ $guru->display_name }}</td>
                     <td>{{ $guru->pasti?->name ?? '-' }}</td>
-                    <td>{{ number_format((float) ($guru->kpiSnapshot?->score ?? 0), 2) }}%</td>
+                    <td>{{ number_format((float) ($guru->kpiSnapshot?->score ?? 0), 0) }}</td>
                     <td>{{ $guru->leave_notices_current_year_count ?? 0 }}</td>
                     <td><a href="{{ route('kpi.guru.show', $guru) }}" class="btn btn-outline">{{ __('messages.view') }}</a></td>
                 </tr>

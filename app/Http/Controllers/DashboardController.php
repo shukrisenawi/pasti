@@ -21,6 +21,14 @@ class DashboardController extends Controller
         if ($this->isGuruOnly($user)) {
             $guruId = $user->guru?->id;
             $programQuery->whereHas('gurus', fn ($q) => $q->where('gurus.id', $guruId));
+
+            // Fetch pending PASTI information requests for this guru
+            if ($guruId) {
+                $pendingPastiInfoCount = \App\Models\PastiInformationRequest::query()
+                    ->whereHas('pasti', fn ($q) => $q->whereHas('gurus', fn ($vg) => $vg->where('gurus.id', $guruId)))
+                    ->whereNull('completed_at')
+                    ->count();
+            }
         }
 
         if ($user->hasAnyRole(['master_admin', 'admin'])) {
@@ -100,8 +108,10 @@ class DashboardController extends Controller
             'statuses' => $statuses,
             'canUpdateOwnStatus' => $user->hasRole('guru') && (bool) $currentParticipation,
             'topKpiGurus' => $topKpiGurus,
-            'currentYear' => $currentYear,
+            'latestYear' => $currentYear,
             'latestInboxMessage' => $latestInboxMessage,
+            'pendingPastiInfoCount' => $pendingPastiInfoCount ?? 0,
+            'guruLeaveDays' => $user->guru ? \App\Models\Guru::where('id', $user->guru->id)->withLeaveDaysForYear($currentYear)->first()?->leave_notices_current_year_count : 0,
         ]);
     }
 

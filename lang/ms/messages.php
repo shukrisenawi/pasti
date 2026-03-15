@@ -62,6 +62,7 @@ return [
     'location' => 'Lokasi',
     'description' => 'Penerangan',
     'title' => 'Tajuk',
+    'markah' => 'Markah',
     'select' => 'Pilih',
     'other' => 'Lain-lain',
     'other_title' => 'Tajuk Lain-lain',
@@ -158,4 +159,8 @@ return [
     'terima_anugerah' => 'Terima Anugerah',
     'admin_only' => 'Admin Sahaja',
     'tarikh_lahir' => 'Tarikh Lahir',
+    'tarikh_exp_skim_pas' => 'Tarikh Exp Skim PAS',
+    'skim_pas_expired' => 'Skim PAS sudah tamat tempoh, sila renew segera',
+    'skim_pas_expiring_soon' => 'Lagi seminggu lagi skim PAS akan tamat tempoh',
+    'skim_pas_expired_list' => 'Senarai Skim PAS Expired',
 ];

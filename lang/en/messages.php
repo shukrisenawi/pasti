@@ -59,6 +59,7 @@ return [
     'location' => 'Location',
     'description' => 'Description',
     'title' => 'Title',
+    'markah' => 'Score',
     'select' => 'Select',
     'other' => 'Other',
     'other_title' => 'Other Title',
@@ -149,4 +150,9 @@ return [
     'unread' => 'Unread',
     'terima_anugerah' => 'Received Award',
     'admin_only' => 'Admin Only',
+    'tarikh_lahir' => 'Date of Birth',
+    'tarikh_exp_skim_pas' => 'PAS Scheme Expiry Date',
+    'skim_pas_expired' => 'PAS Scheme has expired, please renew immediately',
+    'skim_pas_expiring_soon' => 'PAS Scheme will expire in a week',
+    'skim_pas_expired_list' => 'Expired PAS Scheme List',
 ];

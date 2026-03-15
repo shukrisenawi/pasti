@@ -26,13 +26,7 @@
                 </div>
             </div>
 
-            <div class="card border-primary/10 bg-white/95">
-                <div class="card-body p-4 sm:p-8">
-                    <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                    </div>
-                </div>
-            </div>
+
         </div>
     </div>
 </x-app-layout>

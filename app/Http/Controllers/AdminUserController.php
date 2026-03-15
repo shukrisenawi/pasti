@@ -39,6 +39,7 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'nama_samaran' => ['nullable', 'string', 'max:255'],
             'tarikh_lahir' => ['nullable', 'date'],
+            'tarikh_exp_skim_pas' => ['nullable', 'date'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'is_guru' => ['nullable', 'boolean'],
@@ -52,6 +53,7 @@ class AdminUserController extends Controller
             'name' => $data['name'],
             'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
             'tarikh_lahir' => $data['tarikh_lahir'],
+            'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'locale' => 'ms',
@@ -95,6 +97,7 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'nama_samaran' => ['nullable', 'string', 'max:255'],
             'tarikh_lahir' => ['nullable', 'date'],
+            'tarikh_exp_skim_pas' => ['nullable', 'date'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($users_admin->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'is_guru' => ['nullable', 'boolean'],
@@ -107,6 +110,7 @@ class AdminUserController extends Controller
         $users_admin->name = $data['name'];
         $users_admin->nama_samaran = $data['nama_samaran'] ?? $data['name'];
         $users_admin->tarikh_lahir = $data['tarikh_lahir'];
+        $users_admin->tarikh_exp_skim_pas = $data['tarikh_exp_skim_pas'];
         $users_admin->email = $data['email'];
 
         if (! empty($data['password'])) {
@@ -139,6 +143,18 @@ class AdminUserController extends Controller
         $users_admin->delete();
 
         return redirect()->route('users.admins.index')->with('status', __('messages.deleted'));
+    }
+
+    public function expiredSkimPas(): View
+    {
+        $expiredUsers = User::query()
+            ->where('tarikh_exp_skim_pas', '<', now()->startOfDay())
+            ->latest()
+            ->paginate(20);
+
+        return view('admin-users.expired-skim-pas', [
+            'users' => $expiredUsers,
+        ]);
     }
 
     private function syncAdminGuruProfile(User $admin, bool $isGuru, ?int $pastiId): void

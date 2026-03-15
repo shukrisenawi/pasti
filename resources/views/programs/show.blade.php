@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
@@ -22,6 +22,10 @@
         <p>
             <strong>{{ __('messages.teachers') }}:</strong>
             {{ $isAllTeachers ? __('messages.program_all_gurus') : __('messages.program_selected_gurus') }}
+        </p>
+        <p>
+            <strong>{{ __('messages.markah') }}:</strong>
+            {{ $program->markah }}
         </p>
         <p>
             <strong>{{ __('messages.require_absence_reason') }}:</strong>

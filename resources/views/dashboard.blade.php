@@ -1,13 +1,129 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-start justify-between gap-3">
-            <div>
-                <p class="text-xs font-bold uppercase tracking-[0.24em] text-primary">Overview</p>
-                <h2 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">{{ __('messages.dashboard') }}</h2>
-                <p class="mt-2 text-sm text-slate-500">{{ __('messages.dashboard_subtitle') }}</p>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                @role('guru')
+                    <x-avatar :guru="auth()->user()->guru" size="h-12 w-12" rounded="rounded-2xl" border="border-2 border-primary/20" class="lg:hidden" />
+                @endrole
+                <div>
+                    @role('guru')
+                        <p class="text-xs font-bold uppercase tracking-[0.24em] text-primary">Selamat Datang</p>
+                        <h2 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">{{ auth()->user()->display_name }}</h2>
+                    @else
+                        <p class="text-xs font-bold uppercase tracking-[0.24em] text-primary">Overview</p>
+                        <h2 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">{{ __('messages.dashboard') }}</h2>
+                        <p class="mt-2 text-sm text-slate-500">{{ __('messages.dashboard_subtitle') }}</p>
+                    @endrole
+                </div>
             </div>
+            @role('guru')
+                <div class="hidden lg:block">
+                    <p class="text-right text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Tahun Semasa</p>
+                    <p class="text-right text-lg font-extrabold text-slate-900">{{ $latestYear }}</p>
+                </div>
+            @endrole
         </div>
     </x-slot>
+    
+    @php
+        $user = auth()->user();
+        $skimPasAlert = null;
+        if ($user->tarikh_exp_skim_pas) {
+            $today = now()->startOfDay();
+            $expiry = $user->tarikh_exp_skim_pas->startOfDay();
+            
+            if ($expiry->lt($today)) {
+                $skimPasAlert = 'expired';
+            } elseif ($expiry->diffInDays($today) <= 7) {
+                $skimPasAlert = 'expiring_soon';
+            }
+        }
+    @endphp
+
+    @if($skimPasAlert === 'expired')
+        <div class="mb-6 flex items-center gap-4 rounded-2xl border-2 border-red-500/20 bg-red-50 p-4 text-red-800 shadow-sm">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            </div>
+            <div>
+                <p class="font-black">{{ __('messages.skim_pas_expired') }}</p>
+                <p class="text-sm font-bold opacity-80">Tarikh Tamat: {{ $user->tarikh_exp_skim_pas->format('d/m/Y') }}</p>
+            </div>
+        </div>
+    @elseif($skimPasAlert === 'expiring_soon')
+        <div class="mb-6 flex items-center gap-4 rounded-2xl border-2 border-amber-500/20 bg-amber-50 p-4 text-amber-800 shadow-sm">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <div>
+                <p class="font-black">{{ __('messages.skim_pas_expiring_soon') }}</p>
+                <p class="text-sm font-bold opacity-80">Tarikh Tamat: {{ $user->tarikh_exp_skim_pas->format('d/m/Y') }}</p>
+            </div>
+        </div>
+    @endif
+
+    @role('guru')
+        <!-- Guru Mobile Stats & Actions -->
+        <section class="mb-6 space-y-6">
+            <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <div class="card bg-white p-5 shadow-sm">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">KPI Saya</p>
+                    <div class="mt-2 flex items-baseline gap-1">
+                        <span class="text-2xl font-black text-primary">{{ number_format(auth()->user()->guru?->kpiSnapshot?->score ?? 0, 1) }}</span>
+                        <span class="text-xs font-bold text-slate-400">%</span>
+                    </div>
+                </div>
+                <div class="card bg-white p-5 shadow-sm">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Jumlah Cuti</p>
+                    <div class="mt-2 flex items-baseline gap-1">
+                        <span class="text-2xl font-black text-orange-600">{{ $guruLeaveDays }}</span>
+                        <span class="text-xs font-bold text-slate-400">Hari</span>
+                    </div>
+                </div>
+                <div class="card bg-white p-5 shadow-sm">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tugasan Maklumat</p>
+                    <div class="mt-2 flex items-baseline gap-1">
+                        <span class="text-2xl font-black {{ $pendingPastiInfoCount > 0 ? 'text-red-600' : 'text-emerald-600' }}">{{ $pendingPastiInfoCount }}</span>
+                        <span class="text-xs font-bold text-slate-400">Pending</span>
+                    </div>
+                </div>
+                <div class="card bg-white p-5 shadow-sm">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Notifikasi</p>
+                    <div class="mt-2 flex items-baseline gap-1">
+                        <span class="text-2xl font-black text-blue-600">{{ auth()->user()->unreadNotifications()->count() }}</span>
+                        <span class="text-xs font-bold text-slate-400">Baru</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-3 lg:grid-cols-8">
+                <a href="{{ route('leave-notices.create') }}" class="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 text-center shadow-sm transition hover:bg-slate-50">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-600">Minta Cuti</span>
+                </a>
+                <a href="{{ route('pasti.self.edit') }}" class="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 text-center shadow-sm transition hover:bg-slate-50">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-600">Pasti Saya</span>
+                </a>
+                <a href="{{ route('pasti-information.index') }}" class="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 text-center shadow-sm transition hover:bg-slate-50">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-600">Info Pasti</span>
+                </a>
+                <a href="{{ route('pemarkahan.index') }}" class="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 text-center shadow-sm transition hover:bg-slate-50">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-600">Pemarkahan</span>
+                </a>
+            </div>
+        </section>
+    @endrole
 
     @if($latestInboxMessage)
         @php($latestMessageActivity = $latestInboxMessage->replies_max_created_at ?? $latestInboxMessage->created_at)
@@ -144,7 +260,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <p class="text-xs font-bold uppercase tracking-[0.22em] text-primary">KPI Guru</p>
-                        <h3 class="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">Guru KPI Tertinggi ({{ $currentYear }})</h3>
+                        <h3 class="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">Guru KPI Tertinggi ({{ $latestYear ?? $currentYear }})</h3>
                         <p class="mt-2 text-sm text-slate-500">
                             Turutan: skor KPI paling tinggi, kemudian jumlah cuti paling sedikit.
                         </p>

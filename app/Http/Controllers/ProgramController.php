@@ -63,6 +63,7 @@ class ProgramController extends Controller
             'description' => ['nullable', 'string'],
             'banner_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'require_absence_reason' => ['nullable', 'boolean'],
+            'markah' => ['required', 'integer', 'min:1', 'max:5'],
             'teacher_scope' => ['required', 'in:all,selected'],
             'guru_ids' => ['required_if:teacher_scope,selected', 'array', 'min:1'],
             'guru_ids.*' => ['integer', 'exists:gurus,id'],
@@ -80,6 +81,7 @@ class ProgramController extends Controller
                 ? $request->file('banner_image')->store('program-banners', 'public')
                 : null,
             'require_absence_reason' => (bool) ($data['require_absence_reason'] ?? false),
+            'markah' => $data['markah'],
             'created_by' => $user->id,
         ]);
 
@@ -152,6 +154,7 @@ class ProgramController extends Controller
             'description' => ['nullable', 'string'],
             'banner_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'require_absence_reason' => ['nullable', 'boolean'],
+            'markah' => ['required', 'integer', 'min:1', 'max:5'],
             'teacher_scope' => ['required', 'in:all,selected'],
             'guru_ids' => ['required_if:teacher_scope,selected', 'array', 'min:1'],
             'guru_ids.*' => ['integer', 'exists:gurus,id'],
@@ -165,6 +168,7 @@ class ProgramController extends Controller
             'program_time' => $data['program_time'] ?? null,
             'location' => $data['location'] ?? null,
             'description' => $data['description'] ?? null,
+            'markah' => $data['markah'],
             'require_absence_reason' => (bool) ($data['require_absence_reason'] ?? false),
         ]);
 

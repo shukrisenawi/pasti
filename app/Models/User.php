@@ -28,6 +28,7 @@ class User extends Authenticatable
         'name',
         'nama_samaran',
         'tarikh_lahir',
+        'tarikh_exp_skim_pas',
         'email',
         'locale',
         'avatar_path',
@@ -54,6 +55,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'tarikh_lahir' => 'date',
+            'tarikh_exp_skim_pas' => 'date',
             'password' => 'hashed',
         ];
     }

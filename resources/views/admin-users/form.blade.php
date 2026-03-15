@@ -57,6 +57,14 @@
                             @enderror
                         </div>
 
+                        <div class="admin-field">
+                            <label class="admin-field-label">{{ __('messages.tarikh_exp_skim_pas') }}</label>
+                            <input class="admin-field-input" type="date" name="tarikh_exp_skim_pas" value="{{ old('tarikh_exp_skim_pas', $adminUser->tarikh_exp_skim_pas?->format('Y-m-d')) }}">
+                            @error('tarikh_exp_skim_pas')
+                                <p class="admin-field-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div class="admin-field md:col-span-2">
                             <label class="admin-field-label">{{ __('messages.email') }}</label>
                             <input class="admin-field-input" type="email" name="email" value="{{ old('email', $adminUser->email) }}" required>

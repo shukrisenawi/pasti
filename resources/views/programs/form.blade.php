@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="header">
         <h2 class="text-lg font-bold">{{ $program->exists ? __('messages.edit') : __('messages.new') }} {{ __('messages.programs') }}</h2>
     </x-slot>
@@ -74,6 +74,13 @@
                         >
                         <span class="text-sm text-slate-700">{{ __('messages.require_absence_reason_hint') }}</span>
                     </label>
+                </div>
+                <div>
+                    <label class="label-base">{{ __('messages.markah') }} (1-5)</label>
+                    <input class="input-base" type="number" name="markah" min="1" max="5" value="{{ old('markah', $program->markah ?? 1) }}" required>
+                    @error('markah')
+                        <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div class="md:col-span-2">
                     <label class="label-base">{{ __('messages.teachers') }}</label>

@@ -48,6 +48,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/kpi/gurus', [KpiController::class, 'index'])->name('kpi.gurus.index');
         Route::get('/messages/create', [AdminMessageController::class, 'create'])->name('messages.create');
         Route::post('/messages', [AdminMessageController::class, 'store'])->name('messages.store');
+        Route::get('/users/expired-skim-pas', [AdminUserController::class, 'expiredSkimPas'])->name('users.expired-skim-pas');
     });
 
     Route::middleware('role:guru')->group(function () {
@@ -78,7 +79,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 });
 

@@ -32,6 +32,10 @@
                     <label class="label-base">{{ __('messages.tarikh_lahir') }}</label>
                     <input class="input-base" type="date" name="tarikh_lahir" value="{{ old('tarikh_lahir', $userModel?->tarikh_lahir?->format('Y-m-d')) }}">
                 </div>
+                <div x-show="isAssistant === 0" x-cloak>
+                    <label class="label-base">{{ __('messages.tarikh_exp_skim_pas') }}</label>
+                    <input class="input-base" type="date" name="tarikh_exp_skim_pas" value="{{ old('tarikh_exp_skim_pas', $userModel?->tarikh_exp_skim_pas?->format('Y-m-d')) }}">
+                </div>
                 <div>
                     <label class="label-base">{{ __('messages.email') }}</label>
                     <input class="input-base" type="email" name="email" value="{{ old('email', $guru->email ?? $userModel?->email) }}" :required="isAssistant === 0">

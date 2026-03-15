@@ -111,7 +111,7 @@
     </header>
 
     <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8">
-        <aside class="card order-2 h-fit overflow-hidden border-primary/10 bg-white/90 lg:order-1">
+        <aside class="card order-2 h-fit overflow-hidden border-primary/10 bg-white/90 @role('guru') hidden lg:block @endrole lg:order-1">
             <div class="rounded-[1.6rem] bg-gradient-to-br from-primary via-primary-dark to-emerald-700 p-5 text-primary-content shadow-lg">
                 <div class="flex items-center gap-4">
                     <x-avatar :user="auth()->user()" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/20" />
@@ -135,6 +135,16 @@
                     <a href="{{ route('users.gurus.index') }}" class="menu-link {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
                     <a href="{{ route('pasti.index') }}" class="menu-link {{ request()->routeIs('pasti.*') ? 'menu-link-active' : '' }}">{{ __('messages.pasti') }}</a>
                     <a href="{{ route('kpi.gurus.index') }}" class="menu-link {{ request()->routeIs('kpi.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.kpi_guru') }}</a>
+                    
+                    @php
+                        $expiredSkimPasCount = \App\Models\User::where('tarikh_exp_skim_pas', '<', now()->startOfDay())->count();
+                    @endphp
+                    <a href="{{ route('users.expired-skim-pas') }}" class="menu-link {{ request()->routeIs('users.expired-skim-pas') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                        <span>{{ __('messages.skim_pas_expired_list') }}</span>
+                        @if($expiredSkimPasCount > 0)
+                            <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm" style="background-color: #059669 !important;">{{ $expiredSkimPasCount }}</span>
+                        @endif
+                    </a>
                 @endrole
                 @role('guru')
                     <a href="{{ route('pasti.self.edit') }}" class="menu-link {{ request()->routeIs('pasti.self.*') ? 'menu-link-active' : '' }}">{{ __('messages.pasti') }}</a>
@@ -181,6 +191,8 @@
             <div>{{ $slot }}</div>
         </main>
     </div>
+
+    <x-bottom-nav />
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

@@ -15,7 +15,7 @@ class KpiCalculationService
         $baseQuery = $guru->programs()
             ->whereYear('programs.program_date', $currentYear);
 
-        $totalInvited = (int) (clone $baseQuery)->count();
+        $totalInvited = (int) (clone $baseQuery)->sum('programs.markah');
 
         $hadirStatusIds = ProgramStatus::query()
             ->where('is_hadir', true)
@@ -25,9 +25,9 @@ class KpiCalculationService
             ? 0
             : (int) (clone $baseQuery)
                 ->whereIn('program_teacher.program_status_id', $hadirStatusIds)
-                ->count();
+                ->sum('programs.markah');
 
-        $score = $totalInvited > 0 ? round(($totalHadir / $totalInvited) * 100, 2) : 0;
+        $score = $totalHadir;
 
         return KpiSnapshot::query()->updateOrCreate(
             ['guru_id' => $guru->id],

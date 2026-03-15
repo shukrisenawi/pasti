@@ -13,6 +13,7 @@
             <thead>
             <tr>
                 <th>{{ __('messages.title') }}</th>
+                <th>{{ __('messages.markah') }}</th>
                 <th>{{ __('messages.date') }}</th>
                 <th>{{ __('messages.time') }}</th>
                 <th>{{ __('messages.location') }}</th>
@@ -23,6 +24,7 @@
             @forelse($programs as $program)
                 <tr>
                     <td>{{ $program->title }}</td>
+                    <td>{{ $program->markah }}</td>
                     <td>{{ $program->program_date?->format('d/m/Y') }}</td>
                     <td>{{ $program->program_time?->format('H:i') ?? '-' }}</td>
                     <td>{{ $program->location ?? '-' }}</td>

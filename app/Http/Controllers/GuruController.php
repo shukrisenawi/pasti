@@ -98,6 +98,7 @@ class GuruController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
             'tarikh_lahir' => ['nullable', 'date'],
+            'tarikh_exp_skim_pas' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'terima_anugerah' => ['nullable', 'boolean'],
         ]);
@@ -111,6 +112,7 @@ class GuruController extends Controller
                 'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
                 'email' => $data['email'],
                 'tarikh_lahir' => $data['tarikh_lahir'],
+                'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
                 'password' => Hash::make($data['password']),
                 'locale' => 'ms',
             ]);
@@ -198,6 +200,7 @@ class GuruController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
             'tarikh_lahir' => ['nullable', 'date'],
+            'tarikh_exp_skim_pas' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'terima_anugerah' => ['nullable', 'boolean'],
         ]);
@@ -223,6 +226,7 @@ class GuruController extends Controller
                     'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
                     'email' => $data['email'],
                     'tarikh_lahir' => $data['tarikh_lahir'],
+                    'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
                     ...(! empty($data['password']) ? ['password' => Hash::make($data['password'])] : []),
                 ]);
             } else {
@@ -231,6 +235,7 @@ class GuruController extends Controller
                     'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
                     'email' => $data['email'],
                     'tarikh_lahir' => $data['tarikh_lahir'],
+                    'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
                     'password' => Hash::make($data['password']),
                     'locale' => 'ms',
                 ]);

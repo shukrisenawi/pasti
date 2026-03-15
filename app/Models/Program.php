@@ -19,6 +19,7 @@ class Program extends Model
         'description',
         'banner_path',
         'require_absence_reason',
+        'markah',
         'created_by',
     ];
 
@@ -28,6 +29,7 @@ class Program extends Model
             'program_date' => 'date',
             'program_time' => 'datetime:H:i',
             'require_absence_reason' => 'boolean',
+            'markah' => 'integer',
         ];
     }
 
