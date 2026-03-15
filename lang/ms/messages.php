@@ -115,6 +115,8 @@ return [
     'total_hadir' => 'Jumlah Hadir',
     'assignment' => 'Penugasan',
     'admin_assignment' => 'PASTI Tugasan Admin',
+    'all_pasti' => 'Semua PASTI',
+    'select_pasti' => 'Pilih PASTI',
     'admin_is_guru' => 'Admin ini juga seorang guru',
     'admin_is_guru_hint' => 'Jika ditanda, akaun ini akan dapat akses menu/fungsi guru termasuk kemas kini kehadiran program.',
     'password_confirmation' => 'Sahkan Kata Laluan',
@@ -155,4 +157,5 @@ return [
     'unread' => 'Belum baca',
     'terima_anugerah' => 'Terima Anugerah',
     'admin_only' => 'Admin Sahaja',
+    'tarikh_lahir' => 'Tarikh Lahir',
 ];

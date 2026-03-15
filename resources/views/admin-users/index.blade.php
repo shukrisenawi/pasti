@@ -15,6 +15,7 @@
             <tr>
                 <th>{{ __('messages.name') }}</th>
                 <th>{{ __('messages.email') }}</th>
+                <th>{{ __('messages.tarikh_lahir') }}</th>
                 <th>{{ __('messages.admin_assignment') }}</th>
                 <th>{{ __('messages.actions') }}</th>
             </tr>
@@ -24,7 +25,14 @@
                 <tr>
                     <td>{{ $admin->display_name }}</td>
                     <td>{{ $admin->email }}</td>
-                    <td>{{ $admin->assignedPastis->pluck('name')->implode(', ') ?: '-' }}</td>
+                    <td>{{ $admin->tarikh_lahir?->format('d/m/Y') ?: '-' }}</td>
+                    <td>
+                        @if($pastiCount > 0 && $admin->assignedPastis->count() === $pastiCount)
+                            <span class="badge badge-primary">{{ __('messages.all_pasti') }}</span>
+                        @else
+                            {{ $admin->assignedPastis->pluck('name')->implode(', ') ?: '-' }}
+                        @endif
+                    </td>
                     <td class="space-x-2">
                         <a href="{{ route('users.admins.edit', $admin) }}" class="btn btn-outline">{{ __('messages.edit') }}</a>
                         <form class="inline" method="POST" action="{{ route('users.admins.destroy', $admin) }}">

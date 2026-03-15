@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="m-0">
@@ -69,12 +71,11 @@
                                         @endphp
                                         <button type="submit" class="w-full rounded-2xl px-3 py-3 text-left transition hover:bg-primary/5">
                                             <div class="flex items-start gap-3">
-                                                <img
-                                                    src="{{ $notificationAvatar }}"
-                                                    alt="{{ $notification->data['guru_name'] ?? 'Guru' }}"
-                                                    class="h-10 w-10 shrink-0 rounded-xl border border-slate-200 object-cover"
-                                                    loading="lazy"
-                                                >
+                                                <x-avatar
+                                                    size="h-10 w-10"
+                                                    rounded="rounded-xl"
+                                                    :guru="\App\Models\Guru::where('name', $notification->data['guru_name'] ?? '')->first()"
+                                                />
                                                 <div class="min-w-0">
                                                     <p class="text-sm font-semibold text-slate-900">
                                                         {{ $notificationTitle }}
@@ -96,7 +97,7 @@
                         </div>
                     @endif
 
-                    <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->display_name }}" class="hidden h-10 w-10 rounded-2xl border border-slate-200 object-cover sm:block">
+                    <x-avatar :user="auth()->user()" size="h-10 w-10" rounded="rounded-2xl" border="border border-slate-200/50" class="hidden sm:block" />
 
                     <a href="{{ route('profile.edit') }}" class="btn btn-outline btn-sm self-center">{{ __('messages.profile') }}</a>
 
@@ -113,7 +114,7 @@
         <aside class="card order-2 h-fit overflow-hidden border-primary/10 bg-white/90 lg:order-1">
             <div class="rounded-[1.6rem] bg-gradient-to-br from-primary via-primary-dark to-emerald-700 p-5 text-primary-content shadow-lg">
                 <div class="flex items-center gap-4">
-                    <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->display_name }}" class="h-14 w-14 rounded-2xl border border-white/20 object-cover">
+                    <x-avatar :user="auth()->user()" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/20" />
                     <div class="min-w-0">
                         <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">User</p>
                         <p class="truncate text-base font-bold">{{ auth()->user()->display_name }}</p>
@@ -181,5 +182,27 @@
         </main>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr('input[type="date"]', {
+            altInput: true,
+            altFormat: "d/m/Y",
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            onReady: function(selectedDates, dateStr, instance) {
+                if (instance.altInput) {
+                    instance.altInput.classList.add('input-base');
+                    // Copy other classes if needed
+                    const originalClasses = instance.element.classList;
+                    originalClasses.forEach(cls => {
+                        if (cls !== 'flatpickr-input') {
+                            instance.altInput.classList.add(cls);
+                        }
+                    });
+                }
+            }
+        });
+    });
+</script>
 </body>
 </html>

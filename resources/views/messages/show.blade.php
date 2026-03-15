@@ -49,7 +49,7 @@
                 @forelse($message->replies as $reply)
                     <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
                         <div class="flex items-center gap-3">
-                            <img src="{{ $reply->sender?->avatar_url ?? '/images/default-avatar.svg' }}" alt="{{ $reply->sender?->display_name ?? '-' }}" class="h-10 w-10 rounded-xl border border-slate-200 object-cover">
+                            <x-avatar :user="$reply->sender" size="h-10 w-10" rounded="rounded-xl" />
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-semibold text-slate-900">{{ $reply->sender?->display_name ?? '-' }}</p>
                                 <p class="text-xs text-slate-500">{{ $reply->created_at?->format('d/m/Y H:i') }}</p>

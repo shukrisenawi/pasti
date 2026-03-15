@@ -8,9 +8,9 @@
             <div class="rounded-3xl border border-slate-200 bg-slate-50/90 p-4">
                 <div class="flex items-center gap-3">
                     <div class="relative">
-                        <img src="{{ $lastLoginUser->avatar_url }}" alt="{{ $lastLoginUser->display_name }}" class="h-14 w-14 rounded-2xl border border-slate-200 object-cover">
+                        <x-avatar :user="$lastLoginUser" size="h-14 w-14" rounded="rounded-2xl" />
                         @if(($lastLoginUser->login_unread_notifications_count ?? 0) > 0)
-                            <span class="badge badge-error badge-xs absolute -right-1 -top-1">
+                            <span class="badge badge-error badge-xs absolute -right-1 -top-1" style="z-index: 20;">
                                 {{ ($lastLoginUser->login_unread_notifications_count ?? 0) > 99 ? '99+' : $lastLoginUser->login_unread_notifications_count }}
                             </span>
                         @endif

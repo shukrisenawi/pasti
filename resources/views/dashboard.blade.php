@@ -159,11 +159,7 @@
                     @foreach($topKpiGurus as $guru)
                         <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
                             <div class="flex items-center gap-3">
-                                <img
-                                    src="{{ $guru->avatar_url }}"
-                                    alt="{{ $guru->display_name }}"
-                                    class="h-12 w-12 rounded-2xl border border-slate-200 object-cover"
-                                >
+                                <x-avatar :guru="$guru" size="h-12 w-12" rounded="rounded-2xl" />
                                 <div class="min-w-0">
                                     <p class="truncate text-base font-bold text-slate-900">{{ $guru->display_name }}</p>
                                     <p class="truncate text-sm text-slate-500">{{ $guru->pasti?->name ?? '-' }}</p>

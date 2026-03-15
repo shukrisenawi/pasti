@@ -28,6 +28,10 @@
                     <label class="label-base">{{ __('messages.nama_samaran') }}</label>
                     <input class="input-base" name="nama_samaran" value="{{ old('nama_samaran', $userModel?->nama_samaran) }}">
                 </div>
+                <div x-show="isAssistant === 0" x-cloak>
+                    <label class="label-base">{{ __('messages.tarikh_lahir') }}</label>
+                    <input class="input-base" type="date" name="tarikh_lahir" value="{{ old('tarikh_lahir', $userModel?->tarikh_lahir?->format('Y-m-d')) }}">
+                </div>
                 <div>
                     <label class="label-base">{{ __('messages.email') }}</label>
                     <input class="input-base" type="email" name="email" value="{{ old('email', $guru->email ?? $userModel?->email) }}" :required="isAssistant === 0">
@@ -60,7 +64,7 @@
                 <div class="md:col-span-2">
                     <label class="label-base">Avatar</label>
                     <div class="mt-2 flex items-center gap-4">
-                        <img src="{{ $guru->avatar_url }}" alt="{{ $guru->display_name }}" class="h-16 w-16 rounded-full border border-base-300 object-cover">
+                        <x-avatar :guru="$guru" size="h-16 w-16" />
                         <div class="w-full">
                             <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp,image/*" class="file-input w-full">
                             @if($guru->exists)

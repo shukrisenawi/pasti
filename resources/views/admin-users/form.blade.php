@@ -12,14 +12,16 @@
         </div>
     </x-slot>
 
-    <div class="admin-form-shell">
+    <div class="admin-form-shell" x-data="{ isGuru: {{ old('is_guru', $isGuru ?? false) ? 'true' : 'false' }} }">
         <div class="admin-form-panel">
+            @if($adminUser->exists)
             <div class="admin-form-note">
                 <span class="admin-form-note-icon" aria-hidden="true">i</span>
                 <span class="text-sm md:text-[0.95rem]">
-                    {{ $adminUser->exists ? __('messages.optional_password') : __('messages.password_confirmation') }}
+                    {{ __('messages.optional_password') }}
                 </span>
             </div>
+            @endif
 
             <form method="POST" action="{{ $adminUser->exists ? route('users.admins.update', $adminUser) : route('users.admins.store') }}" class="space-y-8">
             @csrf
@@ -43,6 +45,14 @@
                             <label class="admin-field-label">{{ __('messages.nama_samaran') }}</label>
                             <input class="admin-field-input" type="text" name="nama_samaran" value="{{ old('nama_samaran', $adminUser->nama_samaran) }}">
                             @error('nama_samaran')
+                                <p class="admin-field-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="admin-field">
+                            <label class="admin-field-label">{{ __('messages.tarikh_lahir') }}</label>
+                            <input class="admin-field-input" type="date" name="tarikh_lahir" value="{{ old('tarikh_lahir', $adminUser->tarikh_lahir?->format('Y-m-d')) }}">
+                            @error('tarikh_lahir')
                                 <p class="admin-field-error">{{ $message }}</p>
                             @enderror
                         </div>
@@ -79,7 +89,27 @@
                     </div>
                 </section>
 
-                <section class="admin-form-section">
+                <section class="admin-form-section" x-show="isGuru" x-cloak x-transition>
+                    <h3 class="admin-form-section-title">Profil Guru</h3>
+                    <div class="admin-field">
+                        <label class="admin-field-label">
+                            Guru PASTI Yang Mana?
+                            <span class="text-xs font-bold text-red-500">(Wajib)</span>
+                        </label>
+                        <select class="admin-field-input" name="pasti_id" :required="isGuru">
+                            <option value="">- {{ __('messages.select') }} -</option>
+                            @foreach($pastis as $pasti)
+                                <option value="{{ $pasti->id }}" @selected(old('pasti_id', $guruPastiId) == $pasti->id)>{{ $pasti->name }}</option>
+                            @endforeach
+                        </select>
+                        <p class="admin-field-hint">Pilih PASTI di mana admin ini bertugas sebagai guru.</p>
+                        @error('pasti_id')
+                            <p class="admin-field-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </section>
+
+                <section class="admin-form-section" x-data="{ assignmentScope: '{{ old('assignment_scope', ($adminUser->exists && count($selectedPastis) !== $pastiCount) ? 'selected' : 'all') }}' }">
                     <h3 class="admin-form-section-title">{{ __('messages.admin_assignment') }}</h3>
 
                     <div class="admin-field">
@@ -88,6 +118,7 @@
                                 type="checkbox"
                                 name="is_guru"
                                 value="1"
+                                x-model="isGuru"
                                 @checked(old('is_guru', $isGuru ?? false))
                             >
                             <span>{{ __('messages.admin_is_guru') }}</span>
@@ -99,11 +130,28 @@
                     </div>
 
                     <div class="admin-field">
+                        <label class="admin-field-label">Skop Penugasan PASTI</label>
+                        <div class="mt-2 flex flex-wrap gap-6">
+                            <label class="inline-flex cursor-pointer items-center gap-2">
+                                <input type="radio" name="assignment_scope" value="all" x-model="assignmentScope" class="h-4 w-4 border-slate-300 text-primary focus:ring-primary/30">
+                                <span class="text-sm font-medium text-slate-700">{{ __('messages.all_pasti') }}</span>
+                            </label>
+                            <label class="inline-flex cursor-pointer items-center gap-2">
+                                <input type="radio" name="assignment_scope" value="selected" x-model="assignmentScope" class="h-4 w-4 border-slate-300 text-primary focus:ring-primary/30">
+                                <span class="text-sm font-medium text-slate-700">{{ __('messages.select_pasti') }}</span>
+                            </label>
+                        </div>
+                        @error('assignment_scope')
+                            <p class="admin-field-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="admin-field" x-show="assignmentScope === 'selected'" x-cloak x-transition>
                         <label class="admin-field-label">
                             {{ __('messages.admin_assignment') }}
                             <span class="admin-field-label-sub">{{ __('messages.pasti') }}</span>
                         </label>
-                        <select class="admin-select-multi" name="pasti_ids[]" multiple>
+                        <select class="admin-select-multi" name="pasti_ids[]" multiple :required="assignmentScope === 'selected'">
                             @foreach($pastis as $pasti)
                                 <option value="{{ $pasti->id }}" @selected(in_array($pasti->id, old('pasti_ids', $selectedPastis), true))>{{ $pasti->name }}</option>
                             @endforeach

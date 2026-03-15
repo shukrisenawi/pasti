@@ -97,6 +97,7 @@ class GuruController extends Controller
             'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
+            'tarikh_lahir' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'terima_anugerah' => ['nullable', 'boolean'],
         ]);
@@ -109,6 +110,7 @@ class GuruController extends Controller
                 'name' => $data['name'],
                 'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
                 'email' => $data['email'],
+                'tarikh_lahir' => $data['tarikh_lahir'],
                 'password' => Hash::make($data['password']),
                 'locale' => 'ms',
             ]);
@@ -195,6 +197,7 @@ class GuruController extends Controller
             'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
+            'tarikh_lahir' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'terima_anugerah' => ['nullable', 'boolean'],
         ]);
@@ -219,6 +222,7 @@ class GuruController extends Controller
                     'name' => $data['name'],
                     'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
                     'email' => $data['email'],
+                    'tarikh_lahir' => $data['tarikh_lahir'],
                     ...(! empty($data['password']) ? ['password' => Hash::make($data['password'])] : []),
                 ]);
             } else {
@@ -226,6 +230,7 @@ class GuruController extends Controller
                     'name' => $data['name'],
                     'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
                     'email' => $data['email'],
+                    'tarikh_lahir' => $data['tarikh_lahir'],
                     'password' => Hash::make($data['password']),
                     'locale' => 'ms',
                 ]);

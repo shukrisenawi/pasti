@@ -20,7 +20,7 @@
         <div>
             <x-input-label for="avatar" :value="__('Avatar')" />
             <div class="mt-2 flex items-center gap-4">
-                <img src="{{ $user->avatar_url }}" alt="{{ $user->display_name }}" class="h-16 w-16 rounded-2xl border border-slate-200 object-cover">
+                <x-avatar :user="$user" size="h-16 w-16" rounded="rounded-2xl" />
                 <div class="w-full">
                     <input id="avatar" name="avatar" type="file" accept=".jpg,.jpeg,.png,.webp,image/*" class="file-input w-full">
                     <label class="mt-2 inline-flex items-center gap-2 text-sm text-slate-600">
@@ -42,6 +42,12 @@
             <x-input-label for="nama_samaran" :value="__('messages.nama_samaran')" />
             <x-text-input id="nama_samaran" name="nama_samaran" type="text" class="mt-1 block w-full" :value="old('nama_samaran', $user->nama_samaran)" />
             <x-input-error class="mt-2" :messages="$errors->get('nama_samaran')" />
+        </div>
+
+        <div>
+            <x-input-label for="tarikh_lahir" :value="__('messages.tarikh_lahir')" />
+            <x-text-input id="tarikh_lahir" name="tarikh_lahir" type="date" class="mt-1 block w-full" :value="old('tarikh_lahir', $user->tarikh_lahir?->format('Y-m-d'))" />
+            <x-input-error class="mt-2" :messages="$errors->get('tarikh_lahir')" />
         </div>
 
         <div>
