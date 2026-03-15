@@ -21,6 +21,7 @@ class Guru extends Model
         'phone',
         'joined_at',
         'active',
+        'terima_anugerah',
     ];
 
     protected function casts(): array
@@ -29,6 +30,7 @@ class Guru extends Model
             'joined_at' => 'date',
             'active' => 'boolean',
             'is_assistant' => 'boolean',
+            'terima_anugerah' => 'boolean',
         ];
     }
 

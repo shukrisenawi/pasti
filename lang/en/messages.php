@@ -147,4 +147,6 @@ return [
     'from' => 'From',
     'read' => 'Read',
     'unread' => 'Unread',
+    'terima_anugerah' => 'Received Award',
+    'admin_only' => 'Admin Only',
 ];

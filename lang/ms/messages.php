@@ -153,4 +153,6 @@ return [
     'from' => 'Daripada',
     'read' => 'Dibaca',
     'unread' => 'Belum baca',
+    'terima_anugerah' => 'Terima Anugerah',
+    'admin_only' => 'Admin Sahaja',
 ];

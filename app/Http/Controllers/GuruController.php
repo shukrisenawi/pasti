@@ -98,6 +98,7 @@ class GuruController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
+            'terima_anugerah' => ['nullable', 'boolean'],
         ]);
 
         $this->ensurePastiAllowed($user, $data['pasti_id'] ?? null);
@@ -125,6 +126,7 @@ class GuruController extends Controller
             'phone' => $data['phone'] ?? null,
             'joined_at' => $data['joined_at'] ?? null,
             'active' => (bool) ($data['active'] ?? false),
+            'terima_anugerah' => (bool) ($data['terima_anugerah'] ?? false),
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -194,6 +196,7 @@ class GuruController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
+            'terima_anugerah' => ['nullable', 'boolean'],
         ]);
 
         $this->ensurePastiAllowed($user, $data['pasti_id'] ?? null);
@@ -246,6 +249,7 @@ class GuruController extends Controller
             'phone' => $data['phone'] ?? null,
             'joined_at' => $data['joined_at'] ?? null,
             'active' => (bool) ($data['active'] ?? false),
+            'terima_anugerah' => (bool) ($data['terima_anugerah'] ?? false),
         ]);
 
         if ($request->boolean('remove_avatar')) {

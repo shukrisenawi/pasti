@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="header">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
