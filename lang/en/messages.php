@@ -69,7 +69,7 @@ return [
     'program_all_gurus' => 'All active teachers (automatic)',
     'program_selected_gurus' => 'Selected teachers only',
     'program_all_gurus_notice' => 'All active teachers will be assigned to this program automatically.',
-    'program_teacher_scope_all' => 'Default: All active teachers',
+    'program_teacher_scope_all' => 'All active teachers',
     'program_teacher_scope_selected' => 'Select specific teachers',
     'require_absence_reason' => 'Require Absence Reason',
     'require_absence_reason_hint' => 'If enabled, \"Absent\" status must include a reason.',

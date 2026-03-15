@@ -73,7 +73,7 @@ return [
     'program_all_gurus' => 'Semua guru aktif (automatik)',
     'program_selected_gurus' => 'Guru terpilih sahaja',
     'program_all_gurus_notice' => 'Semua guru aktif akan ditugaskan secara automatik untuk program ini.',
-    'program_teacher_scope_all' => 'Default: Semua guru aktif',
+    'program_teacher_scope_all' => 'Semua guru aktif',
     'program_teacher_scope_selected' => 'Pilih guru tertentu',
     'require_absence_reason' => 'Perlu Alasan Tidak Hadir',
     'require_absence_reason_hint' => 'Jika ditanda, status \"Tidak Hadir\" mesti diisi dengan alasan.',

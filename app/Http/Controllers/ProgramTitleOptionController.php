@@ -16,12 +16,14 @@ class ProgramTitleOptionController extends Controller
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255', Rule::unique('program_title_options', 'title')],
+            'markah' => ['required', 'integer', 'min:1', 'max:5'],
         ]);
 
         $maxSortOrder = (int) ProgramTitleOption::query()->max('sort_order');
 
         ProgramTitleOption::query()->create([
             'title' => $data['title'],
+            'markah' => $data['markah'],
             'sort_order' => $maxSortOrder + 1,
             'is_active' => true,
             'created_by' => $user->id,

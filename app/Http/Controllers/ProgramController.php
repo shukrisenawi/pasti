@@ -217,7 +217,7 @@ class ProgramController extends Controller
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('title')
-            ->get(['id', 'title']);
+            ->get(['id', 'title', 'markah']);
     }
 
     private function resolveProgramTitle(string $selectedValue, ?string $otherTitle): string

@@ -9,6 +9,7 @@ class ProgramTitleOption extends Model
 {
     protected $fillable = [
         'title',
+        'markah',
         'sort_order',
         'is_active',
         'created_by',
@@ -17,6 +18,7 @@ class ProgramTitleOption extends Model
     protected function casts(): array
     {
         return [
+            'markah' => 'integer',
             'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];

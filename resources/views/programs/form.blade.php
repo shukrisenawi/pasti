@@ -15,7 +15,22 @@
             @php($initialTitleOption = old('title_option', $matchedTitleOption?->id ? (string) $matchedTitleOption->id : ($program->exists ? 'other' : '')))
             @php($initialTitleOther = old('title_other', $matchedTitleOption ? '' : ($program->title ?? '')))
 
-            <div class="grid gap-4 md:grid-cols-2" x-data="{ teacherScope: '{{ $teacherScope }}', titleOption: '{{ $initialTitleOption }}' }">
+            @php($marksMap = $titleOptions->pluck('markah', 'id')->toArray())
+
+            <div class="grid gap-4 md:grid-cols-2" 
+                x-data="{ 
+                    teacherScope: '{{ $teacherScope }}', 
+                    titleOption: '{{ $initialTitleOption }}',
+                    marksMap: @js($marksMap),
+                    mark: {{ old('markah', $program->markah ?? 1) }},
+                    updateMark() {
+                        if (this.titleOption && this.titleOption !== 'other' && this.marksMap[this.titleOption]) {
+                            this.mark = this.marksMap[this.titleOption];
+                        }
+                    }
+                }"
+                x-init="$watch('titleOption', value => updateMark())"
+            >
                 <div>
                     <label class="label-base">{{ __('messages.title') }}</label>
                     <select class="input-base" name="title_option" x-model="titleOption" required>
@@ -77,7 +92,7 @@
                 </div>
                 <div>
                     <label class="label-base">{{ __('messages.markah') }} (1-5)</label>
-                    <input class="input-base" type="number" name="markah" min="1" max="5" value="{{ old('markah', $program->markah ?? 1) }}" required>
+                    <input class="input-base" type="number" name="markah" min="1" max="5" x-model="mark" required>
                     @error('markah')
                         <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
                     @enderror
@@ -127,9 +142,9 @@
         <form method="POST" action="{{ route('program-title-options.store') }}" class="mt-3 flex flex-wrap gap-2">
             @csrf
             <input class="input-base max-w-md" name="title" placeholder="{{ __('messages.title') }}" required>
+            <input class="input-base w-24" type="number" name="markah" placeholder="{{ __('messages.markah') }}" min="1" max="5" value="1" required>
             <button class="btn btn-outline">{{ __('messages.add') }}</button>
         </form>
     </div>
     @endrole
 </x-app-layout>
-
