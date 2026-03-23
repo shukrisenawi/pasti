@@ -20,37 +20,7 @@ class PastiInformationController extends Controller
         $user = $request->user();
         abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
-        $accessiblePastisQuery = $this->accessiblePastisQueryForUser($user);
-        $allAccessiblePastiIds = (clone $accessiblePastisQuery)->pluck('pastis.id');
-        $hasPendingRequests = $allAccessiblePastiIds->isNotEmpty()
-            && PastiInformationRequest::query()
-                ->whereIn('pasti_id', $allAccessiblePastiIds->all())
-                ->whereNull('completed_at')
-                ->exists();
-
-        $pastis = (clone $accessiblePastisQuery)
-            ->with('kawasan')
-            ->orderBy('name')
-            ->paginate(10);
-        $pastiIds = collect($pastis->items())->pluck('id')->all();
-
-        $requestGroups = PastiInformationRequest::query()
-            ->with(['requestedBy', 'completedBy'])
-            ->whereIn('pasti_id', $pastiIds)
-            ->orderByDesc('id')
-            ->get()
-            ->groupBy('pasti_id');
-
-        return view('pasti-information.index', [
-            'pastis' => $pastis,
-            'latestRequests' => $requestGroups->map(fn ($items) => $items->first()),
-            'latestCompletedRequests' => $requestGroups->map(fn ($items) => $items->firstWhere(fn (PastiInformationRequest $item) => $item->completed_at !== null)),
-            'canRequest' => $user->hasAnyRole(['master_admin', 'admin']),
-            'canRequestAll' => $user->hasAnyRole(['master_admin', 'admin']) && ! $hasPendingRequests && $allAccessiblePastiIds->isNotEmpty(),
-            'hasPendingRequests' => $hasPendingRequests,
-            'isGuru' => $user->hasRole('guru'),
-            'guruPastiId' => $user->guru?->pasti_id,
-        ]);
+        return view('pasti-information.index');
     }
 
     public function requestAllUpdates(Request $request): RedirectResponse
