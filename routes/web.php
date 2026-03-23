@@ -36,6 +36,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/program-title-options/{programTitleOption}', [ProgramTitleOptionController::class, 'update'])->name('program-title-options.update');
         Route::delete('/program-title-options/{programTitleOption}', [ProgramTitleOptionController::class, 'destroy'])->name('program-title-options.destroy');
         Route::post('/pemarkahan/title-options', [PemarkahanController::class, 'storeTitleOption'])->name('pemarkahan.title-options.store');
+        Route::post('/kewangan/jenis-transaksi', [FinancialController::class, 'storeType'])->name('financial.types.store');
+        Route::put('/kewangan/jenis-transaksi/{financialTransactionType}', [FinancialController::class, 'updateType'])->name('financial.types.update');
+        Route::delete('/kewangan/jenis-transaksi/{financialTransactionType}', [FinancialController::class, 'destroyType'])->name('financial.types.destroy');
     });
 
     Route::middleware('role:master_admin|admin')->group(function () {

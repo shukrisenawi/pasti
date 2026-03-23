@@ -18,6 +18,14 @@ return [
     'transaction_remark' => 'Remark Transaksi',
     'debtor_pasti_list' => 'Senarai PASTI Berhutang',
     'current_debt' => 'Hutang Semasa',
+    'financial_type' => 'Jenis Transaksi',
+    'financial_type_name' => 'Nama Jenis Transaksi',
+    'credit_debit' => 'Credit/Debit',
+    'credit' => 'Credit',
+    'debit' => 'Debit',
+    'related_pasti' => 'PASTI Berkaitan',
+    'optional' => 'Pilihan',
+    'financial_type_in_use' => 'Jenis transaksi ini tidak boleh dipadam kerana sudah digunakan.',
     'profile' => 'Profil',
     'logout' => 'Log Keluar',
     'login_subtitle' => 'Masuk menggunakan akaun rasmi PASTI',
@@ -191,5 +199,6 @@ return [
     'upcoming_programs' => 'Program Akan Datang',
     'featured_event' => 'Program Utama',
 ];
+
 
 

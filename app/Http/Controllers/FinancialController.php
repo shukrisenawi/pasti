@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\FinancialTransaction;
+use App\Models\FinancialTransactionType;
 use App\Models\Pasti;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class FinancialController extends Controller
@@ -16,7 +17,10 @@ class FinancialController extends Controller
         $user = $request->user();
         abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
 
-        $activeTab = in_array($request->query('tab'), ['ringkasan', 'transaksi'], true)
+        $allowedTabs = $user->hasRole('master_admin')
+            ? ['ringkasan', 'transaksi', 'jenis-transaksi']
+            : ['ringkasan', 'transaksi'];
+        $activeTab = in_array($request->query('tab'), $allowedTabs, true)
             ? $request->query('tab')
             : 'ringkasan';
 
@@ -32,77 +36,52 @@ class FinancialController extends Controller
         $accessiblePastiIds = $pastis->pluck('id')->all();
 
         $transactions = FinancialTransaction::query()
-            ->with(['pasti.kawasan', 'creator'])
+            ->with(['pasti.kawasan', 'creator', 'transactionType'])
             ->when(
-                $accessiblePastiIds !== [],
-                fn ($query) => $query->whereIn('pasti_id', $accessiblePastiIds),
-                fn ($query) => $query->whereRaw('1 = 0')
+                $user->hasRole('admin') && ! $user->hasRole('master_admin'),
+                fn ($query) => $query->where(function ($q) use ($accessiblePastiIds): void {
+                    $q->whereNull('pasti_id');
+
+                    if ($accessiblePastiIds !== []) {
+                        $q->orWhereIn('pasti_id', $accessiblePastiIds);
+                    }
+                })
             )
             ->orderByDesc('transaction_date')
             ->orderByDesc('id')
             ->paginate(12)
             ->withQueryString();
 
-        $balanceExpression = "SUM(CASE WHEN transaction_type = 'masuk' THEN amount ELSE -amount END)";
+        $balanceExpression = "SUM(CASE WHEN COALESCE(credit_debit, CASE WHEN transaction_type = 'masuk' THEN 'credit' ELSE 'debit' END) = 'credit' THEN amount ELSE -amount END)";
 
         $currentBalance = (float) (FinancialTransaction::query()
             ->when(
-                $accessiblePastiIds !== [],
-                fn ($query) => $query->whereIn('pasti_id', $accessiblePastiIds),
-                fn ($query) => $query->whereRaw('1 = 0')
+                $user->hasRole('admin') && ! $user->hasRole('master_admin'),
+                fn ($query) => $query->where(function ($q) use ($accessiblePastiIds): void {
+                    $q->whereNull('pasti_id');
+
+                    if ($accessiblePastiIds !== []) {
+                        $q->orWhereIn('pasti_id', $accessiblePastiIds);
+                    }
+                })
             )
             ->selectRaw($balanceExpression . ' as balance')
             ->value('balance') ?? 0);
-
-        $debtorBalances = FinancialTransaction::query()
-            ->select('pasti_id')
-            ->selectRaw($balanceExpression . ' as balance')
-            ->when(
-                $accessiblePastiIds !== [],
-                fn ($query) => $query->whereIn('pasti_id', $accessiblePastiIds),
-                fn ($query) => $query->whereRaw('1 = 0')
-            )
-            ->groupBy('pasti_id')
-            ->havingRaw($balanceExpression . ' < 0')
-            ->get();
-
-        $debtorPastis = $debtorBalances
-            ->map(function ($item) use ($pastis) {
-                $pasti = $pastis->firstWhere('id', (int) $item->pasti_id);
-                if (! $pasti) {
-                    return null;
-                }
-
-                return (object) [
-                    'pasti_name' => $pasti->name,
-                    'kawasan_name' => $pasti->kawasan?->name ?? '-',
-                    'balance' => (float) $item->balance,
-                ];
-            })
-            ->filter()
-            ->sortBy('kawasan_name')
-            ->values();
-
-        $debtByKawasan = $debtorPastis
-            ->groupBy('kawasan_name')
-            ->map(function ($rows, $kawasanName) {
-                $totalDebt = collect($rows)->sum(fn ($row) => abs((float) $row->balance));
-
-                return (object) [
-                    'kawasan_name' => $kawasanName,
-                    'total_debt' => $totalDebt,
-                ];
-            })
-            ->sortBy('kawasan_name')
-            ->values();
 
         return view('financial.index', [
             'activeTab' => $activeTab,
             'pastis' => $pastis,
             'transactions' => $transactions,
             'currentBalance' => $currentBalance,
-            'debtorPastis' => $debtorPastis,
-            'debtByKawasan' => $debtByKawasan,
+            'transactionTypes' => FinancialTransactionType::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(),
+            'allTransactionTypes' => FinancialTransactionType::query()
+                ->orderBy('name')
+                ->get(),
+            'editingTransactionType' => $this->editingTransactionType($request),
+            'canManageTypes' => $user->hasRole('master_admin'),
         ]);
     }
 
@@ -120,20 +99,24 @@ class FinancialController extends Controller
             ->all();
 
         $data = $request->validate([
-            'pasti_id' => ['required', 'integer', 'in:' . implode(',', $allowedPastiIds ?: [0])],
+            'pasti_id' => ['nullable', 'integer', 'in:' . implode(',', $allowedPastiIds ?: [0])],
+            'financial_transaction_type_id' => [
+                'required',
+                'integer',
+                Rule::exists('financial_transaction_types', 'id')->where(fn ($query) => $query->where('is_active', true)),
+            ],
             'transaction_date' => ['required', 'date'],
-            'transaction_type' => ['required', 'in:masuk,keluar'],
+            'credit_debit' => ['required', 'in:credit,debit'],
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'amount_remark' => ['nullable', 'string', 'max:255'],
             'transaction_remark' => ['nullable', 'string', 'max:1000'],
         ]);
 
         FinancialTransaction::query()->create([
-            'pasti_id' => (int) $data['pasti_id'],
+            'pasti_id' => $data['pasti_id'] ? (int) $data['pasti_id'] : null,
+            'financial_transaction_type_id' => (int) $data['financial_transaction_type_id'],
             'transaction_date' => $data['transaction_date'],
-            'transaction_type' => $data['transaction_type'],
+            'credit_debit' => $data['credit_debit'],
             'amount' => $data['amount'],
-            'amount_remark' => $data['amount_remark'] ?? null,
             'transaction_remark' => $data['transaction_remark'] ?? null,
             'created_by' => $user->id,
         ]);
@@ -141,5 +124,77 @@ class FinancialController extends Controller
         return redirect()
             ->route('financial.index', ['tab' => 'transaksi'])
             ->with('status', __('messages.saved'));
+    }
+
+    public function storeType(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasRole('master_admin'), 403);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('financial_transaction_types', 'name')],
+        ]);
+
+        FinancialTransactionType::query()->create([
+            'name' => $data['name'],
+            'is_active' => true,
+            'created_by' => $user->id,
+        ]);
+
+        return redirect()
+            ->route('financial.index', ['tab' => 'jenis-transaksi'])
+            ->with('status', __('messages.saved'));
+    }
+
+    public function updateType(Request $request, FinancialTransactionType $financialTransactionType): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasRole('master_admin'), 403);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('financial_transaction_types', 'name')->ignore($financialTransactionType->id)],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        $financialTransactionType->update([
+            'name' => $data['name'],
+            'is_active' => (bool) ($data['is_active'] ?? false),
+        ]);
+
+        return redirect()
+            ->route('financial.index', ['tab' => 'jenis-transaksi'])
+            ->with('status', __('messages.saved'));
+    }
+
+    public function destroyType(Request $request, FinancialTransactionType $financialTransactionType): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasRole('master_admin'), 403);
+
+        if ($financialTransactionType->transactions()->exists()) {
+            return redirect()
+                ->route('financial.index', ['tab' => 'jenis-transaksi'])
+                ->withErrors(['financial_transaction_type' => __('messages.financial_type_in_use')]);
+        }
+
+        $financialTransactionType->delete();
+
+        return redirect()
+            ->route('financial.index', ['tab' => 'jenis-transaksi'])
+            ->with('status', __('messages.deleted'));
+    }
+
+    private function editingTransactionType(Request $request): ?FinancialTransactionType
+    {
+        if (! $request->user()->hasRole('master_admin')) {
+            return null;
+        }
+
+        $editId = (int) $request->integer('edit_type');
+        if ($editId <= 0) {
+            return null;
+        }
+
+        return FinancialTransactionType::query()->find($editId);
     }
 }

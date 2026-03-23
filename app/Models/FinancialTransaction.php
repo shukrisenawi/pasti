@@ -9,10 +9,10 @@ class FinancialTransaction extends Model
 {
     protected $fillable = [
         'pasti_id',
+        'financial_transaction_type_id',
         'transaction_date',
-        'transaction_type',
+        'credit_debit',
         'amount',
-        'amount_remark',
         'transaction_remark',
         'created_by',
     ];
@@ -35,10 +35,19 @@ class FinancialTransaction extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function transactionType(): BelongsTo
+    {
+        return $this->belongsTo(FinancialTransactionType::class, 'financial_transaction_type_id');
+    }
+
     public function getSignedAmountAttribute(): float
     {
         $amount = (float) $this->amount;
 
-        return $this->transaction_type === 'masuk' ? $amount : -$amount;
+        if ($this->credit_debit === 'credit') {
+            return $amount;
+        }
+
+        return -$amount;
     }
 }

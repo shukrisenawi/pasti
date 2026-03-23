@@ -18,6 +18,14 @@ return [
     'transaction_remark' => 'Transaction Remark',
     'debtor_pasti_list' => 'Debtor PASTI List',
     'current_debt' => 'Current Debt',
+    'financial_type' => 'Transaction Type',
+    'financial_type_name' => 'Transaction Type Name',
+    'credit_debit' => 'Credit/Debit',
+    'credit' => 'Credit',
+    'debit' => 'Debit',
+    'related_pasti' => 'Related PASTI',
+    'optional' => 'Optional',
+    'financial_type_in_use' => 'This transaction type cannot be deleted because it is already used.',
     'profile' => 'Profile',
     'logout' => 'Log Out',
     'login_subtitle' => 'Sign in with your official PASTI account',
@@ -181,6 +189,7 @@ return [
     'skim_pas_expiring_soon' => 'PAS Scheme will expire in a week',
     'skim_pas_expired_list' => 'Expired PAS Scheme List',
 ];
+
 
 
 
