@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminMessage;
+use App\Models\FinancialTransaction;
 use App\Models\Guru;
 use App\Models\Program;
 use App\Models\ProgramStatus;
@@ -18,6 +19,8 @@ class DashboardController extends Controller
         $latestInboxMessage = null;
         $guruId = null;
         $isGuruOnly = $this->isGuruOnly($user);
+        $adminCashBalance = 0.0;
+        $adminBankBalance = 0.0;
 
         if ($isGuruOnly) {
             $guruId = $user->guru?->id;
@@ -57,6 +60,33 @@ class DashboardController extends Controller
                     ->sortBy(fn (Guru $guru) => $guru->display_name)
                     ->values();
             }
+
+            $balanceExpression = "SUM(CASE WHEN COALESCE(credit_debit, CASE WHEN transaction_type = 'masuk' THEN 'credit' ELSE 'debit' END) = 'credit' THEN amount ELSE -amount END)";
+
+            $financialBaseQuery = FinancialTransaction::query();
+            if ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
+                $assignedPastiIds = $this->assignedPastiIds($user);
+                $financialBaseQuery->where(function ($query) use ($assignedPastiIds): void {
+                    $query->whereNull('pasti_id');
+
+                    if ($assignedPastiIds !== []) {
+                        $query->orWhereIn('pasti_id', $assignedPastiIds);
+                    }
+                });
+            }
+
+            $adminCashBalance = (float) ((clone $financialBaseQuery)
+                ->where('payment_method', 'cash')
+                ->selectRaw($balanceExpression . ' as balance')
+                ->value('balance') ?? 0);
+
+            $adminBankBalance = (float) ((clone $financialBaseQuery)
+                ->where(function ($query): void {
+                    $query->where('payment_method', 'transfer')
+                        ->orWhereNull('payment_method');
+                })
+                ->selectRaw($balanceExpression . ' as balance')
+                ->value('balance') ?? 0);
         }
 
         if ($user->hasRole('guru')) {
@@ -163,6 +193,8 @@ class DashboardController extends Controller
             'guruLeaveDays' => $user->guru ? \App\Models\Guru::where('id', $user->guru->id)->withLeaveDaysForYear($currentYear)->first()?->leave_notices_current_year_count : 0,
             'guruTeachingDuration' => $guruTeachingDuration,
             'userAjkPositions' => $user->ajkPositions->sortBy('name')->values(),
+            'adminCashBalance' => $adminCashBalance,
+            'adminBankBalance' => $adminBankBalance,
         ]);
     }
 

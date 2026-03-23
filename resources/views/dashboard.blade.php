@@ -110,6 +110,25 @@
         </section>
     @endrole
 
+    @if($user->hasAnyRole(['master_admin', 'admin']))
+        <section class="mb-8">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div class="rounded-2xl border border-emerald-100 bg-white p-4 shadow-card">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{{ __('messages.cash_balance') }}</p>
+                    <p class="mt-2 text-3xl font-black {{ $adminCashBalance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
+                        RM {{ number_format($adminCashBalance, 2) }}
+                    </p>
+                </div>
+                <div class="rounded-2xl border border-blue-100 bg-white p-4 shadow-card">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{{ __('messages.bank_balance') }}</p>
+                    <p class="mt-2 text-3xl font-black {{ $adminBankBalance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
+                        RM {{ number_format($adminBankBalance, 2) }}
+                    </p>
+                </div>
+            </div>
+        </section>
+    @endif
+
     @if($latestInboxMessage)
         @php($latestMessageActivity = $latestInboxMessage->replies_max_created_at ?? $latestInboxMessage->created_at)
         <section class="mb-8">
