@@ -174,5 +174,7 @@ return [
     'skim_pas_expired' => 'Skim PAS sudah tamat tempoh, sila renew segera',
     'skim_pas_expiring_soon' => 'Lagi seminggu lagi skim PAS akan tamat tempoh',
     'skim_pas_expired_list' => 'Senarai Skim PAS Expired',
+    'upcoming_programs' => 'Program Akan Datang',
+    'featured_event' => 'Program Utama',
 ];
 
