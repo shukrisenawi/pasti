@@ -5,7 +5,7 @@
 
     @php
         $programFormRoute = $program->exists ? route('programs.edit', ['program' => $program]) : route('programs.create');
-        $activeTab = $activeTab ?? 'program';
+        $activeTab = session('program_title_options_tab') ? 'title-options' : ($activeTab ?? 'program');
     @endphp
 
     @role('master_admin')
@@ -158,12 +158,76 @@
         @role('master_admin')
             <div class="card mt-4">
                 <h3 class="text-base font-bold">{{ __('messages.add_program_title_option') }}</h3>
-                <form method="POST" action="{{ route('program-title-options.store') }}" class="mt-3 flex flex-wrap gap-2">
+                <form
+                    method="POST"
+                    action="{{ $editingTitleOption ? route('program-title-options.update', $editingTitleOption) : route('program-title-options.store') }}"
+                    class="mt-3 flex flex-wrap gap-2"
+                >
                     @csrf
-                    <input class="input-base max-w-md" name="title" placeholder="{{ __('messages.title') }}" required>
-                    <input class="input-base w-24" type="number" name="markah" placeholder="{{ __('messages.markah') }}" min="1" max="5" value="1" required>
-                    <button class="btn btn-outline">{{ __('messages.add') }}</button>
+                    @if($editingTitleOption)
+                        @method('PUT')
+                    @endif
+                    <input
+                        class="input-base max-w-md"
+                        name="title"
+                        placeholder="{{ __('messages.title') }}"
+                        value="{{ old('title', $editingTitleOption?->title) }}"
+                        required
+                    >
+                    <input
+                        class="input-base w-24"
+                        type="number"
+                        name="markah"
+                        placeholder="{{ __('messages.markah') }}"
+                        min="1"
+                        max="5"
+                        value="{{ old('markah', $editingTitleOption?->markah ?? 1) }}"
+                        required
+                    >
+                    <button class="btn btn-outline">{{ $editingTitleOption ? __('messages.save') : __('messages.add') }}</button>
+                    @if($editingTitleOption)
+                        <a href="{{ $programFormRoute }}?tab=title-options" class="btn btn-outline">{{ __('messages.cancel') }}</a>
+                    @endif
                 </form>
+                @error('title')
+                    <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
+                @enderror
+                @error('markah')
+                    <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
+                @enderror
+                @error('program_title_option')
+                    <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
+                @enderror
+
+                <div class="mt-6">
+                    <p class="text-sm font-semibold text-slate-700">{{ __('messages.list') }} {{ __('messages.title') }}</p>
+                    <div class="mt-3 space-y-3">
+                        @forelse($allTitleOptions as $option)
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <p class="truncate font-bold text-slate-900">{{ $option->title }}</p>
+                                        <p class="text-xs text-slate-500">{{ __('messages.markah') }}: {{ $option->markah }} | {{ $option->is_active ? __('messages.active') : __('messages.inactive') }}</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ $programFormRoute }}?tab=title-options&edit_title_option={{ $option->id }}" class="btn btn-outline btn-xs">
+                                            {{ __('messages.edit') }}
+                                        </a>
+                                        <form method="POST" action="{{ route('program-title-options.destroy', $option) }}" class="m-0">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-outline btn-xs text-rose-600" onclick="return confirm('Padam tajuk ini?')">
+                                                {{ __('messages.delete') }}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-sm text-slate-500">-</p>
+                        @endforelse
+                    </div>
+                </div>
             </div>
         @endrole
     @endif

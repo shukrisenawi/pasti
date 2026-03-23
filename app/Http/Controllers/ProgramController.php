@@ -42,6 +42,8 @@ class ProgramController extends Controller
             'program' => new Program(),
             'gurus' => Guru::query()->with('user', 'pasti')->where('active', true)->orderBy('id')->get(),
             'titleOptions' => $this->activeTitleOptions(),
+            'allTitleOptions' => $this->allTitleOptions(),
+            'editingTitleOption' => $this->editingTitleOption($request),
             'selectedGuruIds' => [],
             'defaultTeacherScope' => 'all',
             'activeTab' => $activeTab,
@@ -138,6 +140,8 @@ class ProgramController extends Controller
             'program' => $program,
             'gurus' => Guru::query()->with('user', 'pasti')->where('active', true)->orderBy('id')->get(),
             'titleOptions' => $this->activeTitleOptions(),
+            'allTitleOptions' => $this->allTitleOptions(),
+            'editingTitleOption' => $this->editingTitleOption($request),
             'selectedGuruIds' => $selectedGuruIds,
             'defaultTeacherScope' => $defaultTeacherScope,
             'activeTab' => $activeTab,
@@ -228,6 +232,24 @@ class ProgramController extends Controller
             ->orderBy('sort_order')
             ->orderBy('title')
             ->get(['id', 'title', 'markah']);
+    }
+
+    private function allTitleOptions()
+    {
+        return ProgramTitleOption::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'title', 'markah', 'is_active']);
+    }
+
+    private function editingTitleOption(Request $request): ?ProgramTitleOption
+    {
+        $editId = (int) $request->integer('edit_title_option');
+        if ($editId <= 0) {
+            return null;
+        }
+
+        return ProgramTitleOption::query()->find($editId);
     }
 
     private function resolveProgramTitle(string $selectedValue, ?string $otherTitle): string

@@ -32,6 +32,8 @@ Route::middleware(['auth'])->group(function () {
             ->names('users.admins')
             ->parameters(['admins' => 'users_admin']);
         Route::post('/program-title-options', [ProgramTitleOptionController::class, 'store'])->name('program-title-options.store');
+        Route::put('/program-title-options/{programTitleOption}', [ProgramTitleOptionController::class, 'update'])->name('program-title-options.update');
+        Route::delete('/program-title-options/{programTitleOption}', [ProgramTitleOptionController::class, 'destroy'])->name('program-title-options.destroy');
         Route::post('/pemarkahan/title-options', [PemarkahanController::class, 'storeTitleOption'])->name('pemarkahan.title-options.store');
     });
 
