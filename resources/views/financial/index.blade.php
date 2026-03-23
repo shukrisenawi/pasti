@@ -18,13 +18,7 @@
     </div>
 
     @if($activeTab === 'ringkasan')
-        <div class="grid gap-4 md:grid-cols-3">
-            <section class="card">
-                <p class="text-sm font-semibold text-slate-600">{{ __('messages.current_balance') }}</p>
-                <p class="mt-2 text-3xl font-black {{ $currentBalance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                    RM {{ number_format($currentBalance, 2) }}
-                </p>
-            </section>
+        <div class="grid gap-4 md:grid-cols-2">
             <section class="card">
                 <p class="text-sm font-semibold text-slate-600">{{ __('messages.cash_balance') }}</p>
                 <p class="mt-2 text-3xl font-black {{ $cashBalance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
