@@ -11,7 +11,7 @@
             <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-none mb-2">{{ __('messages.total_invited') }}</p>
             <div class="flex items-baseline gap-1">
                 <p class="text-2xl font-black text-slate-900">{{ $guru->kpiSnapshot?->total_invited ?? 0 }}</p>
-                <p class="text-xs font-bold text-slate-400">Pekerjaan</p>
+                <p class="text-xs font-bold text-slate-400">Jemputan</p>
             </div>
         </div>
         <div class="bg-white rounded-2xl p-5 shadow-card border border-slate-50">
