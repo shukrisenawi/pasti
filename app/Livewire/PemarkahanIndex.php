@@ -71,7 +71,7 @@ class PemarkahanIndex extends Component
 
         $pastis = $this->accessiblePastisForUser($user);
 
-        $this->hydrateScoresInput($pastis);
+        $this->fillScoresInput($pastis);
 
         return view('livewire.pemarkahan-index', [
             'isGuruOnly' => false,
@@ -205,7 +205,11 @@ class PemarkahanIndex extends Component
         $this->notice = __('messages.saved');
     }
 
-    private function hydrateScoresInput(EloquentCollection $pastis): void
+    public function hydrateScoresInput($value = null): void
+    {
+    }
+
+    private function fillScoresInput(EloquentCollection $pastis): void
     {
         if ($this->selectedTitleOptionId <= 0 || $this->scoresInput !== []) {
             return;
@@ -290,3 +294,5 @@ class PemarkahanIndex extends Component
         }
     }
 }
+
+
