@@ -120,12 +120,26 @@ class ClaimController extends Controller
     {
         $user = $request->user();
         abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
-        abort_if($claim->status !== 'pending', 422);
-        abort_if((int) $claim->user_id === (int) $user->id, 422, 'Anda tidak boleh meluluskan claim sendiri.');
+
+        if ($claim->status !== 'pending') {
+            return redirect()
+                ->route('claims.index', ['tab' => 'pending'])
+                ->withErrors(['claim' => 'Claim ini sudah diproses.']);
+        }
+
+        if ((int) $claim->user_id === (int) $user->id) {
+            return redirect()
+                ->route('claims.index', ['tab' => 'pending'])
+                ->withErrors(['claim' => 'Anda tidak boleh meluluskan claim sendiri.']);
+        }
 
         if ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
             $assignedPastiIds = $this->assignedPastiIds($user);
-            abort_unless($claim->pasti_id && in_array((int) $claim->pasti_id, $assignedPastiIds, true), 403);
+            if (! $claim->pasti_id || ! in_array((int) $claim->pasti_id, $assignedPastiIds, true)) {
+                return redirect()
+                    ->route('claims.index', ['tab' => 'pending'])
+                    ->withErrors(['claim' => 'Anda tiada akses untuk meluluskan claim ini.']);
+            }
         }
 
         $data = $request->validate([
@@ -174,4 +188,3 @@ class ClaimController extends Controller
         return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
     }
 }
-
