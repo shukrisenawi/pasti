@@ -6,10 +6,13 @@ use App\Models\Guru;
 use App\Models\Program;
 use App\Models\ProgramStatus;
 use App\Models\ProgramTitleOption;
+use App\Models\User;
+use App\Notifications\ProgramAssignedNotification;
 use App\Services\KpiCalculationService;
 use App\Services\ProgramParticipationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class ProgramController extends Controller
@@ -97,7 +100,9 @@ class ProgramController extends Controller
         $guruIds = array_values(array_intersect($guruIds, $allActiveGuruIds));
         $this->participationService->syncTeachers($program->id, $guruIds, $user->id);
 
-        Guru::query()->whereIn('id', $guruIds)->get()->each(fn (Guru $guru) => $this->kpiCalculationService->recalculateForGuru($guru));
+        $affectedGurus = Guru::query()->with('user')->whereIn('id', $guruIds)->get();
+        $affectedGurus->each(fn (Guru $guru) => $this->kpiCalculationService->recalculateForGuru($guru));
+        $this->notifyAssignedUsers($program, $affectedGurus, $user, 'ditambah');
 
         return redirect()->route('programs.index')->with('status', __('messages.saved'));
     }
@@ -197,6 +202,12 @@ class ProgramController extends Controller
         $affectedGuruIds = array_values(array_unique(array_merge($existingGuruIds, $guruIds)));
         Guru::query()->whereIn('id', $affectedGuruIds)->get()->each(fn (Guru $guru) => $this->kpiCalculationService->recalculateForGuru($guru));
 
+        $newlyAddedGuruIds = array_values(array_diff($guruIds, $existingGuruIds));
+        if ($newlyAddedGuruIds !== []) {
+            $newlyAddedGurus = Guru::query()->with('user')->whereIn('id', $newlyAddedGuruIds)->get();
+            $this->notifyAssignedUsers($program, $newlyAddedGurus, $user, 'ditambah');
+        }
+
         return redirect()->route('programs.show', $program)->with('status', __('messages.saved'));
     }
 
@@ -246,6 +257,19 @@ class ProgramController extends Controller
     private function isGuruOnly($user): bool
     {
         return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
+    }
+
+    private function notifyAssignedUsers(Program $program, Collection $gurus, User $actor, string $action): void
+    {
+        $users = $gurus
+            ->map(fn (Guru $guru) => $guru->user)
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        foreach ($users as $recipient) {
+            $recipient->notify(new ProgramAssignedNotification($program, $actor, $action));
+        }
     }
 
     private function programFormTab(Request $request, bool $canManageTitleOptions): string

@@ -86,8 +86,8 @@ class DashboardController extends Controller
 
         $latestProgram = (clone $programQuery)
             ->with(['participations.status'])
-            ->orderByDesc('program_date')
             ->orderByDesc('created_at')
+            ->orderByDesc('program_date')
             ->first();
 
         $currentGuruId = $user->guru?->id;
