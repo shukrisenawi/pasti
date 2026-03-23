@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body class="m-0">
 <div class="panel-shell relative overflow-hidden">
@@ -28,81 +29,17 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="navbar">
                 <div class="min-w-0 flex flex-1 items-center gap-3">
-                    <a href="{{ route('dashboard') }}" class="shrink-0">
+                    <a href="{{ route('dashboard') }}" wire:navigate class="shrink-0">
                         <x-application-logo class="h-12 w-12 rounded-full border border-primary/20 bg-white object-contain p-1 shadow-sm" />
                     </a>
                     <div class="min-w-0">
-                        <a href="{{ route('dashboard') }}" class="text-xl font-extrabold tracking-tight text-primary">PASTI Portal</a>
+                        <a href="{{ route('dashboard') }}" wire:navigate class="text-xl font-extrabold tracking-tight text-primary">PASTI Portal</a>
                         <p class="text-xs text-slate-500 {{ $isGuruOnly ? 'hidden sm:block' : '' }}">{{ __('messages.portal_subtitle') }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-end gap-2 sm:gap-3">
-                    @php
-                        $showNotifications = true;
-                        $latestNotifications = $showNotifications
-                            ? auth()->user()->unreadNotifications()->latest()->limit(5)->get()
-                            : collect();
-                        $unreadNotificationsCount = $showNotifications
-                            ? auth()->user()->unreadNotifications()->count()
-                            : 0;
-                    @endphp
-
-                    @if($showNotifications)
-                        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-                            <button type="button" @click="open = !open" class="btn btn-ghost btn-circle relative" aria-label="{{ __('messages.notifications') }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                </svg>
-                                @if($unreadNotificationsCount > 0)
-                                    <span class="badge badge-primary badge-xs absolute -right-1 -top-1">{{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}</span>
-                                @endif
-                            </button>
-
-                            <div
-                                x-show="open"
-                                x-transition.origin.top.right
-                                class="absolute right-0 z-[1000] mt-3 w-[min(22rem,calc(100vw-1.5rem))] max-h-96 overflow-y-auto rounded-3xl border border-slate-200 bg-white p-2 shadow-2xl"
-                                style="display: none;"
-                            >
-                                <p class="px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{{ __('messages.notifications') }}</p>
-                                @forelse($latestNotifications as $notification)
-                                    <form method="POST" action="{{ route('notifications.read', $notification) }}" class="mt-1">
-                                        @csrf
-                                        <input type="hidden" name="redirect_to" value="{{ $notification->data['url'] ?? route('leave-notices.index') }}">
-                                        @php
-                                            $notificationAvatar = $notification->data['guru_avatar_url'] ?? '/images/default-avatar.svg';
-                                            $notificationTitle = $notification->data['notification_title'] ?? __('messages.notifications');
-                                            $notificationMeta = $notification->data['notification_meta'] ?? (($notification->data['guru_name'] ?? '-') . ' · ' . ($notification->data['pasti_name'] ?? '-'));
-                                            $notificationMessage = \Illuminate\Support\Str::limit($notification->data['notification_message'] ?? ($notification->data['reason'] ?? '-'), 70);
-                                        @endphp
-                                        <button type="submit" class="w-full rounded-2xl px-3 py-3 text-left transition hover:bg-primary/5">
-                                            <div class="flex items-start gap-3">
-                                                <x-avatar
-                                                    size="h-10 w-10"
-                                                    rounded="rounded-xl"
-                                                    :guru="\App\Models\Guru::where('name', $notification->data['guru_name'] ?? '')->first()"
-                                                />
-                                                <div class="min-w-0">
-                                                    <p class="text-sm font-semibold text-slate-900">
-                                                        {{ $notificationTitle }}
-                                                    </p>
-                                                    <p class="mt-1 text-xs text-slate-500">
-                                                        {{ $notificationMeta }}
-                                                    </p>
-                                                    <p class="mt-2 text-xs leading-relaxed text-slate-600">
-                                                        {{ $notificationMessage }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </button>
-                                    </form>
-                                @empty
-                                    <p class="px-3 py-3 text-sm text-slate-500">{{ __('messages.no_notifications') }}</p>
-                                @endforelse
-                            </div>
-                        </div>
-                    @endif
+                    <livewire:navbar-notifications />
                     <div class="relative" x-data="{ open: false }" @click.outside="open = false">
                         <button type="button" @click="open = !open" class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-2 py-1.5 shadow-sm transition hover:border-slate-300" aria-label="Menu pengguna">
                             <x-avatar :user="$authUser" size="h-9 w-9" rounded="rounded-xl" border="border border-slate-200/50" />
@@ -117,11 +54,11 @@
                             class="absolute right-0 z-[1000] mt-3 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl"
                             style="display: none;"
                         >
-                            <a href="{{ route('profile.edit') }}" class="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                            <a href="{{ route('profile.edit') }}" wire:navigate class="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                                 {{ __('messages.profile') }}
                             </a>
                             @if($pastiMenuRoute)
-                                <a href="{{ $pastiMenuRoute }}" class="mt-1 block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                                <a href="{{ $pastiMenuRoute }}" wire:navigate class="mt-1 block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                                     {{ __('messages.pasti') }}
                                 </a>
                             @endif
@@ -175,23 +112,23 @@
                         ->whereNull('completed_at')
                         ->count();
                 @endphp
-                <a href="{{ route('dashboard') }}" class="menu-link {{ request()->routeIs('dashboard') ? 'menu-link-active' : '' }}">{{ __('messages.dashboard') }}</a>
+                <a href="{{ route('dashboard') }}" wire:navigate class="menu-link {{ request()->routeIs('dashboard') ? 'menu-link-active' : '' }}">{{ __('messages.dashboard') }}</a>
 
                 @role('master_admin')
-                    <a href="{{ route('users.admins.index') }}" class="menu-link {{ request()->routeIs('users.admins.*') ? 'menu-link-active' : '' }}">{{ __('messages.admin_accounts') }}</a>
+                    <a href="{{ route('users.admins.index') }}" wire:navigate class="menu-link {{ request()->routeIs('users.admins.*') ? 'menu-link-active' : '' }}">{{ __('messages.admin_accounts') }}</a>
                 @endrole
 
                 @role('master_admin|admin')
-                    <a href="{{ route('kawasan.index') }}" class="menu-link {{ request()->routeIs('kawasan.*') ? 'menu-link-active' : '' }}">{{ __('messages.kawasan') }}</a>
-                    <a href="{{ route('users.gurus.index') }}" class="menu-link {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
+                    <a href="{{ route('kawasan.index') }}" wire:navigate class="menu-link {{ request()->routeIs('kawasan.*') ? 'menu-link-active' : '' }}">{{ __('messages.kawasan') }}</a>
+                    <a href="{{ route('users.gurus.index') }}" wire:navigate class="menu-link {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
 
-                    <a href="{{ route('ajk-program.index') }}" class="menu-link {{ request()->routeIs('ajk-program.*') ? 'menu-link-active' : '' }}">{{ __('messages.ajk_program') }}</a>
-                    <a href="{{ route('kpi.gurus.index') }}" class="menu-link {{ request()->routeIs('kpi.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.kpi_guru') }}</a>
+                    <a href="{{ route('ajk-program.index') }}" wire:navigate class="menu-link {{ request()->routeIs('ajk-program.*') ? 'menu-link-active' : '' }}">{{ __('messages.ajk_program') }}</a>
+                    <a href="{{ route('kpi.gurus.index') }}" wire:navigate class="menu-link {{ request()->routeIs('kpi.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.kpi_guru') }}</a>
                     
                     @php
                         $expiredSkimPasCount = \App\Models\User::where('tarikh_exp_skim_pas', '<', now()->startOfDay())->count();
                     @endphp
-                    <a href="{{ route('users.expired-skim-pas') }}" class="menu-link {{ request()->routeIs('users.expired-skim-pas') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                    <a href="{{ route('users.expired-skim-pas') }}" wire:navigate class="menu-link {{ request()->routeIs('users.expired-skim-pas') ? 'menu-link-active' : '' }} flex items-center justify-between">
                         <span>{{ __('messages.skim_pas_expired_list') }}</span>
                         @if($expiredSkimPasCount > 0)
                             <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm" style="background-color: #059669 !important;">{{ $expiredSkimPasCount }}</span>
@@ -199,30 +136,30 @@
                     </a>
                 @endrole
 
-                <a href="{{ route('pemarkahan.index') }}" class="menu-link {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
-                <a href="{{ route('pasti-information.index') }}" class="menu-link {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                <a href="{{ route('pemarkahan.index') }}" wire:navigate class="menu-link {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
+                <a href="{{ route('pasti-information.index') }}" wire:navigate class="menu-link {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                     <span>{{ __('messages.maklumat_pasti') }}</span>
                     @if($menuPastiInfoPendingCount > 0)
                         <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuPastiInfoPendingCount > 99 ? '99+' : $menuPastiInfoPendingCount }}</span>
                     @endif
                 </a>
-                <a href="{{ route('programs.index') }}" class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                <a href="{{ route('programs.index') }}" wire:navigate class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                     <span>{{ __('messages.programs') }}</span>
                     @if($menuUpcomingProgramCount > 0)
                         <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuUpcomingProgramCount > 99 ? '99+' : $menuUpcomingProgramCount }}</span>
                     @endif
                 </a>
-                <a href="{{ route('messages.index') }}" class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                <a href="{{ route('messages.index') }}" wire:navigate class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                     <span>{{ __('messages.inbox') }}</span>
                     @if($menuInboxCount > 0)
                         <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuInboxCount > 99 ? '99+' : $menuInboxCount }}</span>
                     @endif
                 </a>
-                <a href="{{ route('leave-notices.index') }}" class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }}">{{ __('messages.leave_notice') }}</a>
+                <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }}">{{ __('messages.leave_notice') }}</a>
 
                 @role('guru')
                     @if(auth()->user()->guru)
-                        <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
+                        <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
                     @endif
                 @endrole
             </nav>
@@ -258,6 +195,7 @@
 
     <x-bottom-nav />
 </div>
+@livewireScripts
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         flatpickr('input[type="date"]', {
@@ -282,6 +220,12 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
