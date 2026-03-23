@@ -75,15 +75,22 @@
                                 @endif
                             </td>
                             <td>
-                                <form method="POST" action="{{ route('claims.approve', $claim) }}" class="flex min-w-[220px] flex-col gap-2">
-                                    @csrf
-                                    <select name="payment_method" class="input-base input-sm" required>
-                                        <option value="cash">{{ __('messages.cash') }}</option>
-                                        <option value="transfer" selected>{{ __('messages.transfer') }}</option>
-                                    </select>
-                                    <input class="input-base input-sm" type="number" step="0.01" min="0.01" name="approved_amount" value="{{ number_format((float) $claim->amount, 2, '.', '') }}" required>
-                                    <button class="btn btn-primary btn-xs">{{ __('messages.approve') }}</button>
-                                </form>
+                                <div class="flex flex-col gap-2">
+                                    <form method="POST" action="{{ route('claims.approve', $claim) }}" class="flex min-w-[220px] flex-col gap-2">
+                                        @csrf
+                                        <select name="payment_method" class="input-base input-sm" required>
+                                            <option value="cash">{{ __('messages.cash') }}</option>
+                                            <option value="transfer" selected>{{ __('messages.transfer') }}</option>
+                                        </select>
+                                        <input class="input-base input-sm" type="number" step="0.01" min="0.01" name="approved_amount" value="{{ number_format((float) $claim->amount, 2, '.', '') }}" required>
+                                        <button class="btn btn-primary btn-xs">{{ __('messages.approve') }}</button>
+                                    </form>
+                                    <form method="POST" action="{{ route('claims.destroy', $claim) }}" onsubmit="return confirm('{{ __('Adakah anda pasti mahu memadam claim ini?') }}')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-error btn-xs w-full text-white">{{ __('messages.delete') }}</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -102,21 +109,26 @@
                     <thead>
                     <tr>
                         <th>{{ __('messages.date') }}</th>
-                        <th>{{ __('messages.name') }}</th>
-                        <th>{{ __('messages.pasti') }}</th>
+                        @unless(auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                            <th>{{ __('messages.name') }}</th>
+                            <th>{{ __('messages.pasti') }}</th>
+                        @endunless
                         <th>{{ __('messages.amount') }}</th>
                         <th>{{ __('messages.approved_amount') }}</th>
                         <th>{{ __('messages.payment_method') }}</th>
                         <th>{{ __('messages.status') }}</th>
                         <th>{{ __('messages.image') }}</th>
+                        <th>{{ __('messages.actions') }}</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                     @forelse($claims as $claim)
                         <tr>
                             <td>{{ $claim->claim_date?->format('d/m/Y') }}</td>
-                            <td>{{ $claim->user?->display_name ?? '-' }}</td>
-                            <td>{{ $claim->pasti?->name ?? '-' }}</td>
+                            @unless(auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                                <td>{{ $claim->user?->display_name ?? '-' }}</td>
+                                <td>{{ $claim->pasti?->name ?? '-' }}</td>
+                            @endunless
                             <td>RM {{ number_format((float) $claim->amount, 2) }}</td>
                             <td>{{ $claim->approved_amount ? 'RM '.number_format((float) $claim->approved_amount, 2) : '-' }}</td>
                             <td>
@@ -142,9 +154,43 @@
                                     -
                                 @endif
                             </td>
+                            <td>
+                                @if($claim->status === 'pending')
+                                    @php
+                                        $canDelete = false;
+                                        $user = auth()->user();
+                                        if ($user->hasRole('master_admin')) {
+                                            $canDelete = true;
+                                        } elseif ($user->hasRole('admin')) {
+                                            $assignedPastiIds = $user->assignedPastis()->pluck('pastis.id')->all();
+                                            if ($claim->pasti_id && in_array((int) $claim->pasti_id, $assignedPastiIds, true)) {
+                                                $canDelete = true;
+                                            } elseif ((int) $claim->user_id === (int) $user->id) {
+                                                $canDelete = true;
+                                            }
+                                        } elseif ($user->hasRole('guru')) {
+                                            if ((int) $claim->user_id === (int) $user->id) {
+                                                $canDelete = true;
+                                            }
+                                        }
+                                    @endphp
+
+                                    @if($canDelete)
+                                        <form method="POST" action="{{ route('claims.destroy', $claim) }}" onsubmit="return confirm('{{ __('Adakah anda pasti mahu memadam claim ini?') }}')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-error btn-xs text-white">{{ __('messages.delete') }}</button>
+                                        </form>
+                                    @else
+                                        -
+                                    @endif
+                                @else
+                                    -
+                                @endif
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="text-center">-</td></tr>
+                        <tr><td colspan="{{ auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']) ? 7 : 9 }}" class="text-center">-</td></tr>
                     @endforelse
                     </tbody>
                 </table>

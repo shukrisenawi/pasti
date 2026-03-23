@@ -12,7 +12,10 @@
             <tbody class="divide-y divide-slate-100">
             @forelse($gurus as $guru)
                 <tr>
-                    <td>{{ $guru->display_name }}</td>
+                    <td class="flex items-center gap-3">
+                        <x-avatar :guru="$guru" size="h-10 w-10" rounded="rounded-2xl" />
+                        <span>{{ $guru->display_name }}</span>
+                    </td>
                     <td>{{ $guru->pasti?->name ?? '-' }}</td>
                     <td>{{ number_format((float) ($guru->kpiSnapshot?->score ?? 0), 0) }}</td>
                     <td>{{ $guru->leave_notices_current_year_count ?? 0 }}</td>

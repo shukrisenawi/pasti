@@ -105,4 +105,29 @@ class User extends Authenticatable
     {
         return $this->nama_samaran ?: $this->name;
     }
+
+    public function claims(): HasMany
+    {
+        return $this->hasMany(Claim::class);
+    }
+
+    public function getPendingClaimsCountAttribute(): int
+    {
+        if ($this->hasRole('master_admin')) {
+            return Claim::where('status', 'pending')->count();
+        }
+
+        if ($this->hasRole('admin')) {
+            $assignedPastiIds = $this->assignedPastis()->pluck('pastis.id')->all();
+            if (empty($assignedPastiIds)) {
+                return 0;
+            }
+
+            return Claim::where('status', 'pending')
+                ->whereIn('pasti_id', $assignedPastiIds)
+                ->count();
+        }
+
+        return 0;
+    }
 }

@@ -15,6 +15,16 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @unless(auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                        <x-nav-link :href="route('claims.index')" :active="request()->routeIs('claims.*')">
+                            {{ __('Claim') }}
+                            @php($pendingClaims = auth()->user()->pending_claims_count)
+                            @if($pendingClaims > 0)
+                                <span class="ms-2 badge badge-error badge-sm text-white">{{ $pendingClaims }}</span>
+                            @endif
+                        </x-nav-link>
+                    @endunless
                 </div>
             </div>
 
@@ -70,6 +80,18 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @unless(auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                <x-responsive-nav-link :href="route('claims.index')" :active="request()->routeIs('claims.*')">
+                    <div class="flex items-center justify-between w-full">
+                        <span>{{ __('Claim') }}</span>
+                        @php($pendingClaims = auth()->user()->pending_claims_count)
+                        @if($pendingClaims > 0)
+                            <span class="badge badge-error badge-sm text-white">{{ $pendingClaims }}</span>
+                        @endif
+                    </div>
+                </x-responsive-nav-link>
+            @endunless
         </div>
 
         <!-- Responsive Settings Options -->

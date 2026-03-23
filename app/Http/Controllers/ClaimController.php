@@ -183,6 +183,41 @@ class ClaimController extends Controller
             ->with('status', __('messages.saved'));
     }
 
+    public function destroy(Request $request, Claim $claim): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
+
+        if ($claim->status !== 'pending') {
+            return back()->withErrors(['claim' => 'Hanya claim berstatus pending boleh dipadam.']);
+        }
+
+        $canDelete = false;
+
+        if ($user->hasRole('master_admin')) {
+            $canDelete = true;
+        } elseif ($user->hasRole('admin')) {
+            $assignedPastiIds = $this->assignedPastiIds($user);
+            if ($claim->pasti_id && in_array((int) $claim->pasti_id, $assignedPastiIds, true)) {
+                $canDelete = true;
+            } elseif ((int) $claim->user_id === (int) $user->id) {
+                $canDelete = true;
+            }
+        } elseif ($user->hasRole('guru')) {
+            if ((int) $claim->user_id === (int) $user->id) {
+                $canDelete = true;
+            }
+        }
+
+        if (! $canDelete) {
+            abort(403, 'Anda tiada akses untuk memadam claim ini.');
+        }
+
+        $claim->delete();
+
+        return back()->with('status', __('messages.deleted'));
+    }
+
     private function isGuruOnly(User $user): bool
     {
         return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);

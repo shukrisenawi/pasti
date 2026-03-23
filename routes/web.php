@@ -75,6 +75,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:master_admin|admin|guru')->group(function () {
         Route::get('/claims', [ClaimController::class, 'index'])->name('claims.index');
         Route::post('/claims', [ClaimController::class, 'store'])->name('claims.store');
+        Route::delete('/claims/{claim}', [ClaimController::class, 'destroy'])->name('claims.destroy');
         Route::get('/pemarkahan', [PemarkahanController::class, 'index'])->name('pemarkahan.index');
         Route::post('/pemarkahan', [PemarkahanController::class, 'store'])->name('pemarkahan.store');
         Route::get('/maklumat-pasti', [PastiInformationController::class, 'index'])->name('pasti-information.index');

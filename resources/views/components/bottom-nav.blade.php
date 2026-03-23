@@ -36,9 +36,15 @@
         </a>
 
         <a href="{{ route('claims.index') }}" class="flex flex-col items-center gap-1 px-3 py-2 text-xs font-bold transition-colors {{ request()->routeIs('claims.*') ? 'text-primary' : 'text-slate-500' }}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+            <div class="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                @php($pendingClaims = auth()->user()->pending_claims_count)
+                @if($pendingClaims > 0)
+                    <span class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">{{ $pendingClaims }}</span>
+                @endif
+            </div>
             <span>Claim</span>
         </a>
     </div>

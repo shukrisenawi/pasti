@@ -14,19 +14,21 @@
             <div class="bg-white rounded-2xl p-5 shadow-card border border-slate-50 relative overflow-hidden">
                 <div class="flex flex-col gap-3">
                     <div class="flex justify-between items-start">
-                        <div>
-                            @if($showAdminColumns)
-                                <h3 class="font-extrabold text-slate-900 leading-tight mb-1">{{ $notice->guru?->display_name ?? '-' }}</h3>
-                                <p class="text-xs font-semibold text-primary mb-2">{{ $notice->guru?->pasti?->name ?? '-' }}</p>
-                            @else
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Tarikh Cuti</p>
-                            @endif
-                            <div class="flex items-center gap-2 text-slate-700">
-                                <span class="font-bold">{{ $notice->leave_date?->format('d/m/Y') }}</span>
-                                @if($notice->leave_until && $notice->leave_until->ne($notice->leave_date))
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                                    <span class="font-bold">{{ $notice->leave_until?->format('d/m/Y') }}</span>
+                        <div class="flex items-center gap-3 mb-3">
+                            <x-avatar :guru="$notice->guru" size="h-10 w-10" rounded="rounded-2xl" />
+                            <div>
+                                @if($showAdminColumns)
+                                    <h3 class="font-extrabold text-slate-900 leading-tight">{{ $notice->guru?->display_name ?? '-' }}</h3>
+                                @else
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tarikh Cuti</p>
                                 @endif
+                                <div class="flex items-center gap-2 text-slate-700">
+                                    <span class="font-bold">{{ $notice->leave_date?->format('d/m/Y') }}</span>
+                                    @if($notice->leave_until && $notice->leave_until->ne($notice->leave_date))
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                                        <span class="font-bold">{{ $notice->leave_until?->format('d/m/Y') }}</span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                         
@@ -81,7 +83,6 @@
             <tr>
                 @if($showAdminColumns)
                     <th>{{ __('messages.name') }}</th>
-                    <th>{{ __('messages.pasti') }}</th>
                 @endif
                 <th>{{ __('messages.leave_date') }}</th>
                 <th>{{ __('messages.leave_until') }}</th>
@@ -94,8 +95,10 @@
             @forelse($leaveNotices as $notice)
                 <tr class="hover:bg-slate-50 transition-colors">
                     @if($showAdminColumns)
-                        <td class="font-bold text-slate-700">{{ $notice->guru?->display_name ?? '-' }}</td>
-                        <td class="text-slate-500 font-medium">{{ $notice->guru?->pasti?->name ?? '-' }}</td>
+                        <td class="flex items-center gap-3">
+                            <x-avatar :guru="$notice->guru" size="h-10 w-10" rounded="rounded-2xl" />
+                            <span class="font-bold text-slate-700">{{ $notice->guru?->display_name ?? '-' }}</span>
+                        </td>
                     @endif
                     <td class="font-semibold text-slate-700">{{ $notice->leave_date?->format('d/m/Y') }}</td>
                     <td class="font-semibold text-slate-700">{{ ($notice->leave_until ?? $notice->leave_date)?->format('d/m/Y') }}</td>
@@ -134,7 +137,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="{{ $showAdminColumns ? 7 : 5 }}" class="text-center py-8 text-slate-400">-</td></tr>
+                <tr><td colspan="{{ $showAdminColumns ? 6 : 5 }}" class="text-center py-8 text-slate-400">-</td></tr>
             @endforelse
             </tbody>
         </table>
