@@ -12,7 +12,7 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $user = $request->user();
+        $user = $request->user()->load('ajkPositions');
         $currentYear = (int) now()->year;
         $programQuery = Program::query();
         $topKpiGurus = collect();
@@ -112,6 +112,7 @@ class DashboardController extends Controller
             'latestInboxMessage' => $latestInboxMessage,
             'pendingPastiInfoCount' => $pendingPastiInfoCount ?? 0,
             'guruLeaveDays' => $user->guru ? \App\Models\Guru::where('id', $user->guru->id)->withLeaveDaysForYear($currentYear)->first()?->leave_notices_current_year_count : 0,
+            'userAjkPositions' => $user->ajkPositions->sortBy('name')->values(),
         ]);
     }
 

@@ -134,6 +134,7 @@
                     <a href="{{ route('kawasan.index') }}" class="menu-link {{ request()->routeIs('kawasan.*') ? 'menu-link-active' : '' }}">{{ __('messages.kawasan') }}</a>
                     <a href="{{ route('users.gurus.index') }}" class="menu-link {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
                     <a href="{{ route('pasti.index') }}" class="menu-link {{ request()->routeIs('pasti.*') ? 'menu-link-active' : '' }}">{{ __('messages.pasti') }}</a>
+                    <a href="{{ route('ajk-program.index') }}" class="menu-link {{ request()->routeIs('ajk-program.*') ? 'menu-link-active' : '' }}">{{ __('messages.ajk_program') }}</a>
                     <a href="{{ route('kpi.gurus.index') }}" class="menu-link {{ request()->routeIs('kpi.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.kpi_guru') }}</a>
                     
                     @php

@@ -48,5 +48,9 @@ class DatabaseSeeder extends Seeder
         ProgramStatus::query()
             ->whereNotIn('code', ['HADIR', 'TIDAK_HADIR'])
             ->delete();
+
+        $this->call([
+            AjkPositionSeeder::class,
+        ]);
     }
 }

@@ -24,6 +24,17 @@ return [
     'kpi_guru' => 'Teacher KPI',
     'my_kpi' => 'My KPI',
     'programs' => 'Programs',
+    'ajk_program' => 'Program Committee',
+    'ajk_program_subtitle' => 'Manage committee positions and user assignments.',
+    'ajk_position' => 'Committee Position',
+    'position_name' => 'Position Name',
+    'position_description' => 'Position Description',
+    'position_list' => 'Position List',
+    'user_position_assignment' => 'User Position Assignment',
+    'select_user' => 'Select User',
+    'selected_user' => 'Selected User',
+    'select_positions' => 'Select Positions',
+    'my_ajk_positions' => 'My Committee Positions',
     'total_guru' => 'Total Teachers',
     'total_assistant_teacher' => 'Total Assistant Teachers',
     'total_pasti' => 'Total PASTI',
@@ -156,3 +167,4 @@ return [
     'skim_pas_expiring_soon' => 'PAS Scheme will expire in a week',
     'skim_pas_expired_list' => 'Expired PAS Scheme List',
 ];
+

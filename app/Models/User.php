@@ -82,6 +82,13 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function ajkPositions(): BelongsToMany
+    {
+        return $this->belongsToMany(AjkPosition::class, 'user_ajk_positions')
+            ->withPivot(['assigned_by'])
+            ->withTimestamps();
+    }
+
     public function adminMessageReplies(): HasMany
     {
         return $this->hasMany(AdminMessageReply::class, 'sender_id');

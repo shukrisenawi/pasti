@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminMessageController;
+use App\Http\Controllers\AjkProgramController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\KawasanController;
@@ -30,6 +31,9 @@ Route::middleware(['auth'])->group(function () {
             ->except(['show'])
             ->names('users.admins')
             ->parameters(['admins' => 'users_admin']);
+        Route::post('/ajk-program/positions', [AjkProgramController::class, 'storePosition'])->name('ajk-program.positions.store');
+        Route::put('/ajk-program/positions/{position}', [AjkProgramController::class, 'updatePosition'])->name('ajk-program.positions.update');
+        Route::delete('/ajk-program/positions/{position}', [AjkProgramController::class, 'destroyPosition'])->name('ajk-program.positions.destroy');
         Route::post('/program-title-options', [ProgramTitleOptionController::class, 'store'])->name('program-title-options.store');
         Route::post('/pemarkahan/title-options', [PemarkahanController::class, 'storeTitleOption'])->name('pemarkahan.title-options.store');
     });
@@ -49,6 +53,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/messages/create', [AdminMessageController::class, 'create'])->name('messages.create');
         Route::post('/messages', [AdminMessageController::class, 'store'])->name('messages.store');
         Route::get('/users/expired-skim-pas', [AdminUserController::class, 'expiredSkimPas'])->name('users.expired-skim-pas');
+        Route::get('/ajk-program', [AjkProgramController::class, 'index'])->name('ajk-program.index');
+        Route::put('/ajk-program/assignments/{user}', [AjkProgramController::class, 'updateAssignments'])->name('ajk-program.assignments.update');
     });
 
     Route::middleware('role:guru')->group(function () {

@@ -40,6 +40,20 @@
         }
     @endphp
 
+    @if($userAjkPositions->isNotEmpty())
+        <section class="mb-6">
+            <div class="card border-primary/10 bg-white/95">
+                <p class="text-xs font-bold uppercase tracking-[0.22em] text-primary">{{ __('messages.ajk_program') }}</p>
+                <h3 class="mt-2 text-lg font-extrabold text-slate-900">{{ __('messages.my_ajk_positions') }}</h3>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    @foreach($userAjkPositions as $position)
+                        <span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{{ $position->name }}</span>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
     @if($skimPasAlert === 'expired')
         <div class="mb-6 flex items-center gap-4 rounded-2xl border-2 border-red-500/20 bg-red-50 p-4 text-red-800 shadow-sm">
             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white">

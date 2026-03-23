@@ -24,6 +24,17 @@ return [
     'kpi_guru' => 'KPI Guru',
     'my_kpi' => 'KPI Saya',
     'programs' => 'Program',
+    'ajk_program' => 'AJK Program',
+    'ajk_program_subtitle' => 'Urus jawatan AJK dan penugasan kepada pengguna.',
+    'ajk_position' => 'Jawatan AJK',
+    'position_name' => 'Nama Jawatan',
+    'position_description' => 'Huraian Jawatan',
+    'position_list' => 'Senarai Jawatan',
+    'user_position_assignment' => 'Penugasan Jawatan Pengguna',
+    'select_user' => 'Pilih Pengguna',
+    'selected_user' => 'Pengguna Dipilih',
+    'select_positions' => 'Pilih Jawatan',
+    'my_ajk_positions' => 'Jawatan AJK Saya',
     'pemarkahan' => 'Permarkahan',
     'total_guru' => 'Jumlah Guru',
     'total_assistant_teacher' => 'Jumlah Pembantu Guru',
@@ -164,3 +175,4 @@ return [
     'skim_pas_expiring_soon' => 'Lagi seminggu lagi skim PAS akan tamat tempoh',
     'skim_pas_expired_list' => 'Senarai Skim PAS Expired',
 ];
+
