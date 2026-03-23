@@ -84,27 +84,39 @@ class DashboardController extends Controller
                 ->first();
         }
 
-        $latestProgramQuery = Program::query()
+        $programsQuery = Program::query()
             ->with(['participations.status'])
             ->when(
                 $isGuruOnly,
-                fn ($query) => $query->whereHas('gurus', fn ($q) => $q->where('gurus.id', $guruId ?? 0))
+                fn ($query) => $query->where(function($q) use ($guruId) {
+                    $q->whereHas('gurus', fn ($vg) => $vg->where('gurus.id', $guruId ?? 0))
+                      ->orWhereNull('pasti_id'); // Show assigned OR global programs
+                })
             );
 
-        $latestProgram = (clone $latestProgramQuery)
+        // Get 3 upcoming programs (closest first)
+        $latestPrograms = (clone $programsQuery)
             ->whereDate('program_date', '>=', now()->toDateString())
-            ->latest('program_date')
-            ->latest('program_time')
-            ->latest('created_at')
-            ->first();
+            ->oldest('program_date')
+            ->oldest('program_time')
+            ->oldest('id')
+            ->limit(3)
+            ->get();
 
-        if (! $latestProgram) {
-            $latestProgram = (clone $latestProgramQuery)
+        // If fewer than 3 upcoming, pad with recent past programs
+        if ($latestPrograms->count() < 3) {
+            $pastPrograms = (clone $programsQuery)
+                ->whereDate('program_date', '<', now()->toDateString())
                 ->latest('program_date')
                 ->latest('program_time')
-                ->latest('created_at')
-                ->first();
+                ->latest('id')
+                ->limit(3 - $latestPrograms->count())
+                ->get();
+            
+            $latestPrograms = $latestPrograms->concat($pastPrograms);
         }
+
+        $latestProgram = $latestPrograms->first();
 
         $currentGuruId = $user->guru?->id;
         $currentParticipation = null;
@@ -139,6 +151,7 @@ class DashboardController extends Controller
         }
 
         return view('dashboard', [
+            'latestPrograms' => $latestPrograms,
             'latestProgram' => $latestProgram,
             'currentParticipation' => $currentParticipation,
             'statuses' => $statuses,

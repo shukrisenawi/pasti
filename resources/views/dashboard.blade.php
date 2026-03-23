@@ -133,124 +133,129 @@
     @endif
 
     @if($userAjkPositions->isNotEmpty())
-        <section class="mb-6">
-            <div class="card border-primary/10 bg-white/95">
-                <p class="text-xs font-bold uppercase tracking-[0.22em] text-primary">{{ __('messages.ajk_program') }}</p>
-                <h3 class="mt-2 text-lg font-extrabold text-slate-900">{{ __('messages.my_ajk_positions') }}</h3>
-                <div class="mt-4 flex flex-wrap gap-2">
+        <section class="mb-8">
+            <div class="rounded-3xl border border-primary/20 bg-gradient-to-br from-white to-primary/5 p-5 shadow-card sm:p-6">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-primary">{{ __('messages.ajk_program') }}</p>
+                        <h3 class="text-lg font-black text-slate-900">{{ __('messages.my_ajk_positions') }}</h3>
+                    </div>
+                </div>
+                <div class="mt-5 flex flex-wrap gap-2">
                     @foreach($userAjkPositions as $position)
-                        <span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{{ $position->name }}</span>
+                        <div class="group relative flex items-center gap-2 rounded-2xl border border-primary/10 bg-white px-4 py-2 shadow-sm transition-all hover:border-primary/30 hover:shadow-md">
+                            <div class="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
+                            <span class="text-sm font-bold text-slate-700">{{ $position->name }}</span>
+                        </div>
                     @endforeach
                 </div>
             </div>
         </section>
     @endif
 
-    @if($latestProgram)
-        @php
-            $hadirCount = $latestProgram->participations->filter(fn ($p) => $p->status?->code === 'HADIR')->count();
-            $tidakHadirCount = $latestProgram->participations->filter(fn ($p) => $p->status?->code === 'TIDAK_HADIR')->count();
-        @endphp
-
-        <section class="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
-            <div class="card border-primary/10 bg-white/95">
-                <div class="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.22em] text-primary">{{ __('messages.program_terbaru') }}</p>
-                        <h3 class="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{{ $latestProgram->title }}</h3>
-                        <p class="mt-2 text-sm text-slate-500">
-                            {{ $latestProgram->program_date?->format('d/m/Y') }}
-                            <span class="mx-2 text-slate-300">|</span>
-                            {{ $latestProgram->program_time?->format('H:i') ?? '-' }}
-                            <span class="mx-2 text-slate-300">|</span>
-                            {{ $latestProgram->location ?? '-' }}
-                        </p>
-                    </div>
-                    <a href="{{ route('programs.show', $latestProgram) }}" class="btn btn-outline">{{ __('messages.view') }}</a>
-                </div>
-
-                <p class="mt-6 max-w-3xl text-sm leading-7 text-slate-600">{{ $latestProgram->description ?: '-' }}</p>
-
-                <div class="mt-6 grid gap-4 sm:grid-cols-2">
-                    <div class="stat-card">
-                        <p class="stat-title">{{ __('messages.hadir') }}</p>
-                        <p class="stat-value">{{ $hadirCount }}</p>
-                    </div>
-                    <div class="stat-card">
-                        <p class="stat-title">{{ __('messages.tidak_hadir') }}</p>
-                        <p class="stat-value">{{ $tidakHadirCount }}</p>
-                    </div>
-                </div>
-
-                @if($canUpdateOwnStatus)
-                    @php
-                        $statusCodeById = $statuses->mapWithKeys(fn ($status) => [(string) $status->id => $status->code]);
-                        $selectedStatusId = (string) old('program_status_id', $currentParticipation->program_status_id);
-                    @endphp
-                    <div class="mt-8 rounded-3xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
-                        <p class="text-sm font-semibold text-slate-700">{{ __('messages.status') }}</p>
-                        <form
-                            method="POST"
-                            action="{{ route('programs.teachers.status.update', [$latestProgram, $currentParticipation->guru_id]) }}"
-                            class="mt-4 grid gap-3 {{ $latestProgram->require_absence_reason ? 'md:grid-cols-[220px_1fr_auto]' : 'md:grid-cols-[220px_auto]' }} md:items-center"
-                            x-data="{
-                                selectedStatusId: @js($selectedStatusId),
-                                statusCodeById: @js($statusCodeById),
-                                requiresAbsenceReason() {
-                                    return this.statusCodeById[this.selectedStatusId] === 'TIDAK_HADIR';
-                                }
-                            }"
-                        >
-                            @csrf
-                            <select name="program_status_id" class="input-base max-w-xs" x-model="selectedStatusId">
-                                <option value="">-</option>
-                                @foreach($statuses as $status)
-                                    <option value="{{ $status->id }}" @selected(old('program_status_id', $currentParticipation->program_status_id) == $status->id)>
-                                        {{ $status->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @if($latestProgram->require_absence_reason)
-                                <div x-show="requiresAbsenceReason()" x-cloak>
-                                    <input
-                                        type="text"
-                                        name="absence_reason"
-                                        class="input-base"
-                                        placeholder="{{ __('messages.absence_reason_placeholder') }}"
-                                        value="{{ old('absence_reason', $currentParticipation->absence_reason) }}"
-                                    >
+    @if($latestPrograms->isNotEmpty())
+        <section class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+               <h3 class="text-sm font-black uppercase tracking-[0.24em] text-slate-400">{{ __('messages.upcoming_programs') }}</h3>
+               <a href="{{ route('programs.index') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua</a>
+            </div>
+            
+            <div class="grid gap-6 xl:grid-cols-[1fr_auto]">
+                <div class="space-y-4">
+                    @foreach($latestPrograms as $p)
+                        <div class="group relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-4 shadow-card transition-all hover:shadow-lg sm:p-5 {{ $loop->first ? 'ring-2 ring-primary/20' : '' }}">
+                            @if($loop->first)
+                                <div class="absolute top-0 right-0 rounded-bl-2xl bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">TERBARU</div>
+                            @endif
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+                                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4v-4m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <h4 class="text-lg font-black text-slate-900">{{ $p->title }}</h4>
+                                        <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-500">
+                                            {{ $p->program_date?->format('d/m/Y') }}
+                                        </span>
+                                    </div>
+                                    <p class="mt-1 flex items-center gap-3 text-xs font-bold text-slate-400">
+                                        <span class="flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            {{ $p->program_time?->format('H:i') ?? '-' }}
+                                        </span>
+                                        <span class="flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                            {{ $p->location ?? '-' }}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('programs.show', $p) }}" class="rounded-xl bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                                        {{ __('messages.view') }}
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            @if($loop->first && $canUpdateOwnStatus && $currentParticipation)
+                                <div class="mt-4 border-t border-slate-50 pt-4">
+                                     <form method="POST" action="{{ route('programs.teachers.status.update', [$p, $currentParticipation->guru_id]) }}" class="flex flex-wrap items-center gap-2">
+                                        @csrf
+                                        <select name="program_status_id" class="text-xs font-bold rounded-xl border-slate-200 bg-slate-50 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/20">
+                                            @foreach($statuses as $status)
+                                                <option value="{{ $status->id }}" @selected($currentParticipation->program_status_id == $status->id)>
+                                                    {{ $status->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <button class="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all">
+                                            {{ __('messages.save') }}
+                                        </button>
+                                     </form>
                                 </div>
                             @endif
-                            <button class="btn btn-primary">{{ __('messages.save') }}</button>
-                        </form>
-                    </div>
-                @endif
-            </div>
+                        </div>
+                    @endforeach
+                </div>
 
-            <div class="card bg-gradient-to-br from-slate-900 via-emerald-950 to-primary-dark text-white">
-                <p class="text-xs font-bold uppercase tracking-[0.24em] text-white/60">Ringkasan</p>
-                <h3 class="mt-3 text-2xl font-extrabold">Status Program Semasa</h3>
-                <p class="mt-3 text-sm leading-7 text-white/75">Gunakan panel ini untuk semak program paling baru dan kemas kini kehadiran guru dengan cepat.</p>
-
-                <div class="mt-8 space-y-4">
-                    <div class="rounded-2xl border border-white/10 bg-white/10 p-4">
-                        <p class="text-xs uppercase tracking-[0.2em] text-white/60">Tarikh</p>
-                        <p class="mt-2 text-lg font-bold">{{ $latestProgram->program_date?->format('d/m/Y') ?? '-' }}</p>
-                    </div>
-                    <div class="rounded-2xl border border-white/10 bg-white/10 p-4">
-                        <p class="text-xs uppercase tracking-[0.2em] text-white/60">{{ __('messages.time') }}</p>
-                        <p class="mt-2 text-lg font-bold">{{ $latestProgram->program_time?->format('H:i') ?? '-' }}</p>
-                    </div>
-                    <div class="rounded-2xl border border-white/10 bg-white/10 p-4">
-                        <p class="text-xs uppercase tracking-[0.2em] text-white/60">Lokasi</p>
-                        <p class="mt-2 text-lg font-bold">{{ $latestProgram->location ?? '-' }}</p>
+                @if($latestProgram)
+                <div class="hidden xl:block w-80">
+                    <div class="sticky top-6 rounded-3xl bg-gradient-to-br from-slate-900 to-emerald-950 p-6 text-white shadow-xl">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-white/50">Featured Event</p>
+                        <h3 class="mt-3 text-xl font-black leading-tight">{{ $latestProgram->title }}</h3>
+                        <p class="mt-4 text-sm leading-relaxed text-white/70">{{ \Illuminate\Support\Str::limit($latestProgram->description, 100) }}</p>
+                        
+                        <div class="mt-8 space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center text-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4v-4m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                </div>
+                                <span class="text-sm font-bold">{{ $latestProgram->program_date?->format('d M Y') }}</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center text-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                </div>
+                                <span class="text-sm font-bold truncate">{{ $latestProgram->location ?? '-' }}</span>
+                            </div>
+                        </div>
+                        
+                        <a href="{{ route('programs.show', $latestProgram) }}" class="mt-8 flex w-full items-center justify-center rounded-2xl bg-primary py-3 text-sm font-bold text-white transition-all hover:bg-primary-dark">
+                            Detail Program
+                        </a>
                     </div>
                 </div>
+                @endif
             </div>
         </section>
     @else
-        <div class="card text-sm text-slate-500">
-            {{ __('messages.program_terbaru') }}: -
+        <div class="card mb-8 text-sm text-slate-500 bg-white border border-dashed border-slate-200 text-center py-10">
+            <div class="flex flex-col items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4v-4m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <p>{{ __('messages.program_terbaru') }}: tiada rekod akan datang</p>
+            </div>
         </div>
     @endif
 
