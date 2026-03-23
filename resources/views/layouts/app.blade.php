@@ -129,8 +129,8 @@
         </div>
     </header>
 
-    <div class="mx-auto max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8 {{ $isGuruOnly ? 'grid grid-cols-1' : 'grid lg:grid-cols-[280px_minmax(0,1fr)]' }}">
-        <aside class="card order-2 h-fit overflow-hidden border-primary/10 bg-white/90 lg:order-1 {{ $isGuruOnly ? 'hidden' : '' }}">
+    <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8">
+        <aside class="card desktop-sidebar h-fit overflow-hidden border-primary/10 bg-white/90">
             <div class="rounded-[1.6rem] bg-gradient-to-br from-primary via-primary-dark to-emerald-700 p-5 text-primary-content shadow-lg">
                 <div class="flex items-center gap-4">
                     <x-avatar :user="$authUser" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/20" />
@@ -184,7 +184,7 @@
             </nav>
         </aside>
 
-        <main class="order-1 space-y-4 lg:order-2 {{ $isGuruOnly ? 'guru-main-with-bottom-nav' : '' }}">
+        <main class="space-y-4 {{ $isGuruOnly ? 'guru-main-with-bottom-nav' : '' }}">
             @isset($header)
                 <div class="card border-primary/10 bg-white/95">
                     {{ $header }}
@@ -238,6 +238,12 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
