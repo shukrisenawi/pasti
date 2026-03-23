@@ -25,6 +25,43 @@
                             @endif
                         </x-nav-link>
                     @endunless
+
+                    @if(auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="btn btn-sm btn-ghost gap-1 {{ request()->routeIs(['users.*', 'kawasan.*', 'pasti.*', 'kelas.*']) ? 'bg-base-200' : '' }}">
+                                    <span>{{ __('Pengurusan') }}</span>
+                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('kawasan.index')">{{ __('Kawasan') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('pasti.index')">{{ __('PASTI') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('kelas.index')">{{ __('Kelas') }}</x-dropdown-link>
+                                <div class="divider my-0"></div>
+                                <x-dropdown-link :href="route('users.gurus.index')">{{ __('Guru') }}</x-dropdown-link>
+                                @if(auth()->user()->hasRole('master_admin'))
+                                    <x-dropdown-link :href="route('users.admins.index')">{{ __('Admin') }}</x-dropdown-link>
+                                @endif
+                            </x-slot>
+                        </x-dropdown>
+
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="btn btn-sm btn-ghost gap-1 {{ request()->routeIs(['kpi.*', 'financial.index', 'messages.index', 'programs.index', 'leave-notices.index']) ? 'bg-base-200' : '' }}">
+                                    <span>{{ __('Laporan/Aktiviti') }}</span>
+                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('kpi.gurus.index')">{{ __('KPI Guru') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('financial.index')">{{ __('Kewangan') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('programs.index')">{{ __('Program') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('leave-notices.index')">{{ __('Notis Cuti') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('messages.index')">{{ __('Mesej') }}</x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    @endif
                 </div>
             </div>
 
@@ -92,6 +129,38 @@
                     </div>
                 </x-responsive-nav-link>
             @endunless
+
+            @if(auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                <div x-data="{ open: false }" class="space-y-1">
+                    <button @click="open = !open" class="btn btn-sm btn-ghost w-full justify-between {{ request()->routeIs(['users.*', 'kawasan.*', 'pasti.*', 'kelas.*']) ? 'bg-base-200' : '' }}">
+                        <span>{{ __('Pengurusan') }}</span>
+                        <svg class="h-4 w-4 transform transition-transform" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+                    </button>
+                    <div x-show="open" class="ps-4 space-y-1" style="display: none;">
+                        <x-responsive-nav-link :href="route('kawasan.index')" :active="request()->routeIs('kawasan.*')">{{ __('Kawasan') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('pasti.index')" :active="request()->routeIs('pasti.index')">{{ __('PASTI') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('kelas.index')" :active="request()->routeIs('kelas.*')">{{ __('Kelas') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('users.gurus.index')" :active="request()->routeIs('users.gurus.*')">{{ __('Guru') }}</x-responsive-nav-link>
+                        @if(auth()->user()->hasRole('master_admin'))
+                            <x-responsive-nav-link :href="route('users.admins.index')" :active="request()->routeIs('users.admins.*')">{{ __('Admin') }}</x-responsive-nav-link>
+                        @endif
+                    </div>
+                </div>
+
+                <div x-data="{ open: false }" class="space-y-1">
+                    <button @click="open = !open" class="btn btn-sm btn-ghost w-full justify-between {{ request()->routeIs(['kpi.*', 'financial.index', 'messages.index', 'programs.index', 'leave-notices.index']) ? 'bg-base-200' : '' }}">
+                        <span>{{ __('Laporan/Aktiviti') }}</span>
+                        <svg class="h-4 w-4 transform transition-transform" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+                    </button>
+                    <div x-show="open" class="ps-4 space-y-1" style="display: none;">
+                        <x-responsive-nav-link :href="route('kpi.gurus.index')" :active="request()->routeIs('kpi.gurus.*')">{{ __('KPI Guru') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('financial.index')" :active="request()->routeIs('financial.*')">{{ __('Kewangan') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('programs.index')" :active="request()->routeIs('programs.index')">{{ __('Program') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('leave-notices.index')" :active="request()->routeIs('leave-notices.*')">{{ __('Notis Cuti') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.*')">{{ __('Mesej') }}</x-responsive-nav-link>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
