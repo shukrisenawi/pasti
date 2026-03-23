@@ -18,12 +18,26 @@
     </div>
 
     @if($activeTab === 'ringkasan')
-        <section class="card">
-            <p class="text-sm font-semibold text-slate-600">{{ __('messages.current_balance') }}</p>
-            <p class="mt-2 text-3xl font-black {{ $currentBalance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                RM {{ number_format($currentBalance, 2) }}
-            </p>
-        </section>
+        <div class="grid gap-4 md:grid-cols-3">
+            <section class="card">
+                <p class="text-sm font-semibold text-slate-600">{{ __('messages.current_balance') }}</p>
+                <p class="mt-2 text-3xl font-black {{ $currentBalance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
+                    RM {{ number_format($currentBalance, 2) }}
+                </p>
+            </section>
+            <section class="card">
+                <p class="text-sm font-semibold text-slate-600">{{ __('messages.cash_balance') }}</p>
+                <p class="mt-2 text-3xl font-black {{ $cashBalance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
+                    RM {{ number_format($cashBalance, 2) }}
+                </p>
+            </section>
+            <section class="card">
+                <p class="text-sm font-semibold text-slate-600">{{ __('messages.bank_balance') }}</p>
+                <p class="mt-2 text-3xl font-black {{ $bankBalance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
+                    RM {{ number_format($bankBalance, 2) }}
+                </p>
+            </section>
+        </div>
     @elseif($activeTab === 'jenis-transaksi' && $canManageTypes)
         <section class="card">
             <h3 class="text-base font-bold text-slate-900">{{ __('messages.financial_type') }}</h3>
@@ -127,6 +141,14 @@
                 </div>
 
                 <div>
+                    <label class="label-base">{{ __('messages.payment_method') }}</label>
+                    <select class="input-base" name="payment_method" required>
+                        <option value="cash" @selected(old('payment_method') === 'cash')>{{ __('messages.cash') }}</option>
+                        <option value="transfer" @selected(old('payment_method', 'transfer') === 'transfer')>{{ __('messages.transfer') }}</option>
+                    </select>
+                </div>
+
+                <div>
                     <label class="label-base">{{ __('messages.related_pasti') }} ({{ __('messages.optional') }})</label>
                     <select class="input-base" name="pasti_id">
                         <option value="">-- {{ __('messages.select') }} --</option>
@@ -153,6 +175,7 @@
                         <th>{{ __('messages.transaction_date') }}</th>
                         <th>{{ __('messages.financial_type') }}</th>
                         <th>{{ __('messages.credit_debit') }}</th>
+                        <th>{{ __('messages.payment_method') }}</th>
                         <th>{{ __('messages.amount') }}</th>
                         <th>{{ __('messages.transaction_remark') }}</th>
                         <th>{{ __('messages.related_pasti') }}</th>
@@ -168,6 +191,7 @@
                                     {{ ($transaction->credit_debit ?? 'debit') === 'credit' ? __('messages.credit') : __('messages.debit') }}
                                 </span>
                             </td>
+                            <td>{{ $transaction->payment_method === 'cash' ? __('messages.cash') : __('messages.transfer') }}</td>
                             <td class="font-semibold {{ ($transaction->credit_debit ?? 'debit') === 'credit' ? 'text-emerald-700' : 'text-rose-600' }}">
                                 RM {{ number_format((float) $transaction->amount, 2) }}
                             </td>
@@ -175,7 +199,7 @@
                             <td>{{ $transaction->pasti?->name ?? '-' }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center">-</td></tr>
+                        <tr><td colspan="7" class="text-center">-</td></tr>
                     @endforelse
                     </tbody>
                 </table>

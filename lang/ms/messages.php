@@ -23,6 +23,11 @@ return [
     'credit_debit' => 'Credit/Debit',
     'credit' => 'Credit',
     'debit' => 'Debit',
+    'payment_method' => 'Jenis Pembayaran',
+    'cash' => 'Tunai',
+    'transfer' => 'Transfer',
+    'cash_balance' => 'Baki di Tangan (Cash)',
+    'bank_balance' => 'Baki di Bank',
     'related_pasti' => 'PASTI Berkaitan',
     'optional' => 'Pilihan',
     'financial_type_in_use' => 'Jenis transaksi ini tidak boleh dipadam kerana sudah digunakan.',
@@ -199,6 +204,8 @@ return [
     'upcoming_programs' => 'Program Akan Datang',
     'featured_event' => 'Program Utama',
 ];
+
+
 
 
 

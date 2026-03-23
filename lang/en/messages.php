@@ -23,6 +23,11 @@ return [
     'credit_debit' => 'Credit/Debit',
     'credit' => 'Credit',
     'debit' => 'Debit',
+    'payment_method' => 'Payment Method',
+    'cash' => 'Cash',
+    'transfer' => 'Transfer',
+    'cash_balance' => 'Cash on Hand Balance',
+    'bank_balance' => 'Bank Balance',
     'related_pasti' => 'Related PASTI',
     'optional' => 'Optional',
     'financial_type_in_use' => 'This transaction type cannot be deleted because it is already used.',
@@ -189,6 +194,8 @@ return [
     'skim_pas_expiring_soon' => 'PAS Scheme will expire in a week',
     'skim_pas_expired_list' => 'Expired PAS Scheme List',
 ];
+
+
 
 
 

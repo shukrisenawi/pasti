@@ -12,6 +12,7 @@ class FinancialTransaction extends Model
         'financial_transaction_type_id',
         'transaction_date',
         'credit_debit',
+        'payment_method',
         'amount',
         'transaction_remark',
         'created_by',

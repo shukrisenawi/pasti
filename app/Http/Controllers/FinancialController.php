@@ -68,11 +68,46 @@ class FinancialController extends Controller
             ->selectRaw($balanceExpression . ' as balance')
             ->value('balance') ?? 0);
 
+        $cashBalance = (float) (FinancialTransaction::query()
+            ->when(
+                $user->hasRole('admin') && ! $user->hasRole('master_admin'),
+                fn ($query) => $query->where(function ($q) use ($accessiblePastiIds): void {
+                    $q->whereNull('pasti_id');
+
+                    if ($accessiblePastiIds !== []) {
+                        $q->orWhereIn('pasti_id', $accessiblePastiIds);
+                    }
+                })
+            )
+            ->where('payment_method', 'cash')
+            ->selectRaw($balanceExpression . ' as balance')
+            ->value('balance') ?? 0);
+
+        $bankBalance = (float) (FinancialTransaction::query()
+            ->when(
+                $user->hasRole('admin') && ! $user->hasRole('master_admin'),
+                fn ($query) => $query->where(function ($q) use ($accessiblePastiIds): void {
+                    $q->whereNull('pasti_id');
+
+                    if ($accessiblePastiIds !== []) {
+                        $q->orWhereIn('pasti_id', $accessiblePastiIds);
+                    }
+                })
+            )
+            ->where(function ($query): void {
+                $query->where('payment_method', 'transfer')
+                    ->orWhereNull('payment_method');
+            })
+            ->selectRaw($balanceExpression . ' as balance')
+            ->value('balance') ?? 0);
+
         return view('financial.index', [
             'activeTab' => $activeTab,
             'pastis' => $pastis,
             'transactions' => $transactions,
             'currentBalance' => $currentBalance,
+            'cashBalance' => $cashBalance,
+            'bankBalance' => $bankBalance,
             'transactionTypes' => FinancialTransactionType::query()
                 ->where('is_active', true)
                 ->orderBy('name')
@@ -107,6 +142,7 @@ class FinancialController extends Controller
             ],
             'transaction_date' => ['required', 'date'],
             'credit_debit' => ['required', 'in:credit,debit'],
+            'payment_method' => ['required', 'in:cash,transfer'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'transaction_remark' => ['nullable', 'string', 'max:1000'],
         ]);
@@ -116,6 +152,7 @@ class FinancialController extends Controller
             'financial_transaction_type_id' => (int) $data['financial_transaction_type_id'],
             'transaction_date' => $data['transaction_date'],
             'credit_debit' => $data['credit_debit'],
+            'payment_method' => $data['payment_method'],
             'amount' => $data['amount'],
             'transaction_remark' => $data['transaction_remark'] ?? null,
             'created_by' => $user->id,
