@@ -92,6 +92,15 @@ class DashboardController extends Controller
             ->orderByDesc('created_at')
             ->first();
 
+        if (! $latestProgram) {
+            $latestProgram = (clone $programQuery)
+                ->with(['participations.status'])
+                ->orderByDesc('program_date')
+                ->orderByDesc('program_time')
+                ->orderByDesc('created_at')
+                ->first();
+        }
+
         $currentGuruId = $user->guru?->id;
         $currentParticipation = null;
         $statuses = collect();
