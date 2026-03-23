@@ -56,13 +56,13 @@
         </div>
     @else
         <div class="mb-4 flex flex-wrap gap-2">
-            <button type="button" wire:click="switchTab('scores')" class="btn {{ $activeTab === 'scores' ? 'btn-primary' : 'btn-outline' }}">
+            <a href="{{ route('pemarkahan.index', ['tab' => 'scores']) }}" class="btn {{ $activeTab === 'scores' ? 'btn-primary' : 'btn-outline' }}">
                 {{ __('messages.total_score') }}
-            </button>
+            </a>
             @if($canManageTitleOptions)
-                <button type="button" wire:click="switchTab('title-options')" class="btn {{ $activeTab === 'title-options' ? 'btn-primary' : 'btn-outline' }}">
+                <a href="{{ route('pemarkahan.index', ['tab' => 'title-options']) }}" class="btn {{ $activeTab === 'title-options' ? 'btn-primary' : 'btn-outline' }}">
                     {{ __('messages.add_pemarkahan_title_option') }}
-                </button>
+                </a>
             @endif
         </div>
 
@@ -190,3 +190,4 @@
         @endif
     @endif
 </div>
+

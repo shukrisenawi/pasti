@@ -38,7 +38,18 @@ class PemarkahanIndex extends Component
         abort_unless($user?->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
         $this->selectedYear = (int) now()->year;
-        $this->activeTab = $this->isGuruOnly($user) ? 'history' : 'scores';
+        if ($this->isGuruOnly($user)) {
+            $this->activeTab = 'history';
+
+            return;
+        }
+
+        $tab = (string) request()->query('tab', 'scores');
+        $allowedTabs = $user->hasRole('master_admin')
+            ? ['scores', 'title-options']
+            : ['scores'];
+
+        $this->activeTab = in_array($tab, $allowedTabs, true) ? $tab : 'scores';
     }
 
     public function render()
@@ -371,3 +382,4 @@ class PemarkahanIndex extends Component
         }
     }
 }
+
