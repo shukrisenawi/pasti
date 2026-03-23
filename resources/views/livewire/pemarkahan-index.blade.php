@@ -76,6 +76,43 @@
                 @error('newTitle')
                     <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
                 @enderror
+
+                @if($editingTitleOptionId)
+                    <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                        <p class="text-sm font-semibold text-amber-900">{{ __('messages.edit') }} {{ __('messages.title') }}</p>
+                        <form wire:submit.prevent="updateTitleOption" class="mt-2 flex flex-wrap gap-2">
+                            <input class="input-base max-w-md" wire:model.defer="editingTitle" placeholder="{{ __('messages.title') }}" required>
+                            <button class="btn btn-primary" type="submit">{{ __('messages.save') }}</button>
+                            <button class="btn btn-outline" type="button" wire:click="cancelEditTitleOption">{{ __('messages.cancel') }}</button>
+                        </form>
+                        @error('editingTitle')
+                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @endif
+
+                <div class="mt-5">
+                    <p class="text-sm font-semibold text-slate-700">{{ __('messages.list') }} {{ __('messages.title') }}</p>
+                    <div class="mt-3 space-y-2">
+                        @forelse($allTitleOptions as $item)
+                            <div class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-slate-900">{{ $item->title }}</p>
+                                    <p class="text-xs text-slate-500">ID: {{ $item->id }} | {{ $item->is_active ? __('messages.active') : __('messages.inactive') }}</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" wire:click="startEditTitleOption({{ $item->id }})" class="btn btn-outline btn-xs">{{ __('messages.edit') }}</button>
+                                    <button type="button" wire:click="deleteTitleOption({{ $item->id }})" wire:confirm="Padam tajuk ini?" class="btn btn-outline btn-xs text-rose-600">{{ __('messages.delete') }}</button>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-sm text-slate-500">-</p>
+                        @endforelse
+                    </div>
+                    @error('titleOptionAction')
+                        <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
         @endif
 

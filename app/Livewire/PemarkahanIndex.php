@@ -26,6 +26,10 @@ class PemarkahanIndex extends Component
 
     public string $newTitle = '';
 
+    public ?int $editingTitleOptionId = null;
+
+    public string $editingTitle = '';
+
     public ?string $notice = null;
 
     public function mount(): void
@@ -64,13 +68,13 @@ class PemarkahanIndex extends Component
                 'scores' => $scores,
                 'pastiName' => Pasti::query()->whereKey($guruPastiId)->value('name'),
                 'titleOptions' => $titleOptions,
+                'allTitleOptions' => collect(),
                 'pastis' => collect(),
                 'canManageTitleOptions' => false,
             ]);
         }
 
         $pastis = $this->accessiblePastisForUser($user);
-
         $this->fillScoresInput($pastis);
 
         return view('livewire.pemarkahan-index', [
@@ -78,6 +82,10 @@ class PemarkahanIndex extends Component
             'scores' => collect(),
             'pastiName' => null,
             'titleOptions' => $titleOptions,
+            'allTitleOptions' => PemarkahanTitleOption::query()
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get(),
             'pastis' => $pastis,
             'canManageTitleOptions' => $user->hasRole('master_admin'),
         ]);
@@ -202,7 +210,76 @@ class PemarkahanIndex extends Component
         ]);
 
         $this->newTitle = '';
+        $this->editingTitleOptionId = null;
+        $this->editingTitle = '';
         $this->notice = __('messages.saved');
+    }
+
+    public function startEditTitleOption(int $titleOptionId): void
+    {
+        /** @var User $user */
+        $user = auth()->user();
+        abort_unless($user->hasRole('master_admin'), 403);
+
+        $titleOption = PemarkahanTitleOption::query()->findOrFail($titleOptionId);
+        $this->editingTitleOptionId = $titleOption->id;
+        $this->editingTitle = $titleOption->title;
+    }
+
+    public function cancelEditTitleOption(): void
+    {
+        $this->editingTitleOptionId = null;
+        $this->editingTitle = '';
+    }
+
+    public function updateTitleOption(): void
+    {
+        /** @var User $user */
+        $user = auth()->user();
+        abort_unless($user->hasRole('master_admin'), 403);
+
+        if (! $this->editingTitleOptionId) {
+            return;
+        }
+
+        $validated = $this->validate([
+            'editingTitle' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('pemarkahan_title_options', 'title')->ignore($this->editingTitleOptionId),
+            ],
+        ]);
+
+        PemarkahanTitleOption::query()
+            ->whereKey($this->editingTitleOptionId)
+            ->update(['title' => $validated['editingTitle']]);
+
+        $this->cancelEditTitleOption();
+        $this->notice = __('messages.saved');
+    }
+
+    public function deleteTitleOption(int $titleOptionId): void
+    {
+        /** @var User $user */
+        $user = auth()->user();
+        abort_unless($user->hasRole('master_admin'), 403);
+
+        $titleOption = PemarkahanTitleOption::query()->findOrFail($titleOptionId);
+
+        if ($titleOption->scores()->exists()) {
+            $this->addError('titleOptionAction', 'Tajuk ini tidak boleh dipadam kerana sudah digunakan dalam markah.');
+
+            return;
+        }
+
+        $titleOption->delete();
+
+        if ($this->editingTitleOptionId === $titleOptionId) {
+            $this->cancelEditTitleOption();
+        }
+
+        $this->notice = __('messages.deleted');
     }
 
     public function hydrateScoresInput($value = null): void
@@ -294,5 +371,3 @@ class PemarkahanIndex extends Component
         }
     }
 }
-
-
