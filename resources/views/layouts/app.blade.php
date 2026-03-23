@@ -152,6 +152,29 @@
             </div>
 
             <nav class="mt-5 space-y-1.5 text-sm">
+                @php
+                    $menuInboxCount = $authUser->unreadNotifications()->where('type', 'like', '%Message%')->count();
+
+                    $menuUpcomingProgramCount = \App\Models\Program::query()
+                        ->when(
+                            $isGuruOnly,
+                            fn ($query) => $query->whereHas('gurus', fn ($q) => $q->where('gurus.id', $authUser->guru?->id ?? 0))
+                        )
+                        ->whereDate('program_date', '>=', now()->toDateString())
+                        ->count();
+
+                    $menuPastiInfoPendingCount = \App\Models\PastiInformationRequest::query()
+                        ->when(
+                            $authUser->hasRole('guru'),
+                            fn ($query) => $query->where('pasti_id', $authUser->guru?->pasti_id ?? 0)
+                        )
+                        ->when(
+                            $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
+                            fn ($query) => $query->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id'))
+                        )
+                        ->whereNull('completed_at')
+                        ->count();
+                @endphp
                 <a href="{{ route('dashboard') }}" class="menu-link {{ request()->routeIs('dashboard') ? 'menu-link-active' : '' }}">{{ __('messages.dashboard') }}</a>
 
                 @role('master_admin')
@@ -177,9 +200,24 @@
                 @endrole
 
                 <a href="{{ route('pemarkahan.index') }}" class="menu-link {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
-                <a href="{{ route('pasti-information.index') }}" class="menu-link {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }}">{{ __('messages.maklumat_pasti') }}</a>
-                <a href="{{ route('programs.index') }}" class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }}">{{ __('messages.programs') }}</a>
-                <a href="{{ route('messages.index') }}" class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }}">{{ __('messages.inbox') }}</a>
+                <a href="{{ route('pasti-information.index') }}" class="menu-link {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                    <span>{{ __('messages.maklumat_pasti') }}</span>
+                    @if($menuPastiInfoPendingCount > 0)
+                        <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuPastiInfoPendingCount > 99 ? '99+' : $menuPastiInfoPendingCount }}</span>
+                    @endif
+                </a>
+                <a href="{{ route('programs.index') }}" class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                    <span>{{ __('messages.programs') }}</span>
+                    @if($menuUpcomingProgramCount > 0)
+                        <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuUpcomingProgramCount > 99 ? '99+' : $menuUpcomingProgramCount }}</span>
+                    @endif
+                </a>
+                <a href="{{ route('messages.index') }}" class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                    <span>{{ __('messages.inbox') }}</span>
+                    @if($menuInboxCount > 0)
+                        <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuInboxCount > 99 ? '99+' : $menuInboxCount }}</span>
+                    @endif
+                </a>
                 <a href="{{ route('leave-notices.index') }}" class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }}">{{ __('messages.leave_notice') }}</a>
 
                 @role('guru')
@@ -244,6 +282,7 @@
 </script>
 </body>
 </html>
+
 
 
 
