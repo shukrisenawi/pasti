@@ -14,13 +14,13 @@ class DashboardController extends Controller
     {
         $user = $request->user()->load('ajkPositions');
         $currentYear = (int) now()->year;
-        $programQuery = Program::query();
         $topKpiGurus = collect();
         $latestInboxMessage = null;
+        $guruId = null;
+        $isGuruOnly = $this->isGuruOnly($user);
 
-        if ($this->isGuruOnly($user)) {
+        if ($isGuruOnly) {
             $guruId = $user->guru?->id;
-            $programQuery->whereHas('gurus', fn ($q) => $q->where('gurus.id', $guruId));
 
             // Fetch pending PASTI information requests for this guru
             if ($guruId) {
@@ -84,20 +84,25 @@ class DashboardController extends Controller
                 ->first();
         }
 
-        $latestProgram = (clone $programQuery)
+        $latestProgramQuery = Program::query()
             ->with(['participations.status'])
+            ->when(
+                $isGuruOnly,
+                fn ($query) => $query->whereHas('gurus', fn ($q) => $q->where('gurus.id', $guruId ?? 0))
+            );
+
+        $latestProgram = (clone $latestProgramQuery)
             ->whereDate('program_date', '>=', now()->toDateString())
-            ->orderByDesc('program_date')
-            ->orderByDesc('program_time')
-            ->orderByDesc('created_at')
+            ->latest('program_date')
+            ->latest('program_time')
+            ->latest('created_at')
             ->first();
 
         if (! $latestProgram) {
-            $latestProgram = (clone $programQuery)
-                ->with(['participations.status'])
-                ->orderByDesc('program_date')
-                ->orderByDesc('program_time')
-                ->orderByDesc('created_at')
+            $latestProgram = (clone $latestProgramQuery)
+                ->latest('program_date')
+                ->latest('program_time')
+                ->latest('created_at')
                 ->first();
         }
 
