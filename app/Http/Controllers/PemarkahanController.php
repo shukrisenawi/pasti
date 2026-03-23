@@ -153,7 +153,7 @@ class PemarkahanController extends Controller
         return back()->with('status', __('messages.saved'));
     }
 
-    private function assignedPastiIds(User $user): array
+    protected function assignedPastiIds(User $user): array
     {
         return $user->assignedPastis()->pluck('pastis.id')->all();
     }
