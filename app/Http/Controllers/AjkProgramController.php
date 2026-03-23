@@ -28,7 +28,7 @@ class AjkProgramController extends Controller
 
         $positions = AjkPosition::query()->orderBy('name')->get();
         $users = User::query()
-            ->with(['roles', 'ajkPositions'])
+            ->with(['roles', 'ajkPositions', 'guru'])
             ->orderByRaw('COALESCE(NULLIF(nama_samaran, \'\'), name)')
             ->get();
 

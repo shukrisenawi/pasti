@@ -122,8 +122,13 @@
 
                     <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-semibold text-slate-700">{{ __('messages.selected_user') }}</p>
-                        <p class="mt-1 text-base font-bold text-slate-900">{{ $selectedUser->display_name }}</p>
-                        <p class="text-sm text-slate-500">{{ $selectedUser->email }}</p>
+                        <div class="mt-2 flex items-center gap-3">
+                            <x-avatar :user="$selectedUser" size="h-12 w-12" rounded="rounded-2xl" border="border border-slate-200/70" />
+                            <div class="min-w-0">
+                                <p class="truncate text-base font-bold text-slate-900">{{ $selectedUser->display_name }}</p>
+                                <p class="truncate text-sm text-slate-500">{{ $selectedUser->email }}</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
