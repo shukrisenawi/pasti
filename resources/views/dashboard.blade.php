@@ -144,11 +144,16 @@
                         <h3 class="text-lg font-black text-slate-900">{{ __('messages.my_ajk_positions') }}</h3>
                     </div>
                 </div>
-                <div class="mt-5 flex flex-wrap gap-2">
+                <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach($userAjkPositions as $position)
-                        <div class="group relative flex items-center gap-2 rounded-2xl border border-primary/10 bg-white px-4 py-2 shadow-sm transition-all hover:border-primary/30 hover:shadow-md">
-                            <div class="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
-                            <span class="text-sm font-bold text-slate-700">{{ $position->name }}</span>
+                        <div class="group relative flex flex-col gap-1 rounded-2xl border border-primary/10 bg-white p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md">
+                            <div class="flex items-center gap-2">
+                                <div class="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
+                                <span class="text-sm font-black text-slate-900">{{ $position->name }}</span>
+                            </div>
+                            @if($position->description)
+                                <p class="text-xs text-slate-500 leading-relaxed pl-4">{{ $position->description }}</p>
+                            @endif
                         </div>
                     @endforeach
                 </div>
