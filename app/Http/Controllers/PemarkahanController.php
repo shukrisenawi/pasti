@@ -21,82 +21,7 @@ class PemarkahanController extends Controller
         $user = $request->user();
         abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
-        $titleOptions = PemarkahanTitleOption::query()
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
-
-        $selectedTitleOptionId = (int) $request->integer('title_option_id');
-        $selectedYear = (int) ($request->integer('year') ?: now()->year);
-
-        $isGuruOnly = $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
-        $activeTab = $request->query('tab', 'scores');
-
-        if ($isGuruOnly) {
-            $activeTab = 'history';
-        } else {
-            $availableTabs = ['scores'];
-            if ($user->hasRole('master_admin')) {
-                $availableTabs[] = 'title-options';
-            }
-
-            if (! in_array($activeTab, $availableTabs, true)) {
-                $activeTab = 'scores';
-            }
-        }
-
-        if ($isGuruOnly) {
-            $guruPastiId = $user->guru?->pasti_id;
-            abort_unless($guruPastiId, 403);
-
-            $scores = PastiScore::query()
-                ->with('titleOption')
-                ->where('pasti_id', $guruPastiId)
-                ->orderByDesc('year')
-                ->orderBy('pemarkahan_title_option_id')
-                ->get();
-
-            return view('pemarkahan.index', [
-                'isGuruOnly' => true,
-                'scores' => $scores,
-                'pastiName' => Pasti::query()->whereKey($guruPastiId)->value('name'),
-                'titleOptions' => $titleOptions,
-                'selectedTitleOptionId' => $selectedTitleOptionId,
-                'selectedYear' => $selectedYear,
-                'pastis' => collect(),
-                'existingScores' => collect(),
-                'activeTab' => $activeTab,
-            ]);
-        }
-
-        $pastisQuery = Pasti::query()->with('kawasan')->orderBy('name');
-        if ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
-            $pastisQuery->whereIn('id', $this->assignedPastiIds($user));
-        }
-
-        $pastis = $pastisQuery->get();
-        $pastiIds = $pastis->pluck('id')->all();
-
-        $existingScores = $selectedTitleOptionId > 0
-            ? PastiScore::query()
-                ->where('pemarkahan_title_option_id', $selectedTitleOptionId)
-                ->where('year', $selectedYear)
-                ->whereIn('pasti_id', $pastiIds)
-                ->pluck('score', 'pasti_id')
-            : collect();
-
-        return view('pemarkahan.index', [
-            'isGuruOnly' => false,
-            'scores' => collect(),
-            'pastiName' => null,
-            'titleOptions' => $titleOptions,
-            'selectedTitleOptionId' => $selectedTitleOptionId,
-            'selectedYear' => $selectedYear,
-            'pastis' => $pastis,
-            'existingScores' => $existingScores,
-            'activeTab' => $activeTab,
-        ]);
+        return view('pemarkahan.index');
     }
 
     public function store(Request $request): RedirectResponse
@@ -226,5 +151,10 @@ class PemarkahanController extends Controller
         ]);
 
         return back()->with('status', __('messages.saved'));
+    }
+
+    private function assignedPastiIds(User $user): array
+    {
+        return $user->assignedPastis()->pluck('pastis.id')->all();
     }
 }
