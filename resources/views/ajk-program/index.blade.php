@@ -8,7 +8,24 @@
         </div>
     </x-slot>
 
-    <div class="grid gap-5 lg:grid-cols-2">
+    <div class="mb-4 flex flex-wrap gap-2">
+        <a
+            href="{{ route('ajk-program.index', ['tab' => 'assignments', 'user_id' => $selectedUser?->id, 'edit_position' => request('edit_position')]) }}"
+            class="btn {{ $activeTab === 'assignments' ? 'btn-primary' : 'btn-outline' }}"
+        >
+            {{ __('messages.user_position_assignment') }}
+        </a>
+        @role('master_admin')
+            <a
+                href="{{ route('ajk-program.index', ['tab' => 'positions', 'user_id' => $selectedUser?->id]) }}"
+                class="btn {{ $activeTab === 'positions' ? 'btn-primary' : 'btn-outline' }}"
+            >
+                {{ __('messages.ajk_position') }}
+            </a>
+        @endrole
+    </div>
+
+    @if($activeTab === 'positions')
         @role('master_admin')
             <section class="card">
                 <h3 class="text-base font-bold text-slate-900">
@@ -42,7 +59,7 @@
                     <div class="flex gap-2">
                         <button class="btn btn-primary">{{ __('messages.save') }}</button>
                         @if($editingPosition)
-                            <a href="{{ route('ajk-program.index') }}" class="btn btn-outline">{{ __('messages.cancel') }}</a>
+                            <a href="{{ route('ajk-program.index', ['tab' => 'positions', 'user_id' => $selectedUser?->id]) }}" class="btn btn-outline">{{ __('messages.cancel') }}</a>
                         @endif
                     </div>
                 </form>
@@ -58,7 +75,7 @@
                                         <p class="mt-1 text-sm text-slate-600">{{ $position->description }}</p>
                                     </div>
                                     <div class="flex items-center gap-1">
-                                        <a href="{{ route('ajk-program.index', ['edit_position' => $position->id, 'user_id' => $selectedUser?->id]) }}" class="btn btn-ghost btn-xs btn-circle text-amber-600" title="{{ __('messages.edit') }}">
+                                        <a href="{{ route('ajk-program.index', ['tab' => 'positions', 'edit_position' => $position->id, 'user_id' => $selectedUser?->id]) }}" class="btn btn-ghost btn-xs btn-circle text-amber-600" title="{{ __('messages.edit') }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                             </svg>
@@ -82,12 +99,13 @@
                 </div>
             </section>
         @endrole
-
+    @else
         <section class="card">
             <h3 class="text-base font-bold text-slate-900">{{ __('messages.user_position_assignment') }}</h3>
 
             @if($selectedUser)
                 <form method="GET" action="{{ route('ajk-program.index') }}" class="mt-4">
+                    <input type="hidden" name="tab" value="assignments">
                     <label class="label-base">{{ __('messages.select_user') }}</label>
                     <select name="user_id" class="input-base" onchange="this.form.submit()">
                         @foreach($users as $item)
@@ -142,6 +160,5 @@
                 <p class="mt-4 text-sm text-slate-500">-</p>
             @endif
         </section>
-    </div>
+    @endif
 </x-app-layout>
-

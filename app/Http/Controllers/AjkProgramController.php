@@ -18,6 +18,14 @@ class AjkProgramController extends Controller
         $user = $request->user();
         abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
 
+        $activeTab = $request->query('tab', 'assignments');
+        $availableTabs = $user->hasRole('master_admin')
+            ? ['assignments', 'positions']
+            : ['assignments'];
+        if (! in_array($activeTab, $availableTabs, true)) {
+            $activeTab = 'assignments';
+        }
+
         $positions = AjkPosition::query()->orderBy('name')->get();
         $users = User::query()
             ->with(['roles', 'ajkPositions'])
@@ -43,6 +51,7 @@ class AjkProgramController extends Controller
             'users' => $users,
             'selectedUser' => $selectedUser,
             'editingPosition' => $editingPosition,
+            'activeTab' => $activeTab,
         ]);
     }
 
@@ -57,7 +66,7 @@ class AjkProgramController extends Controller
 
         AjkPosition::query()->create($data);
 
-        return redirect()->route('ajk-program.index')->with('status', __('messages.saved'));
+        return redirect()->route('ajk-program.index', ['tab' => 'positions'])->with('status', __('messages.saved'));
     }
 
     public function updatePosition(Request $request, AjkPosition $position): RedirectResponse
@@ -71,7 +80,7 @@ class AjkProgramController extends Controller
 
         $position->update($data);
 
-        return redirect()->route('ajk-program.index')->with('status', __('messages.saved'));
+        return redirect()->route('ajk-program.index', ['tab' => 'positions'])->with('status', __('messages.saved'));
     }
 
     public function destroyPosition(Request $request, AjkPosition $position): RedirectResponse
@@ -80,7 +89,7 @@ class AjkProgramController extends Controller
 
         $position->delete();
 
-        return redirect()->route('ajk-program.index')->with('status', __('messages.deleted'));
+        return redirect()->route('ajk-program.index', ['tab' => 'positions'])->with('status', __('messages.deleted'));
     }
 
     public function updateAssignments(Request $request, User $user): RedirectResponse
@@ -124,8 +133,7 @@ class AjkProgramController extends Controller
         }
 
         return redirect()
-            ->route('ajk-program.index', ['user_id' => $user->id])
+            ->route('ajk-program.index', ['user_id' => $user->id, 'tab' => 'assignments'])
             ->with('status', __('messages.saved'));
     }
 }
-

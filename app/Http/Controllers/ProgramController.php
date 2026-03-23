@@ -38,7 +38,10 @@ class ProgramController extends Controller
 
     public function create(Request $request): View
     {
-        abort_if($this->isGuruOnly($request->user()), 403);
+        $user = $request->user();
+        abort_if($this->isGuruOnly($user), 403);
+
+        $activeTab = $this->programFormTab($request, $user->hasRole('master_admin'));
 
         return view('programs.form', [
             'program' => new Program(),
@@ -46,6 +49,7 @@ class ProgramController extends Controller
             'titleOptions' => $this->activeTitleOptions(),
             'selectedGuruIds' => [],
             'defaultTeacherScope' => 'all',
+            'activeTab' => $activeTab,
         ]);
     }
 
@@ -125,7 +129,9 @@ class ProgramController extends Controller
 
     public function edit(Request $request, Program $program): View
     {
-        abort_if($this->isGuruOnly($request->user()), 403);
+        $user = $request->user();
+        abort_if($this->isGuruOnly($user), 403);
+        $activeTab = $this->programFormTab($request, $user->hasRole('master_admin'));
 
         $allActiveGuruIds = $this->activeGuruIds();
         $selectedGuruIds = $program->gurus()->pluck('gurus.id')->all();
@@ -137,6 +143,7 @@ class ProgramController extends Controller
             'titleOptions' => $this->activeTitleOptions(),
             'selectedGuruIds' => $selectedGuruIds,
             'defaultTeacherScope' => $defaultTeacherScope,
+            'activeTab' => $activeTab,
         ]);
     }
 
@@ -239,5 +246,19 @@ class ProgramController extends Controller
     private function isGuruOnly($user): bool
     {
         return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
+    }
+
+    private function programFormTab(Request $request, bool $canManageTitleOptions): string
+    {
+        $tab = $request->query('tab', 'program');
+        $allowedTabs = $canManageTitleOptions
+            ? ['program', 'title-options']
+            : ['program'];
+
+        if (! in_array($tab, $allowedTabs, true)) {
+            return 'program';
+        }
+
+        return $tab;
     }
 }

@@ -62,8 +62,26 @@
             </table>
         </div>
     @else
+        <div class="mb-4 flex flex-wrap gap-2">
+            <a
+                href="{{ route('pemarkahan.index', ['tab' => 'scores', 'title_option_id' => $selectedTitleOptionId ?: null, 'year' => $selectedYear]) }}"
+                class="btn {{ $activeTab === 'scores' ? 'btn-primary' : 'btn-outline' }}"
+            >
+                {{ __('messages.total_score') }}
+            </a>
+            @role('master_admin')
+                <a
+                    href="{{ route('pemarkahan.index', ['tab' => 'title-options', 'title_option_id' => $selectedTitleOptionId ?: null, 'year' => $selectedYear]) }}"
+                    class="btn {{ $activeTab === 'title-options' ? 'btn-primary' : 'btn-outline' }}"
+                >
+                    {{ __('messages.add_pemarkahan_title_option') }}
+                </a>
+            @endrole
+        </div>
+
         <div class="card">
             <form method="GET" action="{{ route('pemarkahan.index') }}" class="grid gap-4 md:grid-cols-3 md:items-end">
+                <input type="hidden" name="tab" value="{{ $activeTab }}">
                 <div>
                     <label class="label-base">{{ __('messages.title') }}</label>
                     <select class="input-base" name="title_option_id" required>
@@ -83,18 +101,20 @@
             </form>
         </div>
 
-        @role('master_admin')
-        <div class="card mt-4">
-            <h3 class="text-base font-bold">{{ __('messages.add_pemarkahan_title_option') }}</h3>
-            <form method="POST" action="{{ route('pemarkahan.title-options.store') }}" class="mt-3 flex flex-wrap gap-2">
-                @csrf
-                <input class="input-base max-w-md" name="title" placeholder="{{ __('messages.title') }}" required>
-                <button class="btn btn-outline">{{ __('messages.add') }}</button>
-            </form>
-        </div>
-        @endrole
+        @if($activeTab === 'title-options')
+            @role('master_admin')
+                <div class="card mt-4">
+                    <h3 class="text-base font-bold">{{ __('messages.add_pemarkahan_title_option') }}</h3>
+                    <form method="POST" action="{{ route('pemarkahan.title-options.store') }}" class="mt-3 flex flex-wrap gap-2">
+                        @csrf
+                        <input class="input-base max-w-md" name="title" placeholder="{{ __('messages.title') }}" required>
+                        <button class="btn btn-outline">{{ __('messages.add') }}</button>
+                    </form>
+                </div>
+            @endrole
+        @endif
 
-        @if($pastis->isNotEmpty() && $selectedTitleOptionId)
+        @if($activeTab === 'scores' && $pastis->isNotEmpty() && $selectedTitleOptionId)
             <div class="card mt-4">
                 <form method="POST" action="{{ route('pemarkahan.store') }}">
                     @csrf

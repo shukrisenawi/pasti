@@ -31,6 +31,20 @@ class PemarkahanController extends Controller
         $selectedYear = (int) ($request->integer('year') ?: now()->year);
 
         $isGuruOnly = $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
+        $activeTab = $request->query('tab', 'scores');
+
+        if ($isGuruOnly) {
+            $activeTab = 'history';
+        } else {
+            $availableTabs = ['scores'];
+            if ($user->hasRole('master_admin')) {
+                $availableTabs[] = 'title-options';
+            }
+
+            if (! in_array($activeTab, $availableTabs, true)) {
+                $activeTab = 'scores';
+            }
+        }
 
         if ($isGuruOnly) {
             $guruPastiId = $user->guru?->pasti_id;
@@ -52,6 +66,7 @@ class PemarkahanController extends Controller
                 'selectedYear' => $selectedYear,
                 'pastis' => collect(),
                 'existingScores' => collect(),
+                'activeTab' => $activeTab,
             ]);
         }
 
@@ -80,6 +95,7 @@ class PemarkahanController extends Controller
             'selectedYear' => $selectedYear,
             'pastis' => $pastis,
             'existingScores' => $existingScores,
+            'activeTab' => $activeTab,
         ]);
     }
 
