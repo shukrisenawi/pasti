@@ -26,17 +26,9 @@ class ProgramController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
+        abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
-        $query = Program::query();
-
-        if ($this->isGuruOnly($user)) {
-            $guruId = $user->guru?->id ?? 0;
-            $query->whereHas('gurus', fn ($q) => $q->where('gurus.id', $guruId));
-        }
-
-        return view('programs.index', [
-            'programs' => $query->latest('program_date')->paginate(10),
-        ]);
+        return view('programs.index');
     }
 
     public function create(Request $request): View
@@ -286,3 +278,4 @@ class ProgramController extends Controller
         return $tab;
     }
 }
+
