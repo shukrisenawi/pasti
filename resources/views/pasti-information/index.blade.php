@@ -17,8 +17,10 @@
         <table class="table-base">
             <thead>
             <tr>
-                <th>{{ __('messages.pasti') }}</th>
-                <th>{{ __('messages.kawasan') }}</th>
+                @unless($isGuru)
+                    <th>{{ __('messages.pasti') }}</th>
+                    <th>{{ __('messages.kawasan') }}</th>
+                @endunless
                 <th>{{ __('messages.current_info') }}</th>
                 <th>{{ __('messages.request_status') }}</th>
                 <th>{{ __('messages.actions') }}</th>
@@ -34,8 +36,10 @@
                     $canGuruUpdate = $isGuru && (int) $guruPastiId === (int) $pasti->id && $latestCompleted;
                 @endphp
                 <tr>
-                    <td>{{ $pasti->name }}</td>
-                    <td>{{ $pasti->kawasan?->name ?? '-' }}</td>
+                    @unless($isGuru)
+                        <td>{{ $pasti->name }}</td>
+                        <td>{{ $pasti->kawasan?->name ?? '-' }}</td>
+                    @endunless
                     <td class="text-sm">
                         @if($latestCompleted)
                             <div>{{ __('messages.total_guru') }}: {{ $latestCompleted->jumlah_guru ?? 0 }}</div>
@@ -84,7 +88,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="text-center">-</td></tr>
+                <tr><td colspan="{{ $isGuru ? 3 : 5 }}" class="text-center">-</td></tr>
             @endforelse
             </tbody>
         </table>
