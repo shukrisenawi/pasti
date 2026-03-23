@@ -66,35 +66,8 @@
             @endif
         </div>
 
-        <div class="card">
-            <div class="grid gap-4 md:grid-cols-3 md:items-end">
-                <div>
-                    <label class="label-base">{{ __('messages.title') }}</label>
-                    <select class="input-base" wire:model.live="selectedTitleOptionId">
-                        <option value="0">-- {{ __('messages.select') }} --</option>
-                        @foreach($titleOptions as $option)
-                            <option value="{{ $option->id }}">{{ $option->title }}</option>
-                        @endforeach
-                    </select>
-                    @error('selectedTitleOptionId')
-                        <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
-                    <label class="label-base">{{ __('messages.year') }}</label>
-                    <input class="input-base" type="number" min="2000" max="2100" wire:model.live="selectedYear">
-                    @error('selectedYear')
-                        <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
-                    <button type="button" class="btn btn-outline" disabled>{{ __('messages.view') }}</button>
-                </div>
-            </div>
-        </div>
-
         @if($activeTab === 'title-options' && $canManageTitleOptions)
-            <div class="card mt-4">
+            <div class="card">
                 <h3 class="text-base font-bold">{{ __('messages.add_pemarkahan_title_option') }}</h3>
                 <form wire:submit.prevent="saveTitleOption" class="mt-3 flex flex-wrap gap-2">
                     <input class="input-base max-w-md" wire:model.defer="newTitle" placeholder="{{ __('messages.title') }}" required>
@@ -103,6 +76,35 @@
                 @error('newTitle')
                     <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
                 @enderror
+            </div>
+        @endif
+
+        @if($activeTab === 'scores')
+            <div class="card">
+                <div class="grid gap-4 md:grid-cols-3 md:items-end">
+                    <div>
+                        <label class="label-base">{{ __('messages.title') }}</label>
+                        <select class="input-base" wire:model.live="selectedTitleOptionId">
+                            <option value="0">-- {{ __('messages.select') }} --</option>
+                            @foreach($titleOptions as $option)
+                                <option value="{{ $option->id }}">{{ $option->title }}</option>
+                            @endforeach
+                        </select>
+                        @error('selectedTitleOptionId')
+                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="label-base">{{ __('messages.year') }}</label>
+                        <input class="input-base" type="number" min="2000" max="2100" wire:model.live="selectedYear">
+                        @error('selectedYear')
+                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline" disabled>{{ __('messages.view') }}</button>
+                    </div>
+                </div>
             </div>
         @endif
 
