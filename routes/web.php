@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminMessageController;
 use App\Http\Controllers\AjkProgramController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\KawasanController;
@@ -72,6 +73,8 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware('role:master_admin|admin|guru')->group(function () {
+        Route::get('/claims', [ClaimController::class, 'index'])->name('claims.index');
+        Route::post('/claims', [ClaimController::class, 'store'])->name('claims.store');
         Route::get('/pemarkahan', [PemarkahanController::class, 'index'])->name('pemarkahan.index');
         Route::post('/pemarkahan', [PemarkahanController::class, 'store'])->name('pemarkahan.store');
         Route::get('/maklumat-pasti', [PastiInformationController::class, 'index'])->name('pasti-information.index');
@@ -85,6 +88,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/messages', [AdminMessageController::class, 'index'])->name('messages.index');
         Route::get('/messages/{message}', [AdminMessageController::class, 'show'])->name('messages.show');
         Route::post('/messages/{message}/reply', [AdminMessageController::class, 'reply'])->name('messages.reply');
+    });
+
+    Route::middleware('role:master_admin|admin')->group(function () {
+        Route::post('/claims/{claim}/approve', [ClaimController::class, 'approve'])->name('claims.approve');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

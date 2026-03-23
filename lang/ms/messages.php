@@ -28,6 +28,15 @@ return [
     'transfer' => 'Transfer',
     'cash_balance' => 'Baki di Tangan (Cash)',
     'bank_balance' => 'Baki di Bank',
+    'claim' => 'Claim',
+    'submit_claim' => 'Hantar Claim',
+    'claim_list' => 'Senarai Claim',
+    'pending_approval' => 'Menunggu Kelulusan',
+    'approve' => 'Luluskan',
+    'approved' => 'Diluluskan',
+    'rejected' => 'Ditolak',
+    'approved_amount' => 'Jumlah Diluluskan',
+    'notes' => 'Catatan',
     'related_pasti' => 'PASTI Berkaitan',
     'optional' => 'Pilihan',
     'financial_type_in_use' => 'Jenis transaksi ini tidak boleh dipadam kerana sudah digunakan.',
@@ -204,6 +213,7 @@ return [
     'upcoming_programs' => 'Program Akan Datang',
     'featured_event' => 'Program Utama',
 ];
+
 
 
 

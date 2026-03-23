@@ -117,6 +117,10 @@
                     <a href="{{ route('financial.index') }}" wire:navigate class="menu-link {{ request()->routeIs('financial.*') ? 'menu-link-active' : '' }}">{{ __('messages.kewangan') }}</a>
                 @endrole
 
+                <a href="{{ route('claims.index') }}" wire:navigate class="menu-link {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }}">
+                    {{ __('messages.claim') }}
+                </a>
+
                 @role('master_admin')
                     <a href="{{ route('users.admins.index') }}" wire:navigate class="menu-link {{ request()->routeIs('users.admins.*') ? 'menu-link-active' : '' }}">{{ __('messages.admin_accounts') }}</a>
                 @endrole
@@ -223,6 +227,7 @@
 </script>
 </body>
 </html>
+
 
 
 

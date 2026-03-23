@@ -1,0 +1,177 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Claim;
+use App\Models\FinancialTransaction;
+use App\Models\FinancialTransactionType;
+use App\Models\User;
+use App\Notifications\ClaimApprovedNotification;
+use App\Notifications\ClaimSubmittedNotification;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\View\View;
+
+class ClaimController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $user = $request->user();
+        abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
+
+        $allowedTabs = $user->hasAnyRole(['master_admin', 'admin'])
+            ? ['list', 'submit', 'pending']
+            : ['list', 'submit'];
+        $activeTab = in_array($request->query('tab'), $allowedTabs, true)
+            ? $request->query('tab')
+            : 'list';
+
+        $claimsQuery = Claim::query()
+            ->with(['user', 'pasti', 'approver'])
+            ->latest('claim_date')
+            ->latest('id');
+
+        if ($this->isGuruOnly($user)) {
+            $claimsQuery->where('user_id', $user->id);
+        } elseif ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
+            $assignedPastiIds = $this->assignedPastiIds($user);
+            $claimsQuery->where(function ($query) use ($assignedPastiIds, $user): void {
+                $query->where('user_id', $user->id);
+
+                if ($assignedPastiIds !== []) {
+                    $query->orWhereIn('pasti_id', $assignedPastiIds);
+                }
+            });
+        }
+
+        $pendingClaimsQuery = Claim::query()
+            ->with(['user', 'pasti'])
+            ->where('status', 'pending')
+            ->latest('claim_date')
+            ->latest('id');
+
+        if ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
+            $assignedPastiIds = $this->assignedPastiIds($user);
+            $pendingClaimsQuery->whereIn('pasti_id', $assignedPastiIds === [] ? [0] : $assignedPastiIds);
+        } elseif ($this->isGuruOnly($user)) {
+            $pendingClaimsQuery->where('id', 0);
+        }
+
+        return view('claims.index', [
+            'activeTab' => $activeTab,
+            'claims' => $claimsQuery->paginate(10)->withQueryString(),
+            'pendingClaims' => $pendingClaimsQuery->paginate(10, ['*'], 'pending_page')->withQueryString(),
+            'canApprove' => $user->hasAnyRole(['master_admin', 'admin']),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
+
+        $data = $request->validate([
+            'notes' => ['required', 'string', 'max:1000'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'claim_date' => ['required', 'date'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+        ]);
+
+        $guru = $user->guru;
+
+        $claim = Claim::query()->create([
+            'user_id' => $user->id,
+            'guru_id' => $guru?->id,
+            'pasti_id' => $guru?->pasti_id,
+            'claim_date' => $data['claim_date'],
+            'amount' => $data['amount'],
+            'notes' => $data['notes'],
+            'status' => 'pending',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $claim->update([
+                'image_path' => $request->file('image')->store('claims', 'public'),
+            ]);
+        }
+
+        $claim->loadMissing(['user', 'pasti']);
+        $recipients = User::role('master_admin')->get();
+        if ($claim->pasti_id) {
+            $relatedAdmins = User::role('admin')
+                ->whereHas('assignedPastis', fn ($query) => $query->whereKey($claim->pasti_id))
+                ->get();
+            $recipients = $recipients->merge($relatedAdmins);
+        }
+        $recipients = $recipients->unique('id')->values();
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new ClaimSubmittedNotification($claim));
+        }
+
+        return redirect()
+            ->route('claims.index', ['tab' => 'list'])
+            ->with('status', __('messages.saved'));
+    }
+
+    public function approve(Request $request, Claim $claim): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+        abort_if($claim->status !== 'pending', 422);
+        abort_if((int) $claim->user_id === (int) $user->id, 422, 'Anda tidak boleh meluluskan claim sendiri.');
+
+        if ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
+            $assignedPastiIds = $this->assignedPastiIds($user);
+            abort_unless($claim->pasti_id && in_array((int) $claim->pasti_id, $assignedPastiIds, true), 403);
+        }
+
+        $data = $request->validate([
+            'payment_method' => ['required', 'in:cash,transfer'],
+            'approved_amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        DB::transaction(function () use ($claim, $data, $user): void {
+            $claim->update([
+                'status' => 'approved',
+                'payment_method' => $data['payment_method'],
+                'approved_amount' => $data['approved_amount'],
+                'approved_by' => $user->id,
+                'approved_at' => now(),
+            ]);
+
+            $claimType = FinancialTransactionType::query()->firstOrCreate(
+                ['name' => 'Claim'],
+                ['is_active' => true, 'created_by' => $user->id]
+            );
+
+            FinancialTransaction::query()->create([
+                'pasti_id' => $claim->pasti_id,
+                'financial_transaction_type_id' => $claimType->id,
+                'transaction_date' => now()->toDateString(),
+                'credit_debit' => 'debit',
+                'payment_method' => $data['payment_method'],
+                'amount' => $data['approved_amount'],
+                'transaction_remark' => 'Claim #' . $claim->id . ' - ' . $claim->notes,
+                'created_by' => $user->id,
+            ]);
+        });
+
+        $claim->refresh()->loadMissing(['user', 'pasti']);
+        if ($claim->user) {
+            $claim->user->notify(new ClaimApprovedNotification($claim));
+        }
+
+        return redirect()
+            ->route('claims.index', ['tab' => 'pending'])
+            ->with('status', __('messages.saved'));
+    }
+
+    private function isGuruOnly(User $user): bool
+    {
+        return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
+    }
+}
+

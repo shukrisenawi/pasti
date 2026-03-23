@@ -28,6 +28,15 @@ return [
     'transfer' => 'Transfer',
     'cash_balance' => 'Cash on Hand Balance',
     'bank_balance' => 'Bank Balance',
+    'claim' => 'Claim',
+    'submit_claim' => 'Submit Claim',
+    'claim_list' => 'Claim List',
+    'pending_approval' => 'Pending Approval',
+    'approve' => 'Approve',
+    'approved' => 'Approved',
+    'rejected' => 'Rejected',
+    'approved_amount' => 'Approved Amount',
+    'notes' => 'Notes',
     'related_pasti' => 'Related PASTI',
     'optional' => 'Optional',
     'financial_type_in_use' => 'This transaction type cannot be deleted because it is already used.',
@@ -194,6 +203,7 @@ return [
     'skim_pas_expiring_soon' => 'PAS Scheme will expire in a week',
     'skim_pas_expired_list' => 'Expired PAS Scheme List',
 ];
+
 
 
 
