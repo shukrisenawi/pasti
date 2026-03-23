@@ -111,64 +111,118 @@
                         )
                         ->whereNull('completed_at')
                         ->count();
+
+                    $menuPendingClaimsCount = $authUser->pending_claims_count;
                 @endphp
                 <a href="{{ route('dashboard') }}" wire:navigate class="menu-link {{ request()->routeIs('dashboard') ? 'menu-link-active' : '' }}">{{ __('messages.dashboard') }}</a>
+                
                 @role('master_admin|admin')
-                    <a href="{{ route('financial.index') }}" wire:navigate class="menu-link {{ request()->routeIs('financial.*') ? 'menu-link-active' : '' }}">{{ __('messages.kewangan') }}</a>
+                    <!-- Group: Pengurusan -->
+                    <div x-data="{ open: {{ request()->routeIs(['kawasan.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kawasan.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'text-primary bg-primary/5' : '' }}">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                                <span>{{ __('Pengurusan') }}</span>
+                            </div>
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
+                            <a href="{{ route('kawasan.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kawasan.*') ? 'menu-link-active' : '' }}">{{ __('messages.kawasan') }}</a>
+                            <a href="{{ route('users.gurus.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
+                            @role('master_admin')
+                                <a href="{{ route('users.admins.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('users.admins.*') ? 'menu-link-active' : '' }}">{{ __('messages.admin_accounts') }}</a>
+                            @endrole
+                            <a href="{{ route('ajk-program.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('ajk-program.*') ? 'menu-link-active' : '' }}">{{ __('messages.ajk_program') }}</a>
+                        </div>
+                    </div>
+
+                    <!-- Group: Laporan/Aktiviti -->
+                    <div x-data="{ open: {{ request()->routeIs(['financial.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'programs.*', 'messages.*', 'leave-notices.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['financial.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'programs.*', 'messages.*', 'leave-notices.*']) ? 'text-primary bg-primary/5' : '' }}">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
+                                <span>{{ __('Laporan/Aktiviti') }}</span>
+                            </div>
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
+                            <a href="{{ route('financial.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('financial.*') ? 'menu-link-active' : '' }}">{{ __('messages.kewangan') }}</a>
+                            <a href="{{ route('kpi.gurus.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kpi.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.kpi_guru') }}</a>
+                            
+                            @php
+                                $expiredSkimPasCount = \App\Models\User::where('tarikh_exp_skim_pas', '<', now()->startOfDay())->count();
+                            @endphp
+                            <a href="{{ route('users.expired-skim-pas') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('users.expired-skim-pas') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                <span class="truncate">{{ __('messages.skim_pas_expired_list') }}</span>
+                                @if($expiredSkimPasCount > 0)
+                                    <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ $expiredSkimPasCount }}</span>
+                                @endif
+                            </a>
+
+                            <a href="{{ route('pemarkahan.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
+                            
+                            <a href="{{ route('pasti-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                <span>{{ __('messages.maklumat_pasti') }}</span>
+                                @if($menuPastiInfoPendingCount > 0)
+                                    <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuPastiInfoPendingCount > 99 ? '99+' : $menuPastiInfoPendingCount }}</span>
+                                @endif
+                            </a>
+                            
+                            <a href="{{ route('programs.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                <span>{{ __('messages.programs') }}</span>
+                                @if($menuUpcomingProgramCount > 0)
+                                    <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuUpcomingProgramCount > 99 ? '99+' : $menuUpcomingProgramCount }}</span>
+                                @endif
+                            </a>
+                            
+                            <a href="{{ route('messages.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                <span>{{ __('messages.inbox') }}</span>
+                                @if($menuInboxCount > 0)
+                                    <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuInboxCount > 99 ? '99+' : $menuInboxCount }}</span>
+                                @endif
+                            </a>
+                            
+                            <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }}">{{ __('messages.leave_notice') }}</a>
+                        </div>
+                    </div>
                 @endrole
 
-                <a href="{{ route('claims.index') }}" wire:navigate class="menu-link {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }}">
-                    {{ __('messages.claim') }}
-                </a>
-
-                @role('master_admin')
-                    <a href="{{ route('users.admins.index') }}" wire:navigate class="menu-link {{ request()->routeIs('users.admins.*') ? 'menu-link-active' : '' }}">{{ __('messages.admin_accounts') }}</a>
-                @endrole
-
-                @role('master_admin|admin')
-                    <a href="{{ route('kawasan.index') }}" wire:navigate class="menu-link {{ request()->routeIs('kawasan.*') ? 'menu-link-active' : '' }}">{{ __('messages.kawasan') }}</a>
-                    <a href="{{ route('users.gurus.index') }}" wire:navigate class="menu-link {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
-
-                    <a href="{{ route('ajk-program.index') }}" wire:navigate class="menu-link {{ request()->routeIs('ajk-program.*') ? 'menu-link-active' : '' }}">{{ __('messages.ajk_program') }}</a>
-                    <a href="{{ route('kpi.gurus.index') }}" wire:navigate class="menu-link {{ request()->routeIs('kpi.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.kpi_guru') }}</a>
-                    
-                    @php
-                        $expiredSkimPasCount = \App\Models\User::where('tarikh_exp_skim_pas', '<', now()->startOfDay())->count();
-                    @endphp
-                    <a href="{{ route('users.expired-skim-pas') }}" wire:navigate class="menu-link {{ request()->routeIs('users.expired-skim-pas') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                        <span>{{ __('messages.skim_pas_expired_list') }}</span>
-                        @if($expiredSkimPasCount > 0)
-                            <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm" style="background-color: #059669 !important;">{{ $expiredSkimPasCount }}</span>
-                        @endif
-                    </a>
-                @endrole
-
-                <a href="{{ route('pemarkahan.index') }}" wire:navigate class="menu-link {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
-                <a href="{{ route('pasti-information.index') }}" wire:navigate class="menu-link {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                    <span>{{ __('messages.maklumat_pasti') }}</span>
-                    @if($menuPastiInfoPendingCount > 0)
-                        <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuPastiInfoPendingCount > 99 ? '99+' : $menuPastiInfoPendingCount }}</span>
+                <a href="{{ route('claims.index') }}" wire:navigate class="menu-link {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                    <span>{{ __('messages.claim') }}</span>
+                    @if($menuPendingClaimsCount > 0)
+                        <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ $menuPendingClaimsCount > 99 ? '99+' : $menuPendingClaimsCount }}</span>
                     @endif
                 </a>
-                <a href="{{ route('programs.index') }}" wire:navigate class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                    <span>{{ __('messages.programs') }}</span>
-                    @if($menuUpcomingProgramCount > 0)
-                        <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuUpcomingProgramCount > 99 ? '99+' : $menuUpcomingProgramCount }}</span>
-                    @endif
-                </a>
-                <a href="{{ route('messages.index') }}" wire:navigate class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                    <span>{{ __('messages.inbox') }}</span>
-                    @if($menuInboxCount > 0)
-                        <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuInboxCount > 99 ? '99+' : $menuInboxCount }}</span>
-                    @endif
-                </a>
-                <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }}">{{ __('messages.leave_notice') }}</a>
+
 
                 @role('guru')
-                    @if(auth()->user()->guru)
-                        <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
+                    @if(!auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                        <a href="{{ route('pemarkahan.index') }}" wire:navigate class="menu-link {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
+                        <a href="{{ route('pasti-information.index') }}" wire:navigate class="menu-link {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                            <span>{{ __('messages.maklumat_pasti') }}</span>
+                            @if($menuPastiInfoPendingCount > 0)
+                                <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuPastiInfoPendingCount > 99 ? '99+' : $menuPastiInfoPendingCount }}</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('programs.index') }}" wire:navigate class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                            <span>{{ __('messages.programs') }}</span>
+                            @if($menuUpcomingProgramCount > 0)
+                                <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuUpcomingProgramCount > 99 ? '99+' : $menuUpcomingProgramCount }}</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('messages.index') }}" wire:navigate class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                            <span>{{ __('messages.inbox') }}</span>
+                            @if($menuInboxCount > 0)
+                                <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuInboxCount > 99 ? '99+' : $menuInboxCount }}</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }}">{{ __('messages.leave_notice') }}</a>
+                        @if(auth()->user()->guru)
+                            <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
+                        @endif
                     @endif
                 @endrole
+
             </nav>
         </aside>
 
