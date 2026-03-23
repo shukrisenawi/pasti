@@ -18,6 +18,9 @@
     @php
         $authUser = auth()->user();
         $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
+        $pastiMenuRoute = $authUser->hasAnyRole(['master_admin', 'admin'])
+            ? route('pasti.index')
+            : ($authUser->hasRole('guru') ? route('pasti.self.edit') : null);
     @endphp
     <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent"></div>
 
@@ -100,30 +103,36 @@
                             </div>
                         </div>
                     @endif
-                    <x-avatar :user="$authUser" size="h-10 w-10" rounded="rounded-2xl" border="border border-slate-200/50" class="{{ $isGuruOnly ? '' : 'hidden sm:block' }}" />
-
-                    <a href="{{ route('profile.edit') }}" class="btn btn-outline btn-sm self-center {{ $isGuruOnly ? 'hidden sm:inline-flex' : '' }}">{{ __('messages.profile') }}</a>
-
-                    <form method="POST" action="{{ route('logout') }}" class="m-0 items-center {{ $isGuruOnly ? 'hidden sm:flex' : 'flex' }}">
-                        @csrf
-                        <button class="btn btn-primary btn-sm">{{ __('messages.logout') }}</button>
-                    </form>
-
-                    @if($isGuruOnly)
-                        <a href="{{ route('profile.edit') }}" class="btn btn-ghost btn-circle sm:hidden" aria-label="{{ __('messages.profile') }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                        <button type="button" @click="open = !open" class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-2 py-1.5 shadow-sm transition hover:border-slate-300" aria-label="Menu pengguna">
+                            <x-avatar :user="$authUser" size="h-9 w-9" rounded="rounded-xl" border="border border-slate-200/50" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" />
                             </svg>
-                        </a>
-                        <form method="POST" action="{{ route('logout') }}" class="m-0 sm:hidden">
-                            @csrf
-                            <button type="submit" class="btn btn-ghost btn-circle" aria-label="{{ __('messages.logout') }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                </svg>
-                            </button>
-                        </form>
-                    @endif
+                        </button>
+
+                        <div
+                            x-show="open"
+                            x-transition.origin.top.right
+                            class="absolute right-0 z-[1000] mt-3 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl"
+                            style="display: none;"
+                        >
+                            <a href="{{ route('profile.edit') }}" class="block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                                {{ __('messages.profile') }}
+                            </a>
+                            @if($pastiMenuRoute)
+                                <a href="{{ $pastiMenuRoute }}" class="mt-1 block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                                    {{ __('messages.pasti') }}
+                                </a>
+                            @endif
+                            <form method="POST" action="{{ route('logout') }}" class="mt-1">
+                                @csrf
+                                <button type="submit" class="block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-rose-600 transition hover:bg-rose-50">
+                                    {{ __('messages.logout') }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -152,7 +161,7 @@
                 @role('master_admin|admin')
                     <a href="{{ route('kawasan.index') }}" class="menu-link {{ request()->routeIs('kawasan.*') ? 'menu-link-active' : '' }}">{{ __('messages.kawasan') }}</a>
                     <a href="{{ route('users.gurus.index') }}" class="menu-link {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
-                    <a href="{{ route('pasti.index') }}" class="menu-link {{ request()->routeIs('pasti.*') ? 'menu-link-active' : '' }}">{{ __('messages.pasti') }}</a>
+
                     <a href="{{ route('ajk-program.index') }}" class="menu-link {{ request()->routeIs('ajk-program.*') ? 'menu-link-active' : '' }}">{{ __('messages.ajk_program') }}</a>
                     <a href="{{ route('kpi.gurus.index') }}" class="menu-link {{ request()->routeIs('kpi.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.kpi_guru') }}</a>
                     
@@ -165,9 +174,6 @@
                             <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm" style="background-color: #059669 !important;">{{ $expiredSkimPasCount }}</span>
                         @endif
                     </a>
-                @endrole
-                @role('guru')
-                    <a href="{{ route('pasti.self.edit') }}" class="menu-link {{ request()->routeIs('pasti.self.*') ? 'menu-link-active' : '' }}">{{ __('messages.pasti') }}</a>
                 @endrole
 
                 <a href="{{ route('pemarkahan.index') }}" class="menu-link {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
@@ -238,6 +244,8 @@
 </script>
 </body>
 </html>
+
+
 
 
 
