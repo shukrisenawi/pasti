@@ -4,6 +4,20 @@ return [
     'portal_subtitle' => 'Sistem Pengurusan PASTI',
     'dashboard' => 'Dashboard',
     'dashboard_subtitle' => 'Paparan ringkas untuk perkara penting dan program terbaru.',
+    'kewangan' => 'Kewangan',
+    'financial_overview' => 'Ringkasan Kewangan',
+    'financial_transactions' => 'Transaksi Kewangan',
+    'add_financial_transaction' => 'Tambah Transaksi Kewangan',
+    'current_balance' => 'Baki Semasa',
+    'transaction_type' => 'Jenis Transaksi',
+    'transaction_date' => 'Tarikh Transaksi',
+    'income' => 'Masuk',
+    'expense' => 'Keluar',
+    'amount' => 'Jumlah',
+    'amount_remark' => 'Remark Jumlah',
+    'transaction_remark' => 'Remark Transaksi',
+    'debtor_pasti_list' => 'Senarai PASTI Berhutang',
+    'current_debt' => 'Hutang Semasa',
     'profile' => 'Profil',
     'logout' => 'Log Keluar',
     'login_subtitle' => 'Masuk menggunakan akaun rasmi PASTI',
@@ -177,4 +191,5 @@ return [
     'upcoming_programs' => 'Program Akan Datang',
     'featured_event' => 'Program Utama',
 ];
+
 

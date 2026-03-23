@@ -4,6 +4,20 @@ return [
     'portal_subtitle' => 'PASTI Management System',
     'dashboard' => 'Dashboard',
     'dashboard_subtitle' => 'Concise view for key items and latest programs.',
+    'kewangan' => 'Finance',
+    'financial_overview' => 'Financial Overview',
+    'financial_transactions' => 'Financial Transactions',
+    'add_financial_transaction' => 'Add Financial Transaction',
+    'current_balance' => 'Current Balance',
+    'transaction_type' => 'Transaction Type',
+    'transaction_date' => 'Transaction Date',
+    'income' => 'Income',
+    'expense' => 'Expense',
+    'amount' => 'Amount',
+    'amount_remark' => 'Amount Remark',
+    'transaction_remark' => 'Transaction Remark',
+    'debtor_pasti_list' => 'Debtor PASTI List',
+    'current_debt' => 'Current Debt',
     'profile' => 'Profile',
     'logout' => 'Log Out',
     'login_subtitle' => 'Sign in with your official PASTI account',
@@ -167,4 +181,6 @@ return [
     'skim_pas_expiring_soon' => 'PAS Scheme will expire in a week',
     'skim_pas_expired_list' => 'Expired PAS Scheme List',
 ];
+
+
 

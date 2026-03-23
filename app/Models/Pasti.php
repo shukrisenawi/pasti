@@ -53,4 +53,9 @@ class Pasti extends Model
     {
         return $this->hasMany(PastiScore::class);
     }
+
+    public function financialTransactions(): HasMany
+    {
+        return $this->hasMany(FinancialTransaction::class);
+    }
 }

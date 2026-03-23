@@ -113,6 +113,9 @@
                         ->count();
                 @endphp
                 <a href="{{ route('dashboard') }}" wire:navigate class="menu-link {{ request()->routeIs('dashboard') ? 'menu-link-active' : '' }}">{{ __('messages.dashboard') }}</a>
+                @role('master_admin|admin')
+                    <a href="{{ route('financial.index') }}" wire:navigate class="menu-link {{ request()->routeIs('financial.*') ? 'menu-link-active' : '' }}">{{ __('messages.kewangan') }}</a>
+                @endrole
 
                 @role('master_admin')
                     <a href="{{ route('users.admins.index') }}" wire:navigate class="menu-link {{ request()->routeIs('users.admins.*') ? 'menu-link-active' : '' }}">{{ __('messages.admin_accounts') }}</a>
@@ -220,6 +223,7 @@
 </script>
 </body>
 </html>
+
 
 
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminMessageController;
 use App\Http\Controllers\AjkProgramController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\KawasanController;
 use App\Http\Controllers\KelasController;
@@ -53,6 +54,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/messages', [AdminMessageController::class, 'store'])->name('messages.store');
         Route::get('/users/expired-skim-pas', [AdminUserController::class, 'expiredSkimPas'])->name('users.expired-skim-pas');
         Route::get('/ajk-program', [AjkProgramController::class, 'index'])->name('ajk-program.index');
+        Route::get('/kewangan', [FinancialController::class, 'index'])->name('financial.index');
+        Route::post('/kewangan', [FinancialController::class, 'store'])->name('financial.store');
     });
 
     Route::middleware('role:guru')->group(function () {
