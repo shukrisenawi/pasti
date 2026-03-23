@@ -102,6 +102,26 @@ class DashboardController extends Controller
                 ->get();
         }
 
+        $guruTeachingDuration = '-';
+        if ($user->guru?->joined_at) {
+            $joinedAt = $user->guru->joined_at->startOfDay();
+            $today = now()->startOfDay();
+            $months = $joinedAt->diffInMonths($today);
+            $years = intdiv($months, 12);
+            $remainingMonths = $months % 12;
+
+            $durationParts = [];
+            if ($years > 0) {
+                $durationParts[] = $years.' tahun';
+            }
+
+            if ($remainingMonths > 0 || $durationParts === []) {
+                $durationParts[] = $remainingMonths.' bulan';
+            }
+
+            $guruTeachingDuration = implode(' ', $durationParts);
+        }
+
         return view('dashboard', [
             'latestProgram' => $latestProgram,
             'currentParticipation' => $currentParticipation,
@@ -112,6 +132,7 @@ class DashboardController extends Controller
             'latestInboxMessage' => $latestInboxMessage,
             'pendingPastiInfoCount' => $pendingPastiInfoCount ?? 0,
             'guruLeaveDays' => $user->guru ? \App\Models\Guru::where('id', $user->guru->id)->withLeaveDaysForYear($currentYear)->first()?->leave_notices_current_year_count : 0,
+            'guruTeachingDuration' => $guruTeachingDuration,
             'userAjkPositions' => $user->ajkPositions->sortBy('name')->values(),
         ]);
     }
