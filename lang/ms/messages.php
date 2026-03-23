@@ -20,9 +20,9 @@ return [
     'current_debt' => 'Hutang Semasa',
     'financial_type' => 'Jenis Transaksi',
     'financial_type_name' => 'Nama Jenis Transaksi',
-    'credit_debit' => 'Credit/Debit',
-    'credit' => 'Credit',
-    'debit' => 'Debit',
+    'credit_debit' => 'Masuk/Keluar',
+    'credit' => 'Masuk',
+    'debit' => 'Keluar',
     'payment_method' => 'Jenis Pembayaran',
     'cash' => 'Tunai',
     'transfer' => 'Transfer',
@@ -204,6 +204,7 @@ return [
     'upcoming_programs' => 'Program Akan Datang',
     'featured_event' => 'Program Utama',
 ];
+
 
 
 
