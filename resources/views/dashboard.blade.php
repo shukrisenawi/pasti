@@ -77,90 +77,80 @@
     @endif
 
     @role('guru')
-        <!-- Guru Mobile Stats & Actions -->
-        <section class="mb-8 space-y-8">
-            <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                <div class="bg-white rounded-2xl p-4 shadow-card border border-slate-50 flex flex-col justify-between">
-                    <div>
-                        <div class="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        <section class="mb-8 space-y-5">
+            <div class="overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary-dark to-emerald-700 p-5 text-white shadow-xl sm:p-6">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                        <x-avatar :user="$user" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/25" />
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-[0.2em] text-white/70">Guru Dashboard</p>
+                            <p class="mt-1 text-xl font-black sm:text-2xl">{{ $user->display_name }}</p>
+                            <p class="text-xs text-white/80">{{ $user->email }}</p>
                         </div>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">KPI Saya</p>
                     </div>
-                    <div class="mt-2 flex items-baseline gap-1">
-                        <span class="text-2xl font-black text-primary">{{ number_format(auth()->user()->guru?->kpiSnapshot?->score ?? 0, 1) }}</span>
-                        <span class="text-xs font-bold text-slate-400">%</span>
-                    </div>
-                </div>
-                <div class="bg-white rounded-2xl p-4 shadow-card border border-slate-50 flex flex-col justify-between">
-                    <div>
-                        <div class="h-8 w-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600 mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4v-4m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <div class="grid grid-cols-2 gap-2 sm:w-auto">
+                        <div class="rounded-2xl border border-white/20 bg-white/10 px-3 py-2">
+                            <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/70">KPI</p>
+                            <p class="mt-1 text-xl font-extrabold">{{ number_format($user->guru?->kpiSnapshot?->score ?? 0, 1) }}%</p>
                         </div>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Jumlah Cuti</p>
-                    </div>
-                    <div class="mt-2 flex items-baseline gap-1">
-                        <span class="text-2xl font-black text-orange-600">{{ $guruLeaveDays }}</span>
-                        <span class="text-xs font-bold text-slate-400">Hari</span>
-                    </div>
-                </div>
-                <div class="bg-white rounded-2xl p-4 shadow-card border border-slate-50 flex flex-col justify-between">
-                    <div>
-                        <div class="h-8 w-8 rounded-lg {{ $pendingPastiInfoCount > 0 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600' }} flex items-center justify-center mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <div class="rounded-2xl border border-white/20 bg-white/10 px-3 py-2">
+                            <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/70">Cuti</p>
+                            <p class="mt-1 text-xl font-extrabold">{{ $guruLeaveDays }} Hari</p>
                         </div>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tugasan</p>
-                    </div>
-                    <div class="mt-2 flex items-baseline gap-1">
-                        <span class="text-2xl font-black {{ $pendingPastiInfoCount > 0 ? 'text-rose-600' : 'text-emerald-600' }}">{{ $pendingPastiInfoCount }}</span>
-                    </div>
-                </div>
-                <div class="bg-white rounded-2xl p-4 shadow-card border border-slate-50 flex flex-col justify-between">
-                    <div>
-                        <div class="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                        </div>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Notifikasi</p>
-                    </div>
-                    <div class="mt-2 flex items-baseline gap-1">
-                        <span class="text-2xl font-black text-blue-600">{{ auth()->user()->unreadNotifications()->count() }}</span>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-4 gap-4">
-                <a href="{{ route('leave-notices.create') }}" class="group">
-                    <div class="flex flex-col items-center">
-                        <div class="h-14 w-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-sm group-active:scale-95 transition-all mb-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">KPI Saya</p>
+                    <p class="mt-2 text-3xl font-black text-primary">{{ number_format($user->guru?->kpiSnapshot?->score ?? 0, 1) }}<span class="text-sm font-bold text-slate-400">%</span></p>
+                </div>
+                <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Jumlah Cuti</p>
+                    <p class="mt-2 text-3xl font-black text-orange-600">{{ $guruLeaveDays }}</p>
+                </div>
+                <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Tugasan</p>
+                    <p class="mt-2 text-3xl font-black {{ $pendingPastiInfoCount > 0 ? 'text-rose-600' : 'text-emerald-600' }}">{{ $pendingPastiInfoCount }}</p>
+                </div>
+                <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Notifikasi</p>
+                    <p class="mt-2 text-3xl font-black text-blue-600">{{ $user->unreadNotifications()->count() }}</p>
+                </div>
+            </div>
+
+            <div class="rounded-3xl border border-slate-100 bg-white p-4 shadow-card sm:p-5">
+                <div class="flex items-center justify-between gap-3">
+                    <h3 class="text-sm font-black uppercase tracking-[0.2em] text-slate-500">Akses Pantas</h3>
+                    <span class="text-xs font-semibold text-slate-400">Desktop & Mobile Friendly</span>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <a href="{{ route('leave-notices.create') }}" class="rounded-2xl border border-orange-100 bg-orange-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
+                        <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-600 text-center leading-tight">Minta Cuti</span>
-                    </div>
-                </a>
-                <a href="{{ route('pasti.self.edit') }}" class="group">
-                    <div class="flex flex-col items-center">
-                        <div class="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm group-active:scale-95 transition-all mb-2">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        <p class="mt-2 text-xs font-bold text-slate-700">Minta Cuti</p>
+                    </a>
+                    <a href="{{ route('pasti.self.edit') }}" class="rounded-2xl border border-primary/10 bg-primary/5 px-3 py-4 text-center transition hover:-translate-y-0.5">
+                        <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-600 text-center leading-tight">Pasti Saya</span>
-                    </div>
-                </a>
-                <a href="{{ route('pasti-information.index') }}" class="group">
-                    <div class="flex flex-col items-center">
-                        <div class="h-14 w-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm group-active:scale-95 transition-all mb-2">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <p class="mt-2 text-xs font-bold text-slate-700">Pasti Saya</p>
+                    </a>
+                    <a href="{{ route('pasti-information.index') }}" class="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
+                        <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-600 text-center leading-tight">Info Pasti</span>
-                    </div>
-                </a>
-                <a href="{{ route('pemarkahan.index') }}" class="group">
-                    <div class="flex flex-col items-center">
-                        <div class="h-14 w-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shadow-sm group-active:scale-95 transition-all mb-2">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        <p class="mt-2 text-xs font-bold text-slate-700">Info Pasti</p>
+                    </a>
+                    <a href="{{ route('pemarkahan.index') }}" class="rounded-2xl border border-purple-100 bg-purple-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
+                        <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-600 text-center leading-tight">Pemarkahan</span>
-                    </div>
-                </a>
+                        <p class="mt-2 text-xs font-bold text-slate-700">Pemarkahan</p>
+                    </a>
+                </div>
             </div>
         </section>
     @endrole
