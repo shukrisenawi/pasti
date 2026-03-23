@@ -1,29 +1,26 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                @role('guru')
-                    <x-avatar :guru="auth()->user()->guru" size="h-12 w-12" rounded="rounded-2xl" border="border-2 border-primary/20" class="lg:hidden" />
-                @endrole
-                <div>
-                    @role('guru')
-                        <p class="text-xs font-bold uppercase tracking-[0.24em] text-primary">Selamat Datang</p>
-                        <h2 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">{{ auth()->user()->display_name }}</h2>
-                    @else
-                        <p class="text-xs font-bold uppercase tracking-[0.24em] text-primary">Overview</p>
-                        <h2 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">{{ __('messages.dashboard') }}</h2>
-                        <p class="mt-2 text-sm text-slate-500">{{ __('messages.dashboard_subtitle') }}</p>
-                    @endrole
-                </div>
+    @if(auth()->user()->hasRole('guru') && ! auth()->user()->hasAnyRole(['master_admin', 'admin']))
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.24em] text-primary">Dashboard Guru</p>
+                <h2 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">{{ auth()->user()->display_name }}</h2>
             </div>
-            @role('guru')
-                <div class="hidden lg:block">
-                    <p class="text-right text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Tahun Semasa</p>
-                    <p class="text-right text-lg font-extrabold text-slate-900">{{ $latestYear }}</p>
-                </div>
-            @endrole
+            <div class="text-right">
+                <p class="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Tahun Semasa</p>
+                <p class="text-lg font-extrabold text-slate-900">{{ $latestYear }}</p>
+            </div>
         </div>
-    </x-slot>
+    @else
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.24em] text-primary">Overview</p>
+                <h2 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">{{ __('messages.dashboard') }}</h2>
+                <p class="mt-2 text-sm text-slate-500">{{ __('messages.dashboard_subtitle') }}</p>
+            </div>
+        </div>
+    @endif
+</x-slot>
     
     @php
         $user = auth()->user();
@@ -84,7 +81,7 @@
                         <x-avatar :user="$user" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/25" />
                         <div>
                             <p class="text-xs font-bold uppercase tracking-[0.2em] text-white/70">Guru Dashboard</p>
-                            <p class="mt-1 text-xl font-black sm:text-2xl">{{ $user->display_name }}</p>
+                            <p class="mt-1 text-xl font-black sm:text-2xl">{{ auth()->user()->display_name }}</p>
                             <p class="text-xs text-white/80">{{ $user->email }}</p>
                         </div>
                     </div>
@@ -323,3 +320,5 @@
         </section>
     @endif
 </x-app-layout>
+
+

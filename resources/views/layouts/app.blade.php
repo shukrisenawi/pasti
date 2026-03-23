@@ -15,6 +15,10 @@
 </head>
 <body class="m-0">
 <div class="panel-shell relative overflow-hidden">
+    @php
+        $authUser = auth()->user();
+        $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
+    @endphp
     <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent"></div>
 
     <header class="sticky top-0 z-30 border-b border-white/70 bg-white/80 backdrop-blur-xl">
@@ -26,7 +30,7 @@
                     </a>
                     <div class="min-w-0">
                         <a href="{{ route('dashboard') }}" class="text-xl font-extrabold tracking-tight text-primary">PASTI Portal</a>
-                        <p class="text-xs text-slate-500">{{ __('messages.portal_subtitle') }}</p>
+                        <p class="text-xs text-slate-500 {{ $isGuruOnly ? 'hidden sm:block' : '' }}">{{ __('messages.portal_subtitle') }}</p>
                     </div>
                 </div>
 
@@ -96,25 +100,40 @@
                             </div>
                         </div>
                     @endif
+                    <x-avatar :user="$authUser" size="h-10 w-10" rounded="rounded-2xl" border="border border-slate-200/50" class="{{ $isGuruOnly ? '' : 'hidden sm:block' }}" />
 
-                    <x-avatar :user="auth()->user()" size="h-10 w-10" rounded="rounded-2xl" border="border border-slate-200/50" class="hidden sm:block" />
+                    <a href="{{ route('profile.edit') }}" class="btn btn-outline btn-sm self-center {{ $isGuruOnly ? 'hidden sm:inline-flex' : '' }}">{{ __('messages.profile') }}</a>
 
-                    <a href="{{ route('profile.edit') }}" class="btn btn-outline btn-sm self-center">{{ __('messages.profile') }}</a>
-
-                    <form method="POST" action="{{ route('logout') }}" class="m-0 flex items-center">
+                    <form method="POST" action="{{ route('logout') }}" class="m-0 items-center {{ $isGuruOnly ? 'hidden sm:flex' : 'flex' }}">
                         @csrf
                         <button class="btn btn-primary btn-sm">{{ __('messages.logout') }}</button>
                     </form>
+
+                    @if($isGuruOnly)
+                        <a href="{{ route('profile.edit') }}" class="btn btn-ghost btn-circle sm:hidden" aria-label="{{ __('messages.profile') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="m-0 sm:hidden">
+                            @csrf
+                            <button type="submit" class="btn btn-ghost btn-circle" aria-label="{{ __('messages.logout') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
         </div>
     </header>
 
-    <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8">
-        <aside class="card order-2 h-fit overflow-hidden border-primary/10 bg-white/90 @role('guru') hidden lg:block @endrole lg:order-1">
+    <div class="mx-auto max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8 {{ $isGuruOnly ? 'grid grid-cols-1' : 'grid lg:grid-cols-[280px_minmax(0,1fr)]' }}">
+        <aside class="card order-2 h-fit overflow-hidden border-primary/10 bg-white/90 lg:order-1 {{ $isGuruOnly ? 'hidden' : '' }}">
             <div class="rounded-[1.6rem] bg-gradient-to-br from-primary via-primary-dark to-emerald-700 p-5 text-primary-content shadow-lg">
                 <div class="flex items-center gap-4">
-                    <x-avatar :user="auth()->user()" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/20" />
+                    <x-avatar :user="$authUser" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/20" />
                     <div class="min-w-0">
                         <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">User</p>
                         <p class="truncate text-base font-bold">{{ auth()->user()->display_name }}</p>
@@ -165,7 +184,7 @@
             </nav>
         </aside>
 
-        <main class="order-1 space-y-4 lg:order-2">
+        <main class="order-1 space-y-4 lg:order-2 {{ $isGuruOnly ? 'guru-main-with-bottom-nav' : '' }}">
             @isset($header)
                 <div class="card border-primary/10 bg-white/95">
                     {{ $header }}
@@ -219,3 +238,8 @@
 </script>
 </body>
 </html>
+
+
+
+
+

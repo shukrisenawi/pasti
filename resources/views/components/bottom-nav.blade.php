@@ -1,5 +1,5 @@
 @role('guru')
-<div class="fixed bottom-0 left-0 right-0 z-[100] border-t border-slate-200 bg-white/90 pb-safe pt-2 backdrop-blur-xl lg:hidden">
+<div class="guru-bottom-nav fixed bottom-0 left-0 right-0 z-[100] border-t border-slate-200 bg-white/90 pb-safe pt-2 backdrop-blur-xl lg:hidden">
     <div class="mx-auto flex max-w-lg items-center justify-around px-2">
         <a href="{{ route('dashboard') }}" class="flex flex-col items-center gap-1 px-3 py-2 text-xs font-bold transition-colors {{ request()->routeIs('dashboard') ? 'text-primary' : 'text-slate-500' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -44,3 +44,4 @@
     </div>
 </div>
 @endrole
+

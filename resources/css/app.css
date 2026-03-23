@@ -266,3 +266,18 @@
     @apply flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 pt-5;
   }
 }
+
+.guru-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .guru-bottom-nav {
+    display: block;
+  }
+
+  .guru-main-with-bottom-nav {
+    padding-bottom: 6.75rem;
+  }
+}
+
