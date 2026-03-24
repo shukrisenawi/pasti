@@ -7,9 +7,11 @@
         <a href="{{ route('claims.index', ['tab' => 'list']) }}" class="btn {{ $activeTab === 'list' ? 'btn-primary' : 'btn-outline' }}">
             {{ __('messages.list') }}
         </a>
-        <a href="{{ route('claims.index', ['tab' => 'submit']) }}" class="btn {{ $activeTab === 'submit' ? 'btn-primary' : 'btn-outline' }}">
-            {{ __('messages.submit_claim') }}
-        </a>
+        @if(auth()->user()->hasRole('guru'))
+            <a href="{{ route('claims.index', ['tab' => 'submit']) }}" class="btn {{ $activeTab === 'submit' ? 'btn-primary' : 'btn-outline' }}">
+                {{ __('messages.submit_claim') }}
+            </a>
+        @endif
         @if($canApprove)
             <a href="{{ route('claims.index', ['tab' => 'pending']) }}" class="btn {{ $activeTab === 'pending' ? 'btn-primary' : 'btn-outline' }}">
                 {{ __('messages.pending_approval') }}
