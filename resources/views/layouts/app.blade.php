@@ -405,7 +405,7 @@
             </nav>
         </aside>
 
-        <main class="space-y-4 {{ $isGuruOnly ? 'guru-main-with-bottom-nav' : '' }}">
+        <main class="min-w-0 space-y-4 {{ $isGuruOnly ? 'guru-main-with-bottom-nav' : '' }}">
             @isset($header)
                 <div class="card border-primary/10 bg-white/95">
                     {{ $header }}

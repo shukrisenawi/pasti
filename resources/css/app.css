@@ -83,11 +83,11 @@
   }
 
   .table-base thead th {
-    @apply bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500;
+    @apply whitespace-nowrap bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500;
   }
 
   .table-base tbody td {
-    @apply px-4 py-3 align-top;
+    @apply whitespace-nowrap px-4 py-3 align-top;
   }
 
   .table-base tbody tr {
