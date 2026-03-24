@@ -63,7 +63,7 @@ class Program extends Model
     public function getBannerUrlAttribute(): ?string
     {
         return $this->banner_path
-            ? '/storage/' . ltrim($this->banner_path, '/')
+            ? '/uploads/' . ltrim($this->banner_path, '/')
             : null;
     }
 }

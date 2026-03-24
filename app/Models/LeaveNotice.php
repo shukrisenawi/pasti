@@ -30,6 +30,6 @@ class LeaveNotice extends Model
 
     public function getMcImageUrlAttribute(): ?string
     {
-        return $this->mc_image_path ? '/storage/'.ltrim($this->mc_image_path, '/') : null;
+        return $this->mc_image_path ? '/uploads/'.ltrim($this->mc_image_path, '/') : null;
     }
 }

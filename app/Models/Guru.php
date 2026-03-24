@@ -96,6 +96,6 @@ class Guru extends Model
     public function getAvatarUrlAttribute(): string
     {
         return $this->user?->avatar_url
-            ?? ($this->avatar_path ? '/storage/'.ltrim($this->avatar_path, '/') : '/images/default-avatar.svg');
+            ?? ($this->avatar_path ? '/uploads/'.ltrim($this->avatar_path, '/') : '/images/default-avatar.svg');
     }
 }

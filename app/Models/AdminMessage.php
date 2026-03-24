@@ -56,14 +56,14 @@ class AdminMessage extends Model
         }
 
         return $this->image_path
-            ? '/storage/'.ltrim($this->image_path, '/')
+            ? '/uploads/'.ltrim($this->image_path, '/')
             : null;
     }
 
     public function getAttachmentUrlAttribute(): ?string
     {
         return $this->image_path
-            ? '/storage/'.ltrim($this->image_path, '/')
+            ? '/uploads/'.ltrim($this->image_path, '/')
             : null;
     }
 

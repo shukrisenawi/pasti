@@ -71,7 +71,7 @@
                             <td>{{ $claim->notes }}</td>
                             <td>
                                 @if($claim->image_path)
-                                    <a href="{{ asset('storage/' . $claim->image_path) }}" target="_blank" class="btn btn-outline btn-xs">{{ __('messages.view') }}</a>
+                                    <a href="{{ asset('uploads/' . $claim->image_path) }}" target="_blank" class="btn btn-outline btn-xs">{{ __('messages.view') }}</a>
                                 @else
                                     -
                                 @endif
@@ -151,7 +151,7 @@
                             </td>
                             <td>
                                 @if($claim->image_path)
-                                    <a href="{{ asset('storage/' . $claim->image_path) }}" target="_blank" class="btn btn-outline btn-xs">{{ __('messages.view') }}</a>
+                                    <a href="{{ asset('uploads/' . $claim->image_path) }}" target="_blank" class="btn btn-outline btn-xs">{{ __('messages.view') }}</a>
                                 @else
                                     -
                                 @endif
