@@ -21,9 +21,13 @@ class ClaimController extends Controller
         $user = $request->user();
         abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
-        $allowedTabs = $user->hasAnyRole(['master_admin', 'admin'])
-            ? ['list', 'submit', 'pending']
-            : ['list', 'submit'];
+        $allowedTabs = ['list'];
+        if ($user->hasRole('guru')) {
+            $allowedTabs[] = 'submit';
+        }
+        if ($user->hasAnyRole(['master_admin', 'admin'])) {
+            $allowedTabs[] = 'pending';
+        }
         $activeTab = in_array($request->query('tab'), $allowedTabs, true)
             ? $request->query('tab')
             : 'list';
@@ -70,7 +74,7 @@ class ClaimController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
+        abort_unless($user->hasRole('guru'), 403);
 
         $data = $request->validate([
             'notes' => ['required', 'string', 'max:1000'],
