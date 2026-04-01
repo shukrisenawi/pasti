@@ -101,6 +101,7 @@ class GuruController extends Controller
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'terima_anugerah' => ['nullable', 'boolean'],
+            'marital_status' => ['nullable', 'string', 'in:single,married,widowed,divorced'],
         ]);
 
         $this->ensurePastiAllowed($user, $data['pasti_id'] ?? null);
@@ -109,10 +110,11 @@ class GuruController extends Controller
         if (! $isAssistant) {
             $guruUser = User::query()->create([
                 'name' => $data['name'],
-                'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
+                'nama_samaran' => null,
                 'email' => $data['email'],
-                'tarikh_lahir' => $data['tarikh_lahir'],
-                'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
+                'tarikh_lahir' => null,
+                'tarikh_exp_skim_pas' => null,
+                'avatar_path' => null,
                 'password' => Hash::make($data['password']),
                 'locale' => 'ms',
             ]);
@@ -122,15 +124,16 @@ class GuruController extends Controller
 
         $guru = Guru::query()->create([
             'user_id' => $guruUser?->id,
-            'pasti_id' => $data['pasti_id'] ?? null,
+            'pasti_id' => null,
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
             'avatar_path' => null,
             'is_assistant' => $isAssistant,
-            'phone' => $data['phone'] ?? null,
-            'joined_at' => $data['joined_at'] ?? null,
+            'phone' => null,
+            'joined_at' => null,
             'active' => (bool) ($data['active'] ?? false),
             'terima_anugerah' => (bool) ($data['terima_anugerah'] ?? false),
+            'marital_status' => null,
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -203,6 +206,7 @@ class GuruController extends Controller
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'terima_anugerah' => ['nullable', 'boolean'],
+            'marital_status' => ['nullable', 'string', 'in:single,married,widowed,divorced'],
         ]);
 
         $this->ensurePastiAllowed($user, $data['pasti_id'] ?? null);
@@ -260,6 +264,7 @@ class GuruController extends Controller
             'joined_at' => $data['joined_at'] ?? null,
             'active' => (bool) ($data['active'] ?? false),
             'terima_anugerah' => (bool) ($data['terima_anugerah'] ?? false),
+            'marital_status' => $data['marital_status'] ?? null,
         ]);
 
         if ($request->boolean('remove_avatar')) {

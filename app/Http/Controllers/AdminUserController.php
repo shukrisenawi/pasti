@@ -43,10 +43,11 @@ class AdminUserController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'is_guru' => ['nullable', 'boolean'],
-            'pasti_id' => ['required_if:is_guru,1', 'nullable', 'integer', 'exists:pastis,id'],
+            'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'pasti_ids' => ['array'],
             'pasti_ids.*' => ['integer', 'exists:pastis,id'],
             'assignment_scope' => ['required', 'in:all,selected'],
+            'marital_status' => ['nullable', 'string', 'in:single,married,widowed,divorced'],
         ]);
 
         $admin = User::query()->create([
@@ -74,7 +75,7 @@ class AdminUserController extends Controller
             $admin->assignedPastis()->sync($data['pasti_ids'] ?? []);
         }
 
-        $this->syncAdminGuruProfile($admin, $isGuru, $data['pasti_id'] ?? null);
+        $this->syncAdminGuruProfile($admin, $isGuru, $data['pasti_id'] ?? null, $data['marital_status'] ?? null);
 
         return redirect()->route('users.admins.index')->with('status', __('messages.saved'));
     }
@@ -101,10 +102,11 @@ class AdminUserController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($users_admin->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'is_guru' => ['nullable', 'boolean'],
-            'pasti_id' => ['required_if:is_guru,1', 'nullable', 'integer', 'exists:pastis,id'],
+            'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'pasti_ids' => ['array'],
             'pasti_ids.*' => ['integer', 'exists:pastis,id'],
             'assignment_scope' => ['required', 'in:all,selected'],
+            'marital_status' => ['nullable', 'string', 'in:single,married,widowed,divorced'],
         ]);
 
         $users_admin->name = $data['name'];
@@ -133,7 +135,7 @@ class AdminUserController extends Controller
             $users_admin->assignedPastis()->sync($data['pasti_ids'] ?? []);
         }
 
-        $this->syncAdminGuruProfile($users_admin, $isGuru, $data['pasti_id'] ?? null);
+        $this->syncAdminGuruProfile($users_admin, $isGuru, $data['pasti_id'] ?? null, $data['marital_status'] ?? null);
 
         return redirect()->route('users.admins.index')->with('status', __('messages.saved'));
     }
@@ -157,15 +159,16 @@ class AdminUserController extends Controller
         ]);
     }
 
-    private function syncAdminGuruProfile(User $admin, bool $isGuru, ?int $pastiId): void
+    private function syncAdminGuruProfile(User $admin, bool $isGuru, ?int $pastiId, ?string $maritalStatus = null): void
     {
         if ($isGuru) {
-            Guru::query()->firstOrCreate(
+            Guru::query()->updateOrCreate(
                 ['user_id' => $admin->id],
                 [
                     'pasti_id' => $pastiId,
                     'name' => $admin->name,
                     'email' => $admin->email,
+                    'marital_status' => $maritalStatus,
                     'is_assistant' => false,
                     'active' => true,
                 ],

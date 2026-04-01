@@ -212,6 +212,11 @@ return [
     'skim_pas_expired_list' => 'Senarai Skim PAS Expired',
     'upcoming_programs' => 'Program Akan Datang',
     'featured_event' => 'Program Utama',
+    'marital_status' => 'Status Perkahwinan',
+    'single' => 'Bujang',
+    'married' => 'Berkahwin',
+    'widowed' => 'Duda/Balu',
+    'divorced' => 'Bercerai',
 ];
 
 

@@ -102,9 +102,8 @@
                     <div class="admin-field">
                         <label class="admin-field-label">
                             Guru PASTI Yang Mana?
-                            <span class="text-xs font-bold text-red-500">(Wajib)</span>
                         </label>
-                        <select class="admin-field-input" name="pasti_id" :required="isGuru">
+                        <select class="admin-field-input" name="pasti_id">
                             <option value="">- {{ __('messages.select') }} -</option>
                             @foreach($pastis as $pasti)
                                 <option value="{{ $pasti->id }}" @selected(old('pasti_id', $guruPastiId) == $pasti->id)>{{ $pasti->name }}</option>
@@ -114,6 +113,17 @@
                         @error('pasti_id')
                             <p class="admin-field-error">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <div class="admin-field">
+                        <label class="admin-field-label">{{ __('messages.marital_status') }}</label>
+                        <select class="admin-field-input" name="marital_status">
+                            <option value="">- {{ __('messages.select') }} -</option>
+                            <option value="single" @selected(old('marital_status', $adminUser->guru?->marital_status) === 'single')>{{ __('messages.single') }}</option>
+                            <option value="married" @selected(old('marital_status', $adminUser->guru?->marital_status) === 'married')>{{ __('messages.married') }}</option>
+                            <option value="widowed" @selected(old('marital_status', $adminUser->guru?->marital_status) === 'widowed')>{{ __('messages.widowed') }}</option>
+                            <option value="divorced" @selected(old('marital_status', $adminUser->guru?->marital_status) === 'divorced')>{{ __('messages.divorced') }}</option>
+                        </select>
                     </div>
                 </section>
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Guru;
 use App\Models\LeaveNotice;
+use App\Models\Pasti;
 use App\Models\Program;
 use App\Models\ProgramStatus;
 use App\Models\User;
@@ -12,17 +13,20 @@ use App\Notifications\LeaveNoticeSubmittedNotification;
 use App\Notifications\ProgramAbsenceReasonSubmittedNotification;
 use App\Services\KpiCalculationService;
 use App\Services\ProgramParticipationService;
+use App\Support\GuruProfileCompletionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class GuruMobileApiController extends Controller
 {
     public function __construct(
         private readonly KpiCalculationService $kpiCalculationService,
-        private readonly ProgramParticipationService $participationService
+        private readonly ProgramParticipationService $participationService,
+        private readonly GuruProfileCompletionService $profileCompletionService
     ) {
     }
 
@@ -46,10 +50,14 @@ class GuruMobileApiController extends Controller
             return response()->json(['message' => 'Unauthorized. Only gurus can log in here.'], 403);
         }
 
+        $missingFields = $this->profileCompletionService->missingFields($user);
         $token = $user->createToken($request->device_name)->plainTextToken;
 
         return response()->json([
             'token' => $token,
+            'profile_completed' => $missingFields === [],
+            'missing_fields' => $missingFields,
+            'missing_profile_fields' => $missingFields,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -72,8 +80,12 @@ class GuruMobileApiController extends Controller
         }
 
         $guru->load(['pasti.kawasan', 'kpiSnapshot']);
+        $missingFields = $this->profileCompletionService->missingFields($user);
 
         return response()->json([
+            'profile_completed' => $missingFields === [],
+            'missing_fields' => $missingFields,
+            'missing_profile_fields' => $missingFields,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -84,8 +96,12 @@ class GuruMobileApiController extends Controller
                 'avatar_url' => $this->assetUrl($user->avatar_url),
             ],
             'guru' => [
+                'phone' => $guru->phone,
+                'joined_at' => $guru->joined_at?->toDateString(),
+                'pasti_id' => $guru->pasti_id,
                 'pasti_name' => $guru->pasti?->name,
                 'kawasan_name' => $guru->pasti?->kawasan?->name,
+                'marital_status' => $guru->marital_status,
                 'kpi_score' => (float) ($guru->kpiSnapshot?->score ?? 0),
             ],
         ]);
@@ -280,6 +296,95 @@ class GuruMobileApiController extends Controller
         ]);
     }
 
+    public function completeProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $guru = $user->guru;
+
+        if (! $guru) {
+            return response()->json(['message' => 'Guru profile not found.'], 404);
+        }
+
+        $avatarRules = ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'];
+        if (blank($user->avatar_path)) {
+            $avatarRules[0] = 'required';
+        }
+
+        $data = $request->validate([
+            'nama_samaran' => ['required', 'string', 'max:255'],
+            'tarikh_lahir' => ['required', 'date'],
+            'pasti_id' => ['required', 'integer', 'exists:pastis,id'],
+            'phone' => ['required', 'string', 'max:30'],
+            'marital_status' => ['required', 'string', 'in:single,married,widowed,divorced'],
+            'joined_at' => ['required', 'date'],
+            'avatar' => $avatarRules,
+        ]);
+
+        $user->update([
+            'nama_samaran' => $data['nama_samaran'],
+            'tarikh_lahir' => $data['tarikh_lahir'],
+        ]);
+
+        $guru->update([
+            'pasti_id' => $data['pasti_id'],
+            'phone' => $data['phone'],
+            'marital_status' => $data['marital_status'],
+            'joined_at' => $data['joined_at'],
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar_path) {
+                Storage::disk('public')->delete($user->avatar_path);
+            }
+
+            $user->update([
+                'avatar_path' => $request->file('avatar')->store('avatars', 'public'),
+            ]);
+        }
+
+        $freshUser = $user->refresh()->load('guru.pasti.kawasan');
+        $missingFields = $this->profileCompletionService->missingFields($freshUser);
+
+        return response()->json([
+            'message' => 'Profil berjaya dikemaskini.',
+            'profile_completed' => $missingFields === [],
+            'missing_fields' => $missingFields,
+            'missing_profile_fields' => $missingFields,
+            'user' => [
+                'id' => $freshUser->id,
+                'name' => $freshUser->name,
+                'nama_samaran' => $freshUser->nama_samaran,
+                'email' => $freshUser->email,
+                'tarikh_lahir' => $freshUser->tarikh_lahir?->toDateString(),
+                'avatar_url' => $this->assetUrl($freshUser->avatar_url),
+            ],
+            'guru' => [
+                'pasti_id' => $freshUser->guru?->pasti_id,
+                'pasti_name' => $freshUser->guru?->pasti?->name,
+                'kawasan_name' => $freshUser->guru?->pasti?->kawasan?->name,
+                'phone' => $freshUser->guru?->phone,
+                'marital_status' => $freshUser->guru?->marital_status,
+                'joined_at' => $freshUser->guru?->joined_at?->toDateString(),
+            ],
+        ]);
+    }
+
+    public function pastiOptions(): JsonResponse
+    {
+        $pastis = Pasti::query()
+            ->with('kawasan:id,name')
+            ->orderBy('name')
+            ->get(['id', 'name', 'kawasan_id']);
+
+        return response()->json([
+            'data' => $pastis->map(fn (Pasti $pasti) => [
+                'id' => $pasti->id,
+                'name' => $pasti->name,
+                'kawasan_name' => $pasti->kawasan?->name,
+            ]),
+        ]);
+    }
+
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
@@ -298,4 +403,5 @@ class GuruMobileApiController extends Controller
 
         return asset($path);
     }
+
 }

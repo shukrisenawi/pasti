@@ -65,6 +65,16 @@
                     <label class="label-base">{{ __('messages.phone') }}</label>
                     <input class="input-base" name="phone" value="{{ old('phone', $guru->phone) }}">
                 </div>
+                <div>
+                    <label class="label-base">{{ __('messages.marital_status') }}</label>
+                    <select class="input-base" name="marital_status">
+                        <option value="">- {{ __('messages.select') }} -</option>
+                        <option value="single" @selected(old('marital_status', $guru->marital_status) === 'single')>{{ __('messages.single') }}</option>
+                        <option value="married" @selected(old('marital_status', $guru->marital_status) === 'married')>{{ __('messages.married') }}</option>
+                        <option value="widowed" @selected(old('marital_status', $guru->marital_status) === 'widowed')>{{ __('messages.widowed') }}</option>
+                        <option value="divorced" @selected(old('marital_status', $guru->marital_status) === 'divorced')>{{ __('messages.divorced') }}</option>
+                    </select>
+                </div>
                 <div class="md:col-span-2">
                     <label class="label-base">Avatar</label>
                     <div class="mt-2 flex items-center gap-4">

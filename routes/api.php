@@ -11,15 +11,19 @@ Route::prefix('n8n')->middleware('n8n.token')->group(function () {
 });
 
 Route::prefix('guru')->group(function () {
-    Route::post('/login', [GuruMobileApiController::class, 'login']);
+    Route::post('/login', [GuruMobileApiController::class, 'login'])->name('api.guru.login');
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/profile', [GuruMobileApiController::class, 'profile']);
-        Route::get('/kpi', [GuruMobileApiController::class, 'kpi']);
-        Route::get('/leave-notices', [GuruMobileApiController::class, 'leaveNotices']);
-        Route::post('/leave-notices', [GuruMobileApiController::class, 'storeLeaveNotice']);
-        Route::post('/programs/{program}/status', [GuruMobileApiController::class, 'updateProgramStatus']);
-        Route::post('/logout', [GuruMobileApiController::class, 'logout']);
+        Route::get('/profile', [GuruMobileApiController::class, 'profile'])->name('api.guru.profile');
+        Route::post('/profile/complete', [GuruMobileApiController::class, 'completeProfile'])->name('api.guru.complete-profile');
+        Route::get('/pasti-options', [GuruMobileApiController::class, 'pastiOptions'])->name('api.guru.pasti-options');
+        Route::post('/logout', [GuruMobileApiController::class, 'logout'])->name('api.guru.logout');
+
+        Route::middleware('guru.profile.completed')->group(function () {
+            Route::get('/kpi', [GuruMobileApiController::class, 'kpi']);
+            Route::get('/leave-notices', [GuruMobileApiController::class, 'leaveNotices']);
+            Route::post('/leave-notices', [GuruMobileApiController::class, 'storeLeaveNotice']);
+            Route::post('/programs/{program}/status', [GuruMobileApiController::class, 'updateProgramStatus']);
+        });
     });
 });
-

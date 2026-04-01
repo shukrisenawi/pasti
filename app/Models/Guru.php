@@ -19,6 +19,7 @@ class Guru extends Model
         'avatar_path',
         'is_assistant',
         'phone',
+        'marital_status',
         'joined_at',
         'active',
         'terima_anugerah',
