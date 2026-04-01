@@ -12,6 +12,7 @@
         @php
             $isGuru = $user->hasRole('guru');
             $needsOnboarding = $isGuru && ($onboardingStatus['onboarding_completed'] ?? true) === false;
+            $showProfileCard = ! $needsOnboarding || $wizardStep === 'profile';
             $showPasswordCard = ! $needsOnboarding || $wizardStep === 'password' || $errors->updatePassword->isNotEmpty() || session('status') === 'password-updated';
         @endphp
 
@@ -39,6 +40,7 @@
         @endif
 
         <div class="mx-auto max-w-7xl space-y-6">
+            @if($showProfileCard)
             <div class="card border-primary/10 bg-white/95">
                 <div class="card-body p-4 sm:p-8">
                     <div class="max-w-xl">
@@ -46,6 +48,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             @if($showPasswordCard)
             <div id="password-step" class="card border-primary/10 bg-white/95">
