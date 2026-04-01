@@ -14,6 +14,7 @@
             $needsOnboarding = $isGuru && ($onboardingStatus['onboarding_completed'] ?? true) === false;
             $showProfileCard = ! $needsOnboarding || $wizardStep === 'profile';
             $showPasswordCard = ! $needsOnboarding || $wizardStep === 'password' || $errors->updatePassword->isNotEmpty() || session('status') === 'password-updated';
+            $defaultTab = $errors->updatePassword->isNotEmpty() ? 'password' : 'profile';
         @endphp
 
         @if(session('onboarding_notice'))
@@ -28,7 +29,7 @@
             </div>
         @endif
 
-        @if($isGuru)
+        @if($isGuru && $needsOnboarding)
             <div class="mx-auto mb-4 max-w-7xl rounded-2xl border border-slate-200 bg-white px-4 py-4">
                 <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Wizard Onboarding Guru</p>
                 <div class="mt-3 flex items-center gap-3 text-sm">
@@ -39,9 +40,16 @@
             </div>
         @endif
 
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-6" x-data="{ tab: '{{ $defaultTab }}' }">
+            @if($isGuru && ! $needsOnboarding)
+                <div class="rounded-2xl border border-slate-200 bg-white p-2">
+                    <button type="button" @click="tab='profile'" class="rounded-xl px-4 py-2 text-sm font-semibold" :class="tab==='profile' ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-100'">Kemaskini Profil</button>
+                    <button type="button" @click="tab='password'" class="rounded-xl px-4 py-2 text-sm font-semibold" :class="tab==='password' ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-100'">Tukar Kata Laluan</button>
+                </div>
+            @endif
+
             @if($showProfileCard)
-            <div class="card border-primary/10 bg-white/95">
+            <div class="card border-primary/10 bg-white/95" x-show="{{ $isGuru && ! $needsOnboarding ? "tab==='profile'" : 'true' }}" x-cloak>
                 <div class="card-body p-4 sm:p-8">
                     <div class="max-w-xl">
                     @include('profile.partials.update-profile-information-form')
@@ -51,7 +59,7 @@
             @endif
 
             @if($showPasswordCard)
-            <div id="password-step" class="card border-primary/10 bg-white/95">
+            <div id="password-step" class="card border-primary/10 bg-white/95" x-show="{{ $isGuru && ! $needsOnboarding ? "tab==='password'" : 'true' }}" x-cloak>
                 <div class="card-body p-4 sm:p-8">
                     <div class="max-w-xl">
                     @include('profile.partials.update-password-form')
