@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
@@ -52,5 +52,36 @@
         </div>
     </div>
 </div>
+<script>
+    function applyRequiredAsteriskLabels() {
+        const fields = document.querySelectorAll('input[required], select[required], textarea[required]');
+
+        fields.forEach((field) => {
+            if (field.type === 'hidden' || field.disabled) return;
+
+            let label = null;
+            if (field.id) {
+                label = document.querySelector(`label[for="${CSS.escape(field.id)}"]`);
+            }
+
+            if (!label) {
+                label = field.closest('label');
+            }
+
+            if (!label || label.querySelector('.required-asterisk')) return;
+
+            const asterisk = document.createElement('span');
+            asterisk.className = 'required-asterisk ml-1 text-red-600';
+            asterisk.textContent = '*';
+            label.appendChild(asterisk);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        applyRequiredAsteriskLabels();
+        setTimeout(applyRequiredAsteriskLabels, 300);
+    });
+</script>
 </body>
 </html>
+
