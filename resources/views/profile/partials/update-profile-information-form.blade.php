@@ -40,13 +40,13 @@
 
         <div>
             <x-input-label for="nama_samaran" :value="__('messages.nama_samaran')" />
-            <x-text-input id="nama_samaran" name="nama_samaran" type="text" class="mt-1 block w-full" :value="old('nama_samaran', $user->nama_samaran)" @required($user->hasRole('guru')) />
+            <x-text-input id="nama_samaran" name="nama_samaran" type="text" class="mt-1 block w-full" :value="old('nama_samaran', $user->nama_samaran)" required />
             <x-input-error class="mt-2" :messages="$errors->get('nama_samaran')" />
         </div>
 
         <div>
             <x-input-label for="tarikh_lahir" :value="__('messages.tarikh_lahir')" />
-            <x-text-input id="tarikh_lahir" name="tarikh_lahir" type="date" class="mt-1 block w-full" :value="old('tarikh_lahir', $user->tarikh_lahir?->format('Y-m-d'))" @required($user->hasRole('guru')) />
+            <x-text-input id="tarikh_lahir" name="tarikh_lahir" type="date" class="mt-1 block w-full" :value="old('tarikh_lahir', $user->tarikh_lahir?->format('Y-m-d'))" required />
             <x-input-error class="mt-2" :messages="$errors->get('tarikh_lahir')" />
         </div>
 
@@ -126,3 +126,4 @@
         </div>
     </form>
 </section>
+
