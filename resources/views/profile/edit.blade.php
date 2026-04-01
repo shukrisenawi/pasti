@@ -13,6 +13,7 @@
             $isGuru = $user->hasRole('guru');
             $needsOnboarding = $isGuru && ($onboardingStatus['onboarding_completed'] ?? true) === false;
             $showProfileCard = ! $needsOnboarding || $wizardStep === 'profile';
+            $showPastiCard = $needsOnboarding && $wizardStep === 'pasti';
             $showPasswordCard = ! $needsOnboarding || $wizardStep === 'password' || $errors->updatePassword->isNotEmpty() || session('status') === 'password-updated';
             $defaultTab = $errors->updatePassword->isNotEmpty() ? 'password' : 'profile';
         @endphp
@@ -32,10 +33,12 @@
         @if($isGuru && $needsOnboarding)
             <div class="mx-auto mb-4 max-w-7xl rounded-2xl border border-slate-200 bg-white px-4 py-4">
                 <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Wizard Onboarding Guru</p>
-                <div class="mt-3 flex items-center gap-3 text-sm">
+                <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
                     <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'profile' ? 'bg-primary text-white' : 'bg-emerald-100 text-emerald-800' }}">1. Kemaskini Profil</span>
                     <span class="text-slate-400">-></span>
-                    <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'password' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600' }}">2. Tukar Kata Laluan</span>
+                    <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'pasti' ? 'bg-primary text-white' : (($onboardingStatus['pasti_completed'] ?? false) ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600') }}">2. Kemaskini PASTI</span>
+                    <span class="text-slate-400">-></span>
+                    <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'password' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600' }}">3. Tukar Kata Laluan</span>
                 </div>
             </div>
         @endif
@@ -53,6 +56,18 @@
                 <div class="card-body p-4 sm:p-8">
                     <div class="max-w-xl">
                     @include('profile.partials.update-profile-information-form')
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($showPastiCard)
+            <div class="card border-primary/10 bg-white/95" x-cloak>
+                <div class="card-body p-4 sm:p-8">
+                    <div class="max-w-3xl space-y-3">
+                        <h3 class="text-lg font-semibold text-slate-900">Kemaskini Maklumat PASTI</h3>
+                        <p class="text-sm text-slate-600">Sila lengkapkan maklumat PASTI dahulu sebelum boleh tukar kata laluan.</p>
+                        <a href="{{ route('pasti.self.edit', ['step' => 'onboarding']) }}" class="btn btn-primary">Pergi Ke Kemaskini PASTI</a>
                     </div>
                 </div>
             </div>

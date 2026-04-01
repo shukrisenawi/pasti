@@ -423,8 +423,10 @@ class GuruMobileApiController extends Controller
     /**
      * @return array{
      *     profile_completed: bool,
+     *     pasti_completed: bool,
      *     missing_fields: array<int, string>,
      *     missing_profile_fields: array<int, string>,
+     *     missing_pasti_fields: array<int, string>,
      *     password_change_required: bool,
      *     onboarding_completed: bool
      * }
@@ -435,8 +437,10 @@ class GuruMobileApiController extends Controller
 
         return [
             'profile_completed' => $status['profile_completed'],
+            'pasti_completed' => $status['pasti_completed'],
             'missing_fields' => $status['missing_fields'],
             'missing_profile_fields' => $status['missing_fields'],
+            'missing_pasti_fields' => $status['missing_pasti_fields'],
             'password_change_required' => $status['password_change_required'],
             'onboarding_completed' => $status['onboarding_completed'],
         ];

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\Pasti;
 use App\Support\GuruProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,23 +24,44 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $onboardingStatus = $user->hasRole('guru')
-            ? $this->profileCompletionService->onboardingStatus($user->loadMissing('guru'))
+            ? $this->profileCompletionService->onboardingStatus($user->loadMissing('guru.pasti'))
             : null;
 
         $wizardStep = 'profile';
+
         if ($onboardingStatus) {
-            if ($request->query('step') === 'password') {
+            if (! $onboardingStatus['profile_completed']) {
+                $wizardStep = 'profile';
+            } elseif (! $onboardingStatus['pasti_completed']) {
+                $wizardStep = 'pasti';
+            } elseif ($onboardingStatus['password_change_required']) {
                 $wizardStep = 'password';
-            } elseif ($onboardingStatus['profile_completed'] && $onboardingStatus['password_change_required']) {
-                $wizardStep = 'password';
+            }
+
+            $requestedStep = (string) $request->query('step', '');
+            $allowedSteps = ['profile', 'pasti', 'password'];
+
+            if (in_array($requestedStep, $allowedSteps, true)) {
+                if ($requestedStep === 'profile') {
+                    $wizardStep = 'profile';
+                }
+
+                if ($requestedStep === 'pasti' && $onboardingStatus['profile_completed']) {
+                    $wizardStep = 'pasti';
+                }
+
+                if (
+                    $requestedStep === 'password'
+                    && $onboardingStatus['profile_completed']
+                    && $onboardingStatus['pasti_completed']
+                ) {
+                    $wizardStep = 'password';
+                }
             }
         }
 
         return view('profile.edit', [
             'user' => $user,
-            'pastis' => $user->hasRole('guru')
-                ? Pasti::query()->orderBy('name')->get(['id', 'name'])
-                : collect(),
             'onboardingStatus' => $onboardingStatus,
             'wizardStep' => $wizardStep,
         ]);
@@ -58,7 +78,6 @@ class ProfileController extends Controller
         unset(
             $data['avatar'],
             $data['remove_avatar'],
-            $data['pasti_id'],
             $data['phone'],
             $data['marital_status'],
             $data['joined_at']
@@ -89,14 +108,21 @@ class ProfileController extends Controller
 
         if ($user->hasRole('guru') && $user->guru) {
             $user->guru->update([
-                'pasti_id' => $request->input('pasti_id') ?: null,
                 'phone' => $request->input('phone') ?: null,
                 'marital_status' => $request->input('marital_status') ?: null,
                 'joined_at' => $request->input('joined_at') ?: null,
             ]);
 
-            $status = $this->profileCompletionService->onboardingStatus($user->fresh()->loadMissing('guru'));
-            if ($status['profile_completed'] && $status['password_change_required']) {
+            $status = $this->profileCompletionService->onboardingStatus($user->fresh()->loadMissing('guru.pasti'));
+
+            if ($status['profile_completed'] && ! $status['pasti_completed']) {
+                return Redirect::route('pasti.self.edit', ['step' => 'onboarding'])
+                    ->with('status_key', 'profile-updated')
+                    ->with('status', __('messages.profile_updated'))
+                    ->with('wizard_notice', 'Profil berjaya dikemaskini. Seterusnya, sila kemaskini maklumat PASTI.');
+            }
+
+            if ($status['profile_completed'] && $status['pasti_completed'] && $status['password_change_required']) {
                 return Redirect::route('profile.edit', ['step' => 'password'])
                     ->with('status_key', 'profile-updated')
                     ->with('status', __('messages.profile_updated'))

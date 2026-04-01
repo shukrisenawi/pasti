@@ -28,10 +28,12 @@ class EnsureGuruProfileCompleted
         $status = $this->profileCompletionService->onboardingStatus($user);
         if (! $status['onboarding_completed']) {
             return response()->json([
-                'message' => 'Sila lengkapkan profil dan tukar kata laluan sebelum menggunakan fungsi lain.',
+                'message' => 'Sila lengkapkan profil, kemaskini maklumat PASTI dan tukar kata laluan sebelum menggunakan fungsi lain.',
                 'code' => 'ONBOARDING_INCOMPLETE',
                 'profile_completed' => $status['profile_completed'],
+                'pasti_completed' => $status['pasti_completed'],
                 'missing_fields' => $status['missing_fields'],
+                'missing_pasti_fields' => $status['missing_pasti_fields'],
                 'password_change_required' => $status['password_change_required'],
             ], 428);
         }

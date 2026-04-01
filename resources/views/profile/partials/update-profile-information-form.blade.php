@@ -52,17 +52,6 @@
 
         @if($user->hasRole('guru'))
             <div>
-                <x-input-label for="pasti_id" :value="__('messages.pasti')" />
-                <select id="pasti_id" name="pasti_id" class="input-base mt-1 block w-full" required>
-                    <option value="">- {{ __('messages.select') }} -</option>
-                    @foreach(($pastis ?? collect()) as $pasti)
-                        <option value="{{ $pasti->id }}" @selected((int) old('pasti_id', $user->guru?->pasti_id) === (int) $pasti->id)>{{ $pasti->name }}</option>
-                    @endforeach
-                </select>
-                <x-input-error class="mt-2" :messages="$errors->get('pasti_id')" />
-            </div>
-
-            <div>
                 <x-input-label for="phone" :value="__('messages.phone')" />
                 <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->guru?->phone)" required />
                 <x-input-error class="mt-2" :messages="$errors->get('phone')" />

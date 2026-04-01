@@ -26,10 +26,6 @@ class GuruProfileCompletionService
             $missing[] = 'tarikh_lahir';
         }
 
-        if (blank($guru?->pasti_id)) {
-            $missing[] = 'pasti_id';
-        }
-
         if (blank($guru?->phone)) {
             $missing[] = 'phone';
         }
@@ -44,6 +40,53 @@ class GuruProfileCompletionService
 
         if (blank($guru?->joined_at)) {
             $missing[] = 'joined_at';
+        }
+
+        return $missing;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function missingPastiFields(User $user): array
+    {
+        $pasti = $user->guru?->pasti;
+
+        if (blank($pasti)) {
+            return [
+                'kawasan_id',
+                'name',
+                'phone',
+                'manager_name',
+                'manager_phone',
+                'address',
+            ];
+        }
+
+        $missing = [];
+
+        if (blank($pasti->kawasan_id)) {
+            $missing[] = 'kawasan_id';
+        }
+
+        if (blank($pasti->name)) {
+            $missing[] = 'name';
+        }
+
+        if (blank($pasti->phone)) {
+            $missing[] = 'phone';
+        }
+
+        if (blank($pasti->manager_name)) {
+            $missing[] = 'manager_name';
+        }
+
+        if (blank($pasti->manager_phone)) {
+            $missing[] = 'manager_phone';
+        }
+
+        if (blank($pasti->address)) {
+            $missing[] = 'address';
         }
 
         return $missing;
@@ -71,20 +114,25 @@ class GuruProfileCompletionService
      * @return array{
      *     profile_completed: bool,
      *     missing_fields: array<int, string>,
+     *     pasti_completed: bool,
+     *     missing_pasti_fields: array<int, string>,
      *     password_change_required: bool,
      *     onboarding_completed: bool
      * }
      */
     public function onboardingStatus(User $user): array
     {
-        $missingFields = $this->missingFields($user);
+        $missingProfileFields = $this->missingFields($user);
+        $missingPastiFields = $this->missingPastiFields($user);
         $passwordChangeRequired = $this->requiresPasswordChange($user);
 
         return [
-            'profile_completed' => $missingFields === [],
-            'missing_fields' => $missingFields,
+            'profile_completed' => $missingProfileFields === [],
+            'missing_fields' => $missingProfileFields,
+            'pasti_completed' => $missingPastiFields === [],
+            'missing_pasti_fields' => $missingPastiFields,
             'password_change_required' => $passwordChangeRequired,
-            'onboarding_completed' => $missingFields === [] && ! $passwordChangeRequired,
+            'onboarding_completed' => $missingProfileFields === [] && $missingPastiFields === [] && ! $passwordChangeRequired,
         ];
     }
 }
