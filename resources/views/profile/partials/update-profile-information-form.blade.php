@@ -56,6 +56,43 @@
             <p class="mt-1 text-xs text-slate-500">{{ __('Hanya admin boleh mengemaskini tarikh ini.') }}</p>
         </div>
 
+        @if($user->hasRole('guru'))
+            <div>
+                <x-input-label for="pasti_id" :value="__('messages.pasti')" />
+                <select id="pasti_id" name="pasti_id" class="input-base mt-1 block w-full">
+                    <option value="">- {{ __('messages.select') }} -</option>
+                    @foreach(($pastis ?? collect()) as $pasti)
+                        <option value="{{ $pasti->id }}" @selected((int) old('pasti_id', $user->guru?->pasti_id) === (int) $pasti->id)>{{ $pasti->name }}</option>
+                    @endforeach
+                </select>
+                <x-input-error class="mt-2" :messages="$errors->get('pasti_id')" />
+            </div>
+
+            <div>
+                <x-input-label for="phone" :value="__('messages.phone')" />
+                <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->guru?->phone)" />
+                <x-input-error class="mt-2" :messages="$errors->get('phone')" />
+            </div>
+
+            <div>
+                <x-input-label for="marital_status" :value="__('messages.marital_status')" />
+                <select id="marital_status" name="marital_status" class="input-base mt-1 block w-full">
+                    <option value="">- {{ __('messages.select') }} -</option>
+                    <option value="single" @selected(old('marital_status', $user->guru?->marital_status) === 'single')>{{ __('messages.single') }}</option>
+                    <option value="married" @selected(old('marital_status', $user->guru?->marital_status) === 'married')>{{ __('messages.married') }}</option>
+                    <option value="widowed" @selected(old('marital_status', $user->guru?->marital_status) === 'widowed')>{{ __('messages.widowed') }}</option>
+                    <option value="divorced" @selected(old('marital_status', $user->guru?->marital_status) === 'divorced')>{{ __('messages.divorced') }}</option>
+                </select>
+                <x-input-error class="mt-2" :messages="$errors->get('marital_status')" />
+            </div>
+
+            <div>
+                <x-input-label for="joined_at" :value="__('messages.joined_at')" />
+                <x-text-input id="joined_at" name="joined_at" type="date" class="mt-1 block w-full" :value="old('joined_at', optional($user->guru?->joined_at)->format('Y-m-d'))" />
+                <x-input-error class="mt-2" :messages="$errors->get('joined_at')" />
+            </div>
+        @endif
+
         <div>
             <x-input-label for="email" :value="__('Email')" />
             <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />

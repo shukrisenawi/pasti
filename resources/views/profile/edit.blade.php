@@ -9,6 +9,12 @@
     </x-slot>
 
     <div class="py-4">
+        @if(session('onboarding_notice'))
+            <div class="mx-auto mb-4 max-w-7xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {{ session('onboarding_notice') }}
+            </div>
+        @endif
+
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="card border-primary/10 bg-white/95">
                 <div class="card-body p-4 sm:p-8">

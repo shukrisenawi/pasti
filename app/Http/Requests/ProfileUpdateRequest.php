@@ -30,6 +30,10 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'remove_avatar' => ['nullable', 'boolean'],
+            'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'marital_status' => ['nullable', 'string', 'in:single,married,widowed,divorced'],
+            'joined_at' => ['nullable', 'date'],
         ];
     }
 }
