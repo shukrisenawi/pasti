@@ -103,7 +103,7 @@ return [
     'no' => 'Tidak',
     'active' => 'Aktif',
     'inactive' => 'Tidak Aktif',
-    'joined_at' => 'Tarikh Sertai',
+    'joined_at' => 'Tarikh Menjadi Guru PASTI',
     'date' => 'Tarikh',
     'time' => 'Masa',
     'location' => 'Lokasi',
@@ -218,6 +218,7 @@ return [
     'widowed' => 'Duda/Balu',
     'divorced' => 'Bercerai',
 ];
+
 
 
 
