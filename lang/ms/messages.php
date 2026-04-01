@@ -217,12 +217,8 @@ return [
     'married' => 'Berkahwin',
     'widowed' => 'Duda/Balu',
     'divorced' => 'Bercerai',
+    'no_data' => 'Tiada data.',
+    'no_programs_found' => 'Tiada program dijumpai.',
+    'profile_updated' => 'Profil berjaya dikemaskini.',
 ];
-
-
-
-
-
-
-
 

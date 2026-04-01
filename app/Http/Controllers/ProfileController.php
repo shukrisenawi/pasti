@@ -98,11 +98,14 @@ class ProfileController extends Controller
             $status = $this->profileCompletionService->onboardingStatus($user->fresh()->loadMissing('guru'));
             if ($status['profile_completed'] && $status['password_change_required']) {
                 return Redirect::route('profile.edit', ['step' => 'password'])
-                    ->with('status', 'profile-updated')
+                    ->with('status_key', 'profile-updated')
+                    ->with('status', __('messages.profile_updated'))
                     ->with('wizard_notice', 'Profil berjaya dikemaskini. Seterusnya, sila tukar kata laluan anda.');
             }
         }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')
+            ->with('status_key', 'profile-updated')
+            ->with('status', __('messages.profile_updated'));
     }
 }

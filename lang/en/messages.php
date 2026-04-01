@@ -202,11 +202,22 @@ return [
     'skim_pas_expired' => 'PAS Scheme has expired, please renew immediately',
     'skim_pas_expiring_soon' => 'PAS Scheme will expire in a week',
     'skim_pas_expired_list' => 'Expired PAS Scheme List',
+    'add_pemarkahan_title_option' => 'Add Scoring Title Option',
+    'all_pasti' => 'All PASTI',
+    'divorced' => 'Divorced',
+    'leave_until' => 'Leave Until',
+    'manager_name' => 'PASTI Manager Name',
+    'manager_phone' => 'PASTI Manager Phone Number',
+    'marital_status' => 'Marital Status',
+    'married' => 'Married',
+    'no_data' => 'No data found.',
+    'no_programs_found' => 'No programs found.',
+    'pemarkahan' => 'Scoring',
+    'profile_updated' => 'Profile updated successfully.',
+    'select_pasti' => 'Select PASTI',
+    'single' => 'Single',
+    'total_score' => 'Total Score',
+    'upcoming_programs' => 'Upcoming Programs',
+    'widowed' => 'Widowed',
 ];
-
-
-
-
-
-
 

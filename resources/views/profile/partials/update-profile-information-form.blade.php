@@ -114,7 +114,7 @@
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
-            @if (session('status') === 'profile-updated')
+            @if (session('status_key') === 'profile-updated')
                 <p
                     x-data="{ show: true }"
                     x-show="show"
@@ -126,4 +126,3 @@
         </div>
     </form>
 </section>
-
