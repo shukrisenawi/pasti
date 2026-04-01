@@ -16,10 +16,13 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isGuru = (bool) $this->user()?->hasRole('guru');
+        $requiredOrNullable = fn () => $isGuru ? ['required'] : ['nullable'];
+
         return [
             'name' => ['required', 'string', 'max:255'],
-            'nama_samaran' => ['nullable', 'string', 'max:255'],
-            'tarikh_lahir' => ['nullable', 'date'],
+            'nama_samaran' => [...$requiredOrNullable(), 'string', 'max:255'],
+            'tarikh_lahir' => [...$requiredOrNullable(), 'date'],
             'email' => [
                 'required',
                 'string',
@@ -30,10 +33,28 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'remove_avatar' => ['nullable', 'boolean'],
-            'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
-            'phone' => ['nullable', 'string', 'max:30'],
-            'marital_status' => ['nullable', 'string', 'in:single,married,widowed,divorced'],
-            'joined_at' => ['nullable', 'date'],
+            'pasti_id' => [...$requiredOrNullable(), 'integer', 'exists:pastis,id'],
+            'phone' => [...$requiredOrNullable(), 'string', 'max:30'],
+            'marital_status' => [...$requiredOrNullable(), 'string', 'in:single,married,widowed,divorced'],
+            'joined_at' => [...$requiredOrNullable(), 'date'],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator): void {
+            $user = $this->user();
+            if (! $user || ! $user->hasRole('guru')) {
+                return;
+            }
+
+            $wantsRemoveAvatar = $this->boolean('remove_avatar');
+            $hasNewAvatar = $this->hasFile('avatar');
+            $hasExistingAvatar = filled($user->avatar_path) && ! $wantsRemoveAvatar;
+
+            if (! $hasExistingAvatar && ! $hasNewAvatar) {
+                $validator->errors()->add('avatar', 'Avatar wajib diisi untuk guru.');
+            }
+        });
     }
 }
