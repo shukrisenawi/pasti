@@ -25,12 +25,14 @@ class EnsureGuruProfileCompleted
             return response()->json(['message' => 'Guru profile not found.'], 404);
         }
 
-        $missingFields = $this->profileCompletionService->missingFields($user);
-        if ($missingFields !== []) {
+        $status = $this->profileCompletionService->onboardingStatus($user);
+        if (! $status['onboarding_completed']) {
             return response()->json([
-                'message' => 'Sila lengkapkan profil anda sebelum menggunakan fungsi lain.',
-                'code' => 'PROFILE_INCOMPLETE',
-                'missing_fields' => $missingFields,
+                'message' => 'Sila lengkapkan profil dan tukar kata laluan sebelum menggunakan fungsi lain.',
+                'code' => 'ONBOARDING_INCOMPLETE',
+                'profile_completed' => $status['profile_completed'],
+                'missing_fields' => $status['missing_fields'],
+                'password_change_required' => $status['password_change_required'],
             ], 428);
         }
 

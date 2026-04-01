@@ -6,6 +6,7 @@ use App\Models\Guru;
 use App\Models\Pasti;
 use App\Models\User;
 use App\Services\KpiCalculationService;
+use App\Support\GuruProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -76,7 +77,7 @@ class GuruController extends Controller
 
         $isAssistant = $request->boolean('is_assistant');
         $emailRules = ['email', 'max:255'];
-        $passwordRules = ['string', 'min:8', 'confirmed'];
+        $passwordRules = ['nullable', 'string', 'min:8', 'confirmed'];
 
         if ($isAssistant) {
             $emailRules[] = 'nullable';
@@ -84,7 +85,7 @@ class GuruController extends Controller
         } else {
             $emailRules[] = 'unique:users,email';
             $emailRules[] = 'required';
-            $passwordRules[] = 'required';
+            $passwordRules[] = 'nullable';
         }
 
         $data = $request->validate([
@@ -115,7 +116,7 @@ class GuruController extends Controller
                 'tarikh_lahir' => null,
                 'tarikh_exp_skim_pas' => null,
                 'avatar_path' => null,
-                'password' => Hash::make($data['password']),
+                'password' => Hash::make($data['password'] ?: GuruProfileCompletionService::DEFAULT_GURU_PASSWORD),
                 'locale' => 'ms',
             ]);
 
@@ -180,7 +181,7 @@ class GuruController extends Controller
 
         $isAssistant = $request->boolean('is_assistant');
         $emailRules = ['email', 'max:255'];
-        $passwordRules = ['string', 'min:8', 'confirmed'];
+        $passwordRules = ['nullable', 'string', 'min:8', 'confirmed'];
 
         if ($isAssistant) {
             $emailRules[] = 'nullable';
@@ -188,7 +189,7 @@ class GuruController extends Controller
         } else {
             $emailRules[] = Rule::unique('users', 'email')->ignore($users_guru->user_id);
             $emailRules[] = 'required';
-            $passwordRules[] = $users_guru->user_id === null ? 'required' : 'nullable';
+            $passwordRules[] = 'nullable';
         }
 
         $data = $request->validate([
@@ -240,7 +241,7 @@ class GuruController extends Controller
                     'email' => $data['email'],
                     'tarikh_lahir' => $data['tarikh_lahir'],
                     'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
-                    'password' => Hash::make($data['password']),
+                    'password' => Hash::make($data['password'] ?: GuruProfileCompletionService::DEFAULT_GURU_PASSWORD),
                     'locale' => 'ms',
                 ]);
                 $newGuruUser->syncRoles(['guru']);
@@ -357,3 +358,4 @@ class GuruController extends Controller
         abort_unless(in_array((int) $guru->pasti_id, $this->assignedPastiIds($user), true), 403);
     }
 }
+

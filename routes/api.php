@@ -16,6 +16,7 @@ Route::prefix('guru')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/profile', [GuruMobileApiController::class, 'profile'])->name('api.guru.profile');
         Route::post('/profile/complete', [GuruMobileApiController::class, 'completeProfile'])->name('api.guru.complete-profile');
+        Route::post('/password/change', [GuruMobileApiController::class, 'changePassword'])->name('api.guru.change-password');
         Route::get('/pasti-options', [GuruMobileApiController::class, 'pastiOptions'])->name('api.guru.pasti-options');
         Route::post('/logout', [GuruMobileApiController::class, 'logout'])->name('api.guru.logout');
 
@@ -27,3 +28,4 @@ Route::prefix('guru')->group(function () {
         });
     });
 });
+

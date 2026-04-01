@@ -50,14 +50,11 @@ class GuruMobileApiController extends Controller
             return response()->json(['message' => 'Unauthorized. Only gurus can log in here.'], 403);
         }
 
-        $missingFields = $this->profileCompletionService->missingFields($user);
         $token = $user->createToken($request->device_name)->plainTextToken;
 
         return response()->json([
             'token' => $token,
-            'profile_completed' => $missingFields === [],
-            'missing_fields' => $missingFields,
-            'missing_profile_fields' => $missingFields,
+            ...$this->onboardingPayload($user),
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -75,17 +72,14 @@ class GuruMobileApiController extends Controller
         $user = $request->user();
         $guru = $user->guru;
 
-        if (!$guru) {
+        if (! $guru) {
             return response()->json(['message' => 'Guru profile not found.'], 404);
         }
 
         $guru->load(['pasti.kawasan', 'kpiSnapshot']);
-        $missingFields = $this->profileCompletionService->missingFields($user);
 
         return response()->json([
-            'profile_completed' => $missingFields === [],
-            'missing_fields' => $missingFields,
-            'missing_profile_fields' => $missingFields,
+            ...$this->onboardingPayload($user),
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -112,7 +106,7 @@ class GuruMobileApiController extends Controller
         $user = $request->user();
         $guru = $user->guru;
 
-        if (!$guru) {
+        if (! $guru) {
             return response()->json(['message' => 'Guru profile not found.'], 404);
         }
 
@@ -150,7 +144,7 @@ class GuruMobileApiController extends Controller
                 'name' => $status->name,
                 'code' => $status->code,
             ]),
-            'programs' => $guru->programs->map(fn($p) => [
+            'programs' => $guru->programs->map(fn ($p) => [
                 'id' => $p->id,
                 'title' => $p->title,
                 'date' => $p->program_date->toDateString(),
@@ -212,7 +206,6 @@ class GuruMobileApiController extends Controller
             ]);
         }
 
-        // Notify admins
         $masterAdmins = User::role('master_admin')->get();
         $relatedAdmins = User::role('admin')
             ->whereHas('assignedPastis', fn ($q) => $q->whereKey($guru->pasti_id))
@@ -247,7 +240,7 @@ class GuruMobileApiController extends Controller
         ]);
 
         $selectedStatus = ProgramStatus::findOrFail($data['program_status_id']);
-        if (!in_array($selectedStatus->code, ['HADIR', 'TIDAK_HADIR'], true)) {
+        if (! in_array($selectedStatus->code, ['HADIR', 'TIDAK_HADIR'], true)) {
             return response()->json(['message' => 'Invalid status code'], 422);
         }
 
@@ -343,13 +336,10 @@ class GuruMobileApiController extends Controller
         }
 
         $freshUser = $user->refresh()->load('guru.pasti.kawasan');
-        $missingFields = $this->profileCompletionService->missingFields($freshUser);
 
         return response()->json([
             'message' => 'Profil berjaya dikemaskini.',
-            'profile_completed' => $missingFields === [],
-            'missing_fields' => $missingFields,
-            'missing_profile_fields' => $missingFields,
+            ...$this->onboardingPayload($freshUser),
             'user' => [
                 'id' => $freshUser->id,
                 'name' => $freshUser->name,
@@ -366,6 +356,31 @@ class GuruMobileApiController extends Controller
                 'marital_status' => $freshUser->guru?->marital_status,
                 'joined_at' => $freshUser->guru?->joined_at?->toDateString(),
             ],
+        ]);
+    }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $data = $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:8', 'confirmed', 'different:current_password', 'not_in:' . GuruProfileCompletionService::DEFAULT_GURU_PASSWORD],
+        ]);
+
+        if (! Hash::check($data['current_password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['Kata laluan semasa tidak sah.'],
+            ]);
+        }
+
+        $user->update([
+            'password' => Hash::make($data['new_password']),
+        ]);
+
+        return response()->json([
+            'message' => 'Kata laluan berjaya ditukar.',
+            ...$this->onboardingPayload($user->refresh()),
         ]);
     }
 
@@ -404,4 +419,26 @@ class GuruMobileApiController extends Controller
         return asset($path);
     }
 
+    /**
+     * @return array{
+     *     profile_completed: bool,
+     *     missing_fields: array<int, string>,
+     *     missing_profile_fields: array<int, string>,
+     *     password_change_required: bool,
+     *     onboarding_completed: bool
+     * }
+     */
+    private function onboardingPayload(User $user): array
+    {
+        $status = $this->profileCompletionService->onboardingStatus($user);
+
+        return [
+            'profile_completed' => $status['profile_completed'],
+            'missing_fields' => $status['missing_fields'],
+            'missing_profile_fields' => $status['missing_fields'],
+            'password_change_required' => $status['password_change_required'],
+            'onboarding_completed' => $status['onboarding_completed'],
+        ];
+    }
 }
+
