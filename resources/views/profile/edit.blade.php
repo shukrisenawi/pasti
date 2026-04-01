@@ -15,6 +15,23 @@
             </div>
         @endif
 
+        @if(session('wizard_notice'))
+            <div class="mx-auto mb-4 max-w-7xl rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                {{ session('wizard_notice') }}
+            </div>
+        @endif
+
+        @if($user->hasRole('guru'))
+            <div class="mx-auto mb-4 max-w-7xl rounded-2xl border border-slate-200 bg-white px-4 py-4">
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Wizard Onboarding Guru</p>
+                <div class="mt-3 flex items-center gap-3 text-sm">
+                    <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'profile' ? 'bg-primary text-white' : 'bg-emerald-100 text-emerald-800' }}">1. Kemaskini Profil</span>
+                    <span class="text-slate-400">-></span>
+                    <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'password' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600' }}">2. Tukar Kata Laluan</span>
+                </div>
+            </div>
+        @endif
+
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="card border-primary/10 bg-white/95">
                 <div class="card-body p-4 sm:p-8">
@@ -24,15 +41,13 @@
                 </div>
             </div>
 
-            <div class="card border-primary/10 bg-white/95">
+            <div id="password-step" class="card border-primary/10 bg-white/95 {{ $user->hasRole('guru') && $wizardStep !== 'password' ? 'opacity-70' : '' }}">
                 <div class="card-body p-4 sm:p-8">
                     <div class="max-w-xl">
                     @include('profile.partials.update-password-form')
                     </div>
                 </div>
             </div>
-
-
         </div>
     </div>
 </x-app-layout>
