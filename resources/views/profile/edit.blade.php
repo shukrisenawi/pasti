@@ -9,6 +9,12 @@
     </x-slot>
 
     <div class="py-4">
+        @php
+            $isGuru = $user->hasRole('guru');
+            $needsOnboarding = $isGuru && ($onboardingStatus['onboarding_completed'] ?? true) === false;
+            $showPasswordCard = ! $needsOnboarding || $wizardStep === 'password' || $errors->updatePassword->isNotEmpty() || session('status') === 'password-updated';
+        @endphp
+
         @if(session('onboarding_notice'))
             <div class="mx-auto mb-4 max-w-7xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 {{ session('onboarding_notice') }}
@@ -21,7 +27,7 @@
             </div>
         @endif
 
-        @if($user->hasRole('guru'))
+        @if($isGuru)
             <div class="mx-auto mb-4 max-w-7xl rounded-2xl border border-slate-200 bg-white px-4 py-4">
                 <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Wizard Onboarding Guru</p>
                 <div class="mt-3 flex items-center gap-3 text-sm">
@@ -41,13 +47,15 @@
                 </div>
             </div>
 
-            <div id="password-step" class="card border-primary/10 bg-white/95 {{ $user->hasRole('guru') && $wizardStep !== 'password' ? 'opacity-70' : '' }}">
+            @if($showPasswordCard)
+            <div id="password-step" class="card border-primary/10 bg-white/95">
                 <div class="card-body p-4 sm:p-8">
                     <div class="max-w-xl">
                     @include('profile.partials.update-password-form')
                     </div>
                 </div>
             </div>
+            @endif
         </div>
     </div>
 </x-app-layout>
