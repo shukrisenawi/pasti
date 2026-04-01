@@ -461,7 +461,7 @@
         const fields = document.querySelectorAll('input[required], select[required], textarea[required]');
 
         fields.forEach((field) => {
-            if (field.type === 'hidden' || field.disabled) return;
+            if (field.disabled) return;
 
             let label = null;
             if (field.id) {
@@ -493,6 +493,7 @@
 </script>
 </body>
 </html>
+
 
 
 
