@@ -43,14 +43,12 @@
                 </div>
                 <div x-show="isAssistant === 0" x-cloak>
                     <label class="label-base">{{ __('messages.password') }}</label>
-                    <input class="input-base" type="password" name="password" :required="isAssistant === 0 && {{ $guru->exists ? 'false' : 'true' }}">
-                    @if($guru->exists)
-                        <p class="mt-1 text-xs text-slate-500">{{ __('messages.optional_password') }}</p>
-                    @endif
+                    <input class="input-base" type="password" name="password">
+                    <p class="mt-1 text-xs text-slate-500">Jika dikosongkan, kata laluan default ialah <code>123</code>.</p>
                 </div>
                 <div x-show="isAssistant === 0" x-cloak>
                     <label class="label-base">{{ __('messages.password_confirmation') }}</label>
-                    <input class="input-base" type="password" name="password_confirmation" :required="isAssistant === 0 && {{ $guru->exists ? 'false' : 'true' }}">
+                    <input class="input-base" type="password" name="password_confirmation">
                 </div>
                 <div>
                     <label class="label-base">{{ __('messages.pasti') }}</label>
@@ -121,3 +119,4 @@
         </form>
     </div>
 </x-app-layout>
+

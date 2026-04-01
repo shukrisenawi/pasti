@@ -118,6 +118,7 @@ class GuruController extends Controller
                 'avatar_path' => null,
                 'password' => Hash::make($data['password'] ?: GuruProfileCompletionService::DEFAULT_GURU_PASSWORD),
                 'locale' => 'ms',
+                'force_password_change' => true,
             ]);
 
             $guruUser->syncRoles(['guru']);
@@ -243,6 +244,7 @@ class GuruController extends Controller
                     'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
                     'password' => Hash::make($data['password'] ?: GuruProfileCompletionService::DEFAULT_GURU_PASSWORD),
                     'locale' => 'ms',
+                'force_password_change' => true,
                 ]);
                 $newGuruUser->syncRoles(['guru']);
                 if ($existingGuruAvatar) {
@@ -358,4 +360,5 @@ class GuruController extends Controller
         abort_unless(in_array((int) $guru->pasti_id, $this->assignedPastiIds($user), true), 403);
     }
 }
+
 

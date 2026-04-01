@@ -56,6 +56,10 @@ class GuruProfileCompletionService
 
     public function requiresPasswordChange(User $user): bool
     {
+        if ((bool) $user->force_password_change) {
+            return true;
+        }
+
         if (blank($user->password)) {
             return true;
         }

@@ -376,6 +376,7 @@ class GuruMobileApiController extends Controller
 
         $user->update([
             'password' => Hash::make($data['new_password']),
+            'force_password_change' => false,
         ]);
 
         return response()->json([
@@ -441,4 +442,5 @@ class GuruMobileApiController extends Controller
         ];
     }
 }
+
 

@@ -33,6 +33,7 @@ class User extends Authenticatable
         'email',
         'locale',
         'avatar_path',
+        'force_password_change',
         'password',
     ];
 
@@ -57,6 +58,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'tarikh_lahir' => 'date',
             'tarikh_exp_skim_pas' => 'date',
+            'force_password_change' => 'boolean',
             'password' => 'hashed',
         ];
     }
