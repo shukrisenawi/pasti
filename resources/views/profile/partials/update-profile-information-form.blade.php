@@ -50,11 +50,6 @@
             <x-input-error class="mt-2" :messages="$errors->get('tarikh_lahir')" />
         </div>
 
-        <div>
-            <x-input-label for="tarikh_exp_skim_pas" :value="__('messages.tarikh_exp_skim_pas')" />
-            <x-text-input id="tarikh_exp_skim_pas" name="tarikh_exp_skim_pas" type="date" class="mt-1 block w-full bg-slate-50" :value="$user->tarikh_exp_skim_pas?->format('Y-m-d')" disabled />
-            <p class="mt-1 text-xs text-slate-500">{{ __('Hanya admin boleh mengemaskini tarikh ini.') }}</p>
-        </div>
 
         @if($user->hasRole('guru'))
             <div>
