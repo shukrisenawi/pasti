@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Kawasan;
 use App\Support\GuruProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -64,6 +65,10 @@ class ProfileController extends Controller
             'user' => $user,
             'onboardingStatus' => $onboardingStatus,
             'wizardStep' => $wizardStep,
+            'kawasans' => $user->hasRole('guru')
+                ? Kawasan::query()->orderBy('name')->get(['id', 'name'])
+                : collect(),
+            'guruPasti' => $user->hasRole('guru') ? $user->guru?->pasti : null,
         ]);
     }
 
@@ -116,7 +121,7 @@ class ProfileController extends Controller
             $status = $this->profileCompletionService->onboardingStatus($user->fresh()->loadMissing('guru.pasti'));
 
             if ($status['profile_completed'] && ! $status['pasti_completed']) {
-                return Redirect::route('pasti.self.edit', ['step' => 'onboarding'])
+                return Redirect::route('profile.edit', ['step' => 'pasti'])
                     ->with('status_key', 'profile-updated')
                     ->with('status', __('messages.profile_updated'))
                     ->with('wizard_notice', 'Profil berjaya dikemaskini. Seterusnya, sila kemaskini maklumat PASTI.');

@@ -64,10 +64,8 @@
             @if($showPastiCard)
             <div class="card border-primary/10 bg-white/95" x-cloak>
                 <div class="card-body p-4 sm:p-8">
-                    <div class="max-w-3xl space-y-3">
-                        <h3 class="text-lg font-semibold text-slate-900">Kemaskini Maklumat PASTI</h3>
-                        <p class="text-sm text-slate-600">Sila lengkapkan maklumat PASTI dahulu sebelum boleh tukar kata laluan.</p>
-                        <a href="{{ route('pasti.self.edit', ['step' => 'onboarding']) }}" class="btn btn-primary">Pergi Ke Kemaskini PASTI</a>
+                    <div class="max-w-3xl">
+                        @include('profile.partials.update-pasti-information-form')
                     </div>
                 </div>
             </div>
