@@ -87,6 +87,13 @@
                     ->when($authUser->hasRole('admin') && !$authUser->hasRole('master_admin'), fn ($q) => $q->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
                     ->whereNull('completed_at')
                     ->count();
+                $drawerOnLeaveGuruCount = \App\Models\LeaveNotice::query()
+                    ->when($authUser->hasRole('guru'), fn ($q) => $q->where('guru_id', $authUser->guru?->id ?? 0))
+                    ->when($authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'), fn ($q) => $q->whereHas('guru', fn ($q2) => $q2->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id'))))
+                    ->whereDate('leave_date', '<=', now()->toDateString())
+                    ->whereDate('leave_until', '>=', now()->toDateString())
+                    ->distinct('guru_id')
+                    ->count('guru_id');
                 $drawerPendingClaimsCount = $authUser->pending_claims_count;
             @endphp
 
@@ -143,7 +150,10 @@
                             <span>{{ __('messages.inbox') }}</span>
                             @if($drawerInboxCount > 0)<span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerInboxCount > 99 ? '99+' : $drawerInboxCount }}</span>@endif
                         </a>
-                        <a href="{{ route('leave-notices.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }}">{{ __('messages.leave_notice') }}</a>
+                        <a href="{{ route('leave-notices.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                            <span>{{ __('messages.leave_notice') }}</span>
+                            @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
+                        </a>
                     </div>
                 </div>
             @endrole
@@ -168,7 +178,10 @@
                         <span>{{ __('messages.inbox') }}</span>
                         @if($drawerInboxCount > 0)<span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerInboxCount > 99 ? '99+' : $drawerInboxCount }}</span>@endif
                     </a>
-                    <a href="{{ route('leave-notices.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }}">{{ __('messages.leave_notice') }}</a>
+                    <a href="{{ route('leave-notices.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                        <span>{{ __('messages.leave_notice') }}</span>
+                        @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
+                    </a>
                     @if(auth()->user()->guru)
                         <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
                     @endif
@@ -290,6 +303,20 @@
                         ->whereNull('completed_at')
                         ->count();
 
+                    $menuOnLeaveGuruCount = \App\Models\LeaveNotice::query()
+                        ->when(
+                            $authUser->hasRole('guru'),
+                            fn ($query) => $query->where('guru_id', $authUser->guru?->id ?? 0)
+                        )
+                        ->when(
+                            $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
+                            fn ($query) => $query->whereHas('guru', fn ($q) => $q->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
+                        )
+                        ->whereDate('leave_date', '<=', now()->toDateString())
+                        ->whereDate('leave_until', '>=', now()->toDateString())
+                        ->distinct('guru_id')
+                        ->count('guru_id');
+
                     $menuPendingClaimsCount = $authUser->pending_claims_count;
                 @endphp
                 <a href="{{ route('dashboard') }}" wire:navigate class="menu-link {{ request()->routeIs('dashboard') ? 'menu-link-active' : '' }}">{{ __('messages.dashboard') }}</a>
@@ -361,7 +388,12 @@
                                 @endif
                             </a>
                             
-                            <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }}">{{ __('messages.leave_notice') }}</a>
+                            <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                <span>{{ __('messages.leave_notice') }}</span>
+                                @if($menuOnLeaveGuruCount > 0)
+                                    <span class="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuOnLeaveGuruCount > 99 ? '99+' : $menuOnLeaveGuruCount }}</span>
+                                @endif
+                            </a>
                         </div>
                     </div>
                 @endrole
@@ -395,7 +427,12 @@
                                 <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuInboxCount > 99 ? '99+' : $menuInboxCount }}</span>
                             @endif
                         </a>
-                        <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }}">{{ __('messages.leave_notice') }}</a>
+                        <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                            <span>{{ __('messages.leave_notice') }}</span>
+                            @if($menuOnLeaveGuruCount > 0)
+                                <span class="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuOnLeaveGuruCount > 99 ? '99+' : $menuOnLeaveGuruCount }}</span>
+                            @endif
+                        </a>
                         @if(auth()->user()->guru)
                             <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
                         @endif
