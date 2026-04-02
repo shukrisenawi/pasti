@@ -59,6 +59,9 @@
             <a href="{{ route('pemarkahan.index', ['tab' => 'scores']) }}" class="btn {{ $activeTab === 'scores' ? 'btn-primary' : 'btn-outline' }}">
                 {{ __('messages.total_score') }}
             </a>
+            <a href="{{ route('pemarkahan.index', ['tab' => 'pasti-scores']) }}" class="btn {{ $activeTab === 'pasti-scores' ? 'btn-primary' : 'btn-outline' }}">
+                Letak Markah PASTI
+            </a>
             @if($canManageTitleOptions)
                 <a href="{{ route('pemarkahan.index', ['tab' => 'title-options']) }}" class="btn {{ $activeTab === 'title-options' ? 'btn-primary' : 'btn-outline' }}">
                     {{ __('messages.add_pemarkahan_title_option') }}
@@ -116,7 +119,7 @@
             </div>
         @endif
 
-        @if($activeTab === 'scores')
+        @if(in_array($activeTab, ['scores', 'pasti-scores'], true))
             <div class="card">
                 <div class="grid gap-4 md:grid-cols-3 md:items-end">
                     <div>
@@ -145,7 +148,7 @@
             </div>
         @endif
 
-        @if($activeTab === 'scores' && $pastis->isNotEmpty() && $selectedTitleOptionId > 0)
+        @if(in_array($activeTab, ['scores', 'pasti-scores'], true) && $pastis->isNotEmpty() && $selectedTitleOptionId > 0)
             <div class="card mt-4">
                 <form wire:submit.prevent="saveScores">
                     <div class="table-wrap">

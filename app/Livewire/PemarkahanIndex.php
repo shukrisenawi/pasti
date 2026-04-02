@@ -46,8 +46,8 @@ class PemarkahanIndex extends Component
 
         $tab = (string) request()->query('tab', 'scores');
         $allowedTabs = $user->hasRole('master_admin')
-            ? ['scores', 'title-options']
-            : ['scores'];
+            ? ['scores', 'pasti-scores', 'title-options']
+            : ['scores', 'pasti-scores'];
 
         $this->activeTab = in_array($tab, $allowedTabs, true) ? $tab : 'scores';
     }
@@ -113,7 +113,7 @@ class PemarkahanIndex extends Component
             return;
         }
 
-        if (! in_array($tab, ['scores', 'title-options'], true)) {
+        if (! in_array($tab, ['scores', 'pasti-scores', 'title-options'], true)) {
             return;
         }
 
