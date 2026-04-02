@@ -24,6 +24,10 @@ class PemarkahanIndex extends Component
 
     public array $scoresInput = [];
 
+    public int $currentYear;
+
+    public array $pastiScoresForm = [];
+
     public string $newTitle = '';
 
     public ?int $editingTitleOptionId = null;
@@ -37,7 +41,8 @@ class PemarkahanIndex extends Component
         $user = auth()->user();
         abort_unless($user?->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
-        $this->selectedYear = (int) now()->year;
+        $this->currentYear = (int) now()->year;
+        $this->selectedYear = $this->currentYear;
         if ($this->isGuruOnly($user)) {
             $this->activeTab = 'history';
 
@@ -87,6 +92,7 @@ class PemarkahanIndex extends Component
 
         $pastis = $this->accessiblePastisForUser($user);
         $this->fillScoresInput($pastis);
+        $this->fillPastiScoresForm($pastis);
 
         return view('livewire.pemarkahan-index', [
             'isGuruOnly' => false,
@@ -198,6 +204,75 @@ class PemarkahanIndex extends Component
         );
 
         $this->scoresInput = [];
+        $this->notice = __('messages.saved');
+    }
+    public function savePastiScores(): void
+    {
+        /** @var User $user */
+        $user = auth()->user();
+        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+
+        $validated = $this->validate([
+            'pastiScoresForm' => ['nullable', 'array'],
+            'pastiScoresForm.*.title_option_id' => ['nullable', 'integer', Rule::exists('pemarkahan_title_options', 'id')],
+            'pastiScoresForm.*.score' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $allowedPastis = $this->accessiblePastisForUser($user);
+        $allowedPastiIds = $allowedPastis->pluck('id')->all();
+
+        $rowsToUpsert = [];
+        $now = now();
+        $hasInvalidPartialRow = false;
+
+        foreach ($allowedPastiIds as $pastiId) {
+            $row = $validated['pastiScoresForm'][(string) $pastiId]
+                ?? $validated['pastiScoresForm'][$pastiId]
+                ?? [];
+
+            $titleOptionId = (int) ($row['title_option_id'] ?? 0);
+            $rawScore = $row['score'] ?? null;
+            $scoreFilled = ! ($rawScore === null || $rawScore === '');
+            $titleFilled = $titleOptionId > 0;
+
+            if (! $scoreFilled && ! $titleFilled) {
+                continue;
+            }
+
+            if (! $scoreFilled || ! $titleFilled) {
+                $hasInvalidPartialRow = true;
+                continue;
+            }
+
+            $rowsToUpsert[] = [
+                'pasti_id' => $pastiId,
+                'pemarkahan_title_option_id' => $titleOptionId,
+                'year' => $this->currentYear,
+                'score' => (float) $rawScore,
+                'updated_by' => $user->id,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        if ($hasInvalidPartialRow) {
+            $this->addError('pastiScoresForm', 'Setiap baris perlu lengkapkan tajuk permarkahan dan jumlah markah.');
+
+            return;
+        }
+
+        if ($rowsToUpsert !== []) {
+            PastiScore::query()->upsert(
+                $rowsToUpsert,
+                ['pasti_id', 'pemarkahan_title_option_id', 'year'],
+                ['score', 'updated_by', 'updated_at']
+            );
+
+            $this->sendPastiScoreNotifications($rowsToUpsert);
+        }
+
+        $this->pastiScoresForm = [];
+        $this->fillPastiScoresForm($allowedPastis);
         $this->notice = __('messages.saved');
     }
 
@@ -314,6 +389,28 @@ class PemarkahanIndex extends Component
             $this->scoresInput[(string) $pasti->id] = $existingScores[$pasti->id] ?? '';
         }
     }
+    private function fillPastiScoresForm(EloquentCollection $pastis): void
+    {
+        if ($this->pastiScoresForm !== []) {
+            return;
+        }
+
+        $latestScoresByPasti = PastiScore::query()
+            ->where('year', $this->currentYear)
+            ->whereIn('pasti_id', $pastis->pluck('id')->all())
+            ->orderByDesc('updated_at')
+            ->get()
+            ->groupBy('pasti_id')
+            ->map(fn (Collection $rows): ?PastiScore => $rows->first());
+
+        foreach ($pastis as $pasti) {
+            $latestScore = $latestScoresByPasti->get($pasti->id);
+            $this->pastiScoresForm[(string) $pasti->id] = [
+                'title_option_id' => $latestScore?->pemarkahan_title_option_id ?? '',
+                'score' => $latestScore?->score ?? '',
+            ];
+        }
+    }
 
     private function accessiblePastisForUser(User $user): EloquentCollection
     {
@@ -381,5 +478,52 @@ class PemarkahanIndex extends Component
             );
         }
     }
+    private function sendPastiScoreNotifications(array $rowsToUpsert): void
+    {
+        if ($rowsToUpsert === []) {
+            return;
+        }
+
+        $pastiIds = array_values(array_unique(array_map(fn (array $row): int => (int) $row['pasti_id'], $rowsToUpsert)));
+        $titleOptionIds = array_values(array_unique(array_map(fn (array $row): int => (int) $row['pemarkahan_title_option_id'], $rowsToUpsert)));
+
+        $pastiNames = Pasti::query()->whereIn('id', $pastiIds)->pluck('name', 'id');
+        $titleOptionNames = PemarkahanTitleOption::query()->whereIn('id', $titleOptionIds)->pluck('title', 'id');
+
+        $guruRecipientsByPasti = User::query()
+            ->select('users.*')
+            ->role('guru')
+            ->whereHas('guru', fn ($q) => $q
+                ->whereIn('pasti_id', $pastiIds)
+                ->where('active', true)
+            )
+            ->with('guru')
+            ->get()
+            ->groupBy(fn (User $recipient): int => (int) ($recipient->guru?->pasti_id ?? 0));
+
+        foreach ($rowsToUpsert as $row) {
+            $pastiId = (int) $row['pasti_id'];
+            $titleOptionId = (int) $row['pemarkahan_title_option_id'];
+            $score = (float) $row['score'];
+
+            $recipients = $guruRecipientsByPasti->get($pastiId, collect());
+            if ($recipients->isEmpty()) {
+                continue;
+            }
+
+            Notification::send(
+                $recipients,
+                new PemarkahanSubmittedNotification(
+                    $titleOptionNames[$titleOptionId] ?? '-',
+                    $this->currentYear,
+                    $score,
+                    $pastiNames[$pastiId] ?? '-'
+                )
+            );
+        }
+    }
 }
+
+
+
 

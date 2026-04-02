@@ -119,7 +119,7 @@
             </div>
         @endif
 
-        @if(in_array($activeTab, ['scores', 'pasti-scores'], true))
+        @if($activeTab === 'scores')
             <div class="card">
                 <div class="grid gap-4 md:grid-cols-3 md:items-end">
                     <div>
@@ -148,7 +148,7 @@
             </div>
         @endif
 
-        @if(in_array($activeTab, ['scores', 'pasti-scores'], true) && $pastis->isNotEmpty() && $selectedTitleOptionId > 0)
+        @if($activeTab === 'scores' && $pastis->isNotEmpty() && $selectedTitleOptionId > 0)
             <div class="card mt-4">
                 <form wire:submit.prevent="saveScores">
                     <div class="table-wrap">
@@ -191,6 +191,66 @@
                 </form>
             </div>
         @endif
+
+        @if($activeTab === 'pasti-scores' && $pastis->isNotEmpty())
+            <div class="card mt-4">
+                <form wire:submit.prevent="savePastiScores">
+                    <div class="table-wrap">
+                        <table class="table-base">
+                            <thead>
+                            <tr>
+                                <th>Senarai PASTI</th>
+                                <th>Tajuk Permarkahan</th>
+                                <th>Jumlah Markah</th>
+                                <th>Tahun</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                            @foreach($pastis as $pasti)
+                                <tr>
+                                    <td>{{ $pasti->name }}</td>
+                                    <td>
+                                        <select class="input-base" wire:model.defer="pastiScoresForm.{{ $pasti->id }}.title_option_id">
+                                            <option value="">-- {{ __('messages.select') }} --</option>
+                                            @foreach($titleOptions as $option)
+                                                <option value="{{ $option->id }}">{{ $option->title }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input
+                                            class="input-base"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            wire:model.defer="pastiScoresForm.{{ $pasti->id }}.score"
+                                            placeholder="0.00"
+                                        >
+                                    </td>
+                                    <td>{{ $currentYear }}</td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @error('pastiScoresForm')
+                        <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
+                    @error('pastiScoresForm.*.title_option_id')
+                        <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
+                    @error('pastiScoresForm.*.score')
+                        <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
+
+                    <div class="mt-4">
+                        <button class="btn btn-primary" type="submit">{{ __('messages.save') }}</button>
+                    </div>
+                </form>
+            </div>
+        @endif
     @endif
 </div>
+
 
