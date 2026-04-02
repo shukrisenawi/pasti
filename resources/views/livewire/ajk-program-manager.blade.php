@@ -114,9 +114,9 @@
                         <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
                     @enderror
                 </div>
-
-                <form wire:submit.prevent="saveAssignments" wire:key="assignment-form-user-{{ $selectedUser->id }}" class="mt-4 space-y-4">
-                    <input type="hidden" wire:model="selectedUserId" value="{{ $selectedUser->id }}">
+                <form method="POST" action="{{ route('ajk-program.assignments.update') }}" class="mt-4 space-y-4">
+                    @csrf
+                    <input type="hidden" name="selected_user_id" value="{{ $selectedUser->id }}">
                     <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-semibold text-slate-700">{{ __('messages.selected_user') }}</p>
                         <div class="mt-2 flex items-center gap-3">
@@ -135,8 +135,9 @@
                                 <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 hover:border-primary/40">
                                     <input
                                         type="checkbox"
-                                        wire:model="positionIds"
+                                        name="position_ids[]"
                                         value="{{ $position->id }}"
+                                        @checked($selectedUser->ajkPositions->contains('id', $position->id))
                                         class="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
                                     >
                                     <span class="block">
@@ -160,4 +161,5 @@
         </section>
     @endif
 </div>
+
 

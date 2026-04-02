@@ -58,6 +58,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/messages', [AdminMessageController::class, 'store'])->name('messages.store');
         Route::get('/users/expired-skim-pas', [AdminUserController::class, 'expiredSkimPas'])->name('users.expired-skim-pas');
         Route::get('/ajk-program', [AjkProgramController::class, 'index'])->name('ajk-program.index');
+        Route::post('/ajk-program/assignments', [AjkProgramController::class, 'updateAssignments'])->name('ajk-program.assignments.update');
         Route::get('/kewangan', [FinancialController::class, 'index'])->name('financial.index');
         Route::post('/kewangan', [FinancialController::class, 'store'])->name('financial.store');
     });
@@ -102,3 +103,4 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
