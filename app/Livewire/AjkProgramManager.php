@@ -28,6 +28,11 @@ class AjkProgramManager extends Component
     public function mount(): void
     {
         $this->activeTab = 'assignments';
+        $requestedUserId = (int) request()->query('selected_user_id', 0);
+        if ($requestedUserId > 0) {
+            $this->selectedUserId = $requestedUserId;
+        }
+
         $this->ensureSelectedUser();
     }
 
@@ -237,3 +242,4 @@ class AjkProgramManager extends Component
             ->value('id');
     }
 }
+

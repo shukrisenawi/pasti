@@ -101,13 +101,15 @@
             @if($selectedUser)
                 <div class="mt-4">
                     <label class="label-base">{{ __('messages.select_user') }}</label>
-                    <select wire:model.live="selectedUserId" class="input-base">
-                        @foreach($users as $item)
-                            <option value="{{ $item->id }}">
-                                {{ $item->display_name }} ({{ $item->email }})
-                            </option>
-                        @endforeach
-                    </select>
+                    <form method="GET" action="{{ route('ajk-program.index') }}">
+                        <select name="selected_user_id" onchange="this.form.submit()" class="input-base">
+                            @foreach($users as $item)
+                                <option value="{{ $item->id }}" @selected((int) $selectedUserId === (int) $item->id)>
+                                    {{ $item->display_name }} ({{ $item->email }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
                     @error('selectedUserId')
                         <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
                     @enderror
