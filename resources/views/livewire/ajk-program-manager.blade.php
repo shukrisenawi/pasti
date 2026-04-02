@@ -101,7 +101,7 @@
             @if($selectedUser)
                 <div class="mt-4">
                     <label class="label-base">{{ __('messages.select_user') }}</label>
-                    <select wire:model.live="selectedUserId" class="input-base">
+                    <select wire:model="selectedUserId" wire:change="selectUser($event.target.value)" class="input-base">
                         @foreach($users as $item)
                             <option value="{{ $item->id }}">
                                 {{ $item->display_name }} ({{ $item->email }})
@@ -113,7 +113,7 @@
                     @enderror
                 </div>
 
-                <form wire:submit.prevent="saveAssignments" class="mt-4 space-y-4">
+                <form wire:submit.prevent="saveAssignments" wire:key="assignment-form-user-{{ $selectedUser->id }}" class="mt-4 space-y-4">
                     <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-semibold text-slate-700">{{ __('messages.selected_user') }}</p>
                         <div class="mt-2 flex items-center gap-3">

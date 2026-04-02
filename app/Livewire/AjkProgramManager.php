@@ -89,6 +89,11 @@ class AjkProgramManager extends Component
         $this->positionIds = $user->ajkPositions->pluck('id')->map(fn ($id) => (int) $id)->all();
     }
 
+    public function selectUser($value): void
+    {
+        $this->updatedSelectedUserId($value);
+    }
+
     public function saveAssignments(): void
     {
         $this->ensureAccess();
