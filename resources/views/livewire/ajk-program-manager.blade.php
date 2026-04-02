@@ -116,6 +116,7 @@
                 </div>
 
                 <form wire:submit.prevent="saveAssignments" wire:key="assignment-form-user-{{ $selectedUser->id }}" class="mt-4 space-y-4">
+                    <input type="hidden" wire:model="selectedUserId" value="{{ $selectedUser->id }}">
                     <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-semibold text-slate-700">{{ __('messages.selected_user') }}</p>
                         <div class="mt-2 flex items-center gap-3">
