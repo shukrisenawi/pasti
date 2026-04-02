@@ -101,7 +101,7 @@
             @if($selectedUser)
                 <div class="mt-4">
                     <label class="label-base">{{ __('messages.select_user') }}</label>
-                    <select wire:model="selectedUserId" wire:change="selectUser($event.target.value)" class="input-base">
+                    <select wire:model.live="selectedUserId" class="input-base">
                         @foreach($users as $item)
                             <option value="{{ $item->id }}">
                                 {{ $item->display_name }} ({{ $item->email }})
@@ -157,3 +157,4 @@
         </section>
     @endif
 </div>
+
