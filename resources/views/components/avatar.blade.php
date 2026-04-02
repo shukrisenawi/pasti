@@ -11,7 +11,7 @@
     $targetGuru = $guru ?? ($user?->guru ?? null);
     $avatarUrl = $targetGuru?->avatar_url ?? $user?->avatar_url ?? '/images/default-avatar.svg';
     $name = $targetGuru?->display_name ?? $user?->display_name ?? 'Avatar';
-    $hasAward = $targetGuru?->terima_anugerah ?? false;
+    $hasAward = ($targetGuru?->kursus_guru ?? null) === 'terima_anugerah' || ($targetGuru?->terima_anugerah ?? false);
 @endphp
 
 <div class="relative inline-block shrink-0 {{ $class }}" style="position:relative; display:inline-block; flex-shrink:0;">
