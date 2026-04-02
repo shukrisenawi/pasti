@@ -11,6 +11,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Guru extends Model
 {
+    public const KURSUS_GURU_OPTIONS = [
+        'belum_kursus',
+        'semester_1',
+        'semester_2',
+        'semester_3',
+        'semester_4',
+        'semester_5',
+        'semester_6',
+        'semester_7',
+        'terima_anugerah',
+    ];
+
     protected $fillable = [
         'user_id',
         'pasti_id',
@@ -20,6 +32,7 @@ class Guru extends Model
         'is_assistant',
         'phone',
         'marital_status',
+        'kursus_guru',
         'joined_at',
         'active',
         'terima_anugerah',

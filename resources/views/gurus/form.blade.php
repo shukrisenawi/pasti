@@ -73,6 +73,21 @@
                         <option value="divorced" @selected(old('marital_status', $guru->marital_status) === 'divorced')>{{ __('messages.divorced') }}</option>
                     </select>
                 </div>
+                <div>
+                    <label class="label-base">{{ __('messages.kursus_guru') }}</label>
+                    <select class="input-base" name="kursus_guru">
+                        <option value="">- {{ __('messages.select') }} -</option>
+                        <option value="belum_kursus" @selected(old('kursus_guru', $guru->kursus_guru) === 'belum_kursus')>{{ __('messages.kursus_guru_belum_kursus') }}</option>
+                        <option value="semester_1" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_1')>{{ __('messages.kursus_guru_semester_1') }}</option>
+                        <option value="semester_2" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_2')>{{ __('messages.kursus_guru_semester_2') }}</option>
+                        <option value="semester_3" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_3')>{{ __('messages.kursus_guru_semester_3') }}</option>
+                        <option value="semester_4" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_4')>{{ __('messages.kursus_guru_semester_4') }}</option>
+                        <option value="semester_5" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_5')>{{ __('messages.kursus_guru_semester_5') }}</option>
+                        <option value="semester_6" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_6')>{{ __('messages.kursus_guru_semester_6') }}</option>
+                        <option value="semester_7" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_7')>{{ __('messages.kursus_guru_semester_7') }}</option>
+                        <option value="terima_anugerah" @selected(old('kursus_guru', $guru->kursus_guru) === 'terima_anugerah')>{{ __('messages.kursus_guru_terima_anugerah') }}</option>
+                    </select>
+                </div>
                 <div class="md:col-span-2">
                     <label class="label-base">Avatar</label>
                     <div class="mt-2 flex items-center gap-4">
@@ -119,4 +134,3 @@
         </form>
     </div>
 </x-app-layout>
-

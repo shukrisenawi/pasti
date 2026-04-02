@@ -102,6 +102,7 @@ class GuruController extends Controller
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'terima_anugerah' => ['nullable', 'boolean'],
+            'kursus_guru' => ['nullable', 'string', Rule::in(Guru::KURSUS_GURU_OPTIONS)],
             'marital_status' => ['nullable', 'string', 'in:single,married,widowed,divorced'],
         ]);
 
@@ -135,6 +136,7 @@ class GuruController extends Controller
             'joined_at' => null,
             'active' => (bool) ($data['active'] ?? false),
             'terima_anugerah' => (bool) ($data['terima_anugerah'] ?? false),
+            'kursus_guru' => $data['kursus_guru'] ?? null,
             'marital_status' => null,
         ]);
 
@@ -208,6 +210,7 @@ class GuruController extends Controller
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'terima_anugerah' => ['nullable', 'boolean'],
+            'kursus_guru' => ['nullable', 'string', Rule::in(Guru::KURSUS_GURU_OPTIONS)],
             'marital_status' => ['nullable', 'string', 'in:single,married,widowed,divorced'],
         ]);
 
@@ -267,6 +270,7 @@ class GuruController extends Controller
             'joined_at' => $data['joined_at'] ?? null,
             'active' => (bool) ($data['active'] ?? false),
             'terima_anugerah' => (bool) ($data['terima_anugerah'] ?? false),
+            'kursus_guru' => $data['kursus_guru'] ?? null,
             'marital_status' => $data['marital_status'] ?? null,
         ]);
 

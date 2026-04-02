@@ -217,8 +217,17 @@ return [
     'married' => 'Berkahwin',
     'widowed' => 'Duda/Balu',
     'divorced' => 'Bercerai',
+    'kursus_guru' => 'Kursus Guru',
+    'kursus_guru_belum_kursus' => 'Belum Kursus',
+    'kursus_guru_semester_1' => 'Semester 1',
+    'kursus_guru_semester_2' => 'Semester 2',
+    'kursus_guru_semester_3' => 'Semester 3',
+    'kursus_guru_semester_4' => 'Semester 4',
+    'kursus_guru_semester_5' => 'Semester 5',
+    'kursus_guru_semester_6' => 'Semester 6',
+    'kursus_guru_semester_7' => 'Semester 7',
+    'kursus_guru_terima_anugerah' => 'Terima Anugerah',
     'no_data' => 'Tiada data.',
     'no_programs_found' => 'Tiada program dijumpai.',
     'profile_updated' => 'Profil berjaya dikemaskini.',
 ];
-

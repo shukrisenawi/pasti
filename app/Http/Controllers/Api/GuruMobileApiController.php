@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class GuruMobileApiController extends Controller
@@ -96,6 +97,7 @@ class GuruMobileApiController extends Controller
                 'pasti_name' => $guru->pasti?->name,
                 'kawasan_name' => $guru->pasti?->kawasan?->name,
                 'marital_status' => $guru->marital_status,
+                'kursus_guru' => $guru->kursus_guru,
                 'kpi_score' => (float) ($guru->kpiSnapshot?->score ?? 0),
             ],
         ]);
@@ -309,6 +311,7 @@ class GuruMobileApiController extends Controller
             'pasti_id' => ['required', 'integer', 'exists:pastis,id'],
             'phone' => ['required', 'string', 'max:30'],
             'marital_status' => ['required', 'string', 'in:single,married,widowed,divorced'],
+            'kursus_guru' => ['nullable', 'string', Rule::in(Guru::KURSUS_GURU_OPTIONS)],
             'joined_at' => ['required', 'date'],
             'avatar' => $avatarRules,
         ]);
@@ -322,6 +325,7 @@ class GuruMobileApiController extends Controller
             'pasti_id' => $data['pasti_id'],
             'phone' => $data['phone'],
             'marital_status' => $data['marital_status'],
+            'kursus_guru' => $data['kursus_guru'] ?? null,
             'joined_at' => $data['joined_at'],
         ]);
 
@@ -354,6 +358,7 @@ class GuruMobileApiController extends Controller
                 'kawasan_name' => $freshUser->guru?->pasti?->kawasan?->name,
                 'phone' => $freshUser->guru?->phone,
                 'marital_status' => $freshUser->guru?->marital_status,
+                'kursus_guru' => $freshUser->guru?->kursus_guru,
                 'joined_at' => $freshUser->guru?->joined_at?->toDateString(),
             ],
         ]);

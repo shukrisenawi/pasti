@@ -219,5 +219,14 @@ return [
     'total_score' => 'Total Score',
     'upcoming_programs' => 'Upcoming Programs',
     'widowed' => 'Widowed',
+    'kursus_guru' => 'Teacher Course',
+    'kursus_guru_belum_kursus' => 'Not Yet Attended',
+    'kursus_guru_semester_1' => 'Semester 1',
+    'kursus_guru_semester_2' => 'Semester 2',
+    'kursus_guru_semester_3' => 'Semester 3',
+    'kursus_guru_semester_4' => 'Semester 4',
+    'kursus_guru_semester_5' => 'Semester 5',
+    'kursus_guru_semester_6' => 'Semester 6',
+    'kursus_guru_semester_7' => 'Semester 7',
+    'kursus_guru_terima_anugerah' => 'Received Award',
 ];
-

@@ -85,6 +85,7 @@ class ProfileController extends Controller
             $data['remove_avatar'],
             $data['phone'],
             $data['marital_status'],
+            $data['kursus_guru'],
             $data['joined_at']
         );
 
@@ -115,6 +116,7 @@ class ProfileController extends Controller
             $user->guru->update([
                 'phone' => $request->input('phone') ?: null,
                 'marital_status' => $request->input('marital_status') ?: null,
+                'kursus_guru' => $request->input('kursus_guru') ?: null,
                 'joined_at' => $request->input('joined_at') ?: null,
             ]);
 
