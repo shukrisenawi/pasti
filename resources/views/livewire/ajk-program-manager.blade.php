@@ -4,21 +4,19 @@
     @endif
 
     <div class="flex flex-wrap gap-2">
-        <button
-            type="button"
-            wire:click="switchTab('assignments')"
+        <a
+            href="{{ route('ajk-program.index', ['tab' => 'assignments', 'selected_user_id' => $selectedUserId]) }}"
             class="btn {{ $activeTab === 'assignments' ? 'btn-primary' : 'btn-outline' }}"
         >
             {{ __('messages.user_position_assignment') }}
-        </button>
+        </a>
         @if($canManagePositions)
-            <button
-                type="button"
-                wire:click="switchTab('positions')"
+            <a
+                href="{{ route('ajk-program.index', ['tab' => 'positions', 'selected_user_id' => $selectedUserId]) }}"
                 class="btn {{ $activeTab === 'positions' ? 'btn-primary' : 'btn-outline' }}"
             >
                 {{ __('messages.ajk_position') }}
-            </button>
+            </a>
         @endif
     </div>
 
@@ -161,5 +159,6 @@
         </section>
     @endif
 </div>
+
 
 

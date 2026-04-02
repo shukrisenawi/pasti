@@ -27,7 +27,15 @@ class AjkProgramManager extends Component
 
     public function mount(): void
     {
-        $this->activeTab = 'assignments';
+        $requestedTab = (string) request()->query('tab', 'assignments');
+        $this->activeTab = in_array($requestedTab, ['assignments', 'positions'], true)
+            ? $requestedTab
+            : 'assignments';
+
+        if ($this->activeTab === 'positions' && ! $this->canManagePositions()) {
+            $this->activeTab = 'assignments';
+        }
+
         $requestedUserId = (int) request()->query('selected_user_id', 0);
         if ($requestedUserId > 0) {
             $this->selectedUserId = $requestedUserId;
@@ -242,4 +250,5 @@ class AjkProgramManager extends Component
             ->value('id');
     }
 }
+
 
