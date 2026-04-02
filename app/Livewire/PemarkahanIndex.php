@@ -87,12 +87,21 @@ class PemarkahanIndex extends Component
                 'allTitleOptions' => collect(),
                 'pastis' => collect(),
                 'canManageTitleOptions' => false,
+                'savedScores' => $scores,
             ]);
         }
 
         $pastis = $this->accessiblePastisForUser($user);
         $this->fillScoresInput($pastis);
         $this->fillPastiScoresForm($pastis);
+
+        $savedScores = PastiScore::query()
+            ->with(['pasti.kawasan', 'titleOption'])
+            ->whereIn('pasti_id', $pastis->pluck('id')->all())
+            ->orderByDesc('year')
+            ->orderBy('pasti_id')
+            ->orderBy('pemarkahan_title_option_id')
+            ->get();
 
         return view('livewire.pemarkahan-index', [
             'isGuruOnly' => false,
@@ -105,6 +114,7 @@ class PemarkahanIndex extends Component
                 ->get(),
             'pastis' => $pastis,
             'canManageTitleOptions' => $user->hasRole('master_admin'),
+            'savedScores' => $savedScores,
         ]);
     }
 
@@ -523,6 +533,7 @@ class PemarkahanIndex extends Component
         }
     }
 }
+
 
 
 

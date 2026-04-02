@@ -57,7 +57,7 @@
     @else
         <div class="mb-4 flex flex-wrap gap-2">
             <a href="{{ route('pemarkahan.index', ['tab' => 'scores']) }}" class="btn {{ $activeTab === 'scores' ? 'btn-primary' : 'btn-outline' }}">
-                {{ __('messages.total_score') }}
+                Senarai Markah
             </a>
             <a href="{{ route('pemarkahan.index', ['tab' => 'pasti-scores']) }}" class="btn {{ $activeTab === 'pasti-scores' ? 'btn-primary' : 'btn-outline' }}">
                 Letak Markah PASTI
@@ -121,118 +121,61 @@
 
         @if($activeTab === 'scores')
             <div class="card">
-                <div class="grid gap-4 md:grid-cols-3 md:items-end">
-                    <div>
-                        <label class="label-base">{{ __('messages.title') }}</label>
-                        <select class="input-base" wire:model.live="selectedTitleOptionId">
-                            <option value="0">-- {{ __('messages.select') }} --</option>
-                            @foreach($titleOptions as $option)
-                                <option value="{{ $option->id }}">{{ $option->title }}</option>
-                            @endforeach
-                        </select>
-                        @error('selectedTitleOptionId')
-                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label class="label-base">{{ __('messages.year') }}</label>
-                        <input class="input-base" type="number" min="2000" max="2100" wire:model.live="selectedYear">
-                        @error('selectedYear')
-                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <button type="button" class="btn btn-outline" disabled>{{ __('messages.view') }}</button>
-                    </div>
+                <h3 class="text-base font-bold">Senarai Markah Disimpan</h3>
+                <div class="mt-4 space-y-3">
+                    @forelse($savedScores as $score)
+                        <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <p class="text-base font-bold text-slate-900">{{ $score->pasti?->name ?? '-' }}</p>
+                                <span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{{ $score->year }}</span>
+                            </div>
+                            <p class="mt-2 text-sm text-slate-600">Tajuk Permarkahan: <span class="font-semibold text-slate-800">{{ $score->titleOption?->title ?? '-' }}</span></p>
+                            <p class="mt-1 text-sm text-slate-600">Kawasan: <span class="font-semibold text-slate-800">{{ $score->pasti?->kawasan?->name ?? '-' }}</span></p>
+                            <p class="mt-1 text-sm text-slate-600">Jumlah Markah: <span class="font-bold text-primary">{{ number_format((float) $score->score, 2) }}</span></p>
+                        </div>
+                    @empty
+                        <p class="text-sm text-slate-500">-</p>
+                    @endforelse
                 </div>
-            </div>
-        @endif
-
-        @if($activeTab === 'scores' && $pastis->isNotEmpty() && $selectedTitleOptionId > 0)
-            <div class="card mt-4">
-                <form wire:submit.prevent="saveScores">
-                    <div class="table-wrap">
-                        <table class="table-base">
-                            <thead>
-                            <tr>
-                                <th>{{ __('messages.name') }}</th>
-                                <th>{{ __('messages.kawasan') }}</th>
-                                <th>{{ __('messages.total_score') }}</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                            @foreach($pastis as $pasti)
-                                <tr>
-                                    <td>{{ $pasti->name }}</td>
-                                    <td>{{ $pasti->kawasan?->name ?? '-' }}</td>
-                                    <td>
-                                        <input
-                                            class="input-base"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            wire:model.defer="scoresInput.{{ $pasti->id }}"
-                                            placeholder="0.00"
-                                        >
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    @error('scoresInput.*')
-                        <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
-                    @enderror
-
-                    <div class="mt-4">
-                        <button class="btn btn-primary" type="submit">{{ __('messages.save') }}</button>
-                    </div>
-                </form>
             </div>
         @endif
 
         @if($activeTab === 'pasti-scores' && $pastis->isNotEmpty())
             <div class="card mt-4">
-                <form wire:submit.prevent="savePastiScores">
-                    <div class="table-wrap">
-                        <table class="table-base">
-                            <thead>
-                            <tr>
-                                <th>Senarai PASTI</th>
-                                <th>Tajuk Permarkahan</th>
-                                <th>Jumlah Markah</th>
-                                <th>Tahun</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                            @foreach($pastis as $pasti)
-                                <tr>
-                                    <td>{{ $pasti->name }}</td>
-                                    <td>
-                                        <select class="input-base" wire:model.defer="pastiScoresForm.{{ $pasti->id }}.title_option_id">
-                                            <option value="">-- {{ __('messages.select') }} --</option>
-                                            @foreach($titleOptions as $option)
-                                                <option value="{{ $option->id }}">{{ $option->title }}</option>
-                                            @endforeach
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <input
-                                            class="input-base"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            wire:model.defer="pastiScoresForm.{{ $pasti->id }}.score"
-                                            placeholder="0.00"
-                                        >
-                                    </td>
-                                    <td>{{ $currentYear }}</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                <form wire:submit.prevent="savePastiScores" class="space-y-4">
+                    @foreach($pastis as $pasti)
+                        <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                            <p class="text-base font-bold text-slate-900">{{ $pasti->name }}</p>
+                            <p class="mt-1 text-xs text-slate-500">{{ $pasti->kawasan?->name ?? '-' }}</p>
+
+                            <div class="mt-3 grid gap-3 md:grid-cols-3">
+                                <div>
+                                    <label class="label-base">Tajuk Permarkahan</label>
+                                    <select class="input-base" wire:model.defer="pastiScoresForm.{{ $pasti->id }}.title_option_id">
+                                        <option value="">-- {{ __('messages.select') }} --</option>
+                                        @foreach($titleOptions as $option)
+                                            <option value="{{ $option->id }}">{{ $option->title }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="label-base">Jumlah Markah</label>
+                                    <input
+                                        class="input-base"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        wire:model.defer="pastiScoresForm.{{ $pasti->id }}.score"
+                                        placeholder="0.00"
+                                    >
+                                </div>
+                                <div>
+                                    <label class="label-base">Tahun</label>
+                                    <input class="input-base bg-slate-100" type="text" value="{{ $currentYear }}" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
 
                     @error('pastiScoresForm')
                         <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
