@@ -19,9 +19,7 @@
     @php
         $authUser = auth()->user();
         $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
-        $pastiMenuRoute = $authUser->hasAnyRole(['master_admin', 'admin'])
-            ? route('pasti.index')
-            : ($authUser->hasRole('guru') ? route('pasti.self.edit') : null);
+        $pastiMenuRoute = $authUser->hasRole('guru') ? route('pasti.self.edit') : null;
     @endphp
     <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent"></div>
 
@@ -96,8 +94,8 @@
 
             @role('master_admin|admin')
                 {{-- Pengurusan Dropdown --}}
-                <div x-data="{ open: {{ request()->routeIs(['kawasan.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'true' : 'false' }} }" class="space-y-1">
-                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kawasan.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'text-primary bg-primary/5' : '' }}">
+                <div x-data="{ open: {{ request()->routeIs(['kawasan.*', 'pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kawasan.*', 'pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'text-primary bg-primary/5' : '' }}">
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                             <span>{{ __('Pengurusan') }}</span>
@@ -106,6 +104,7 @@
                     </button>
                     <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
                         <a href="{{ route('kawasan.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kawasan.*') ? 'menu-link-active' : '' }}">{{ __('messages.kawasan') }}</a>
+                        <a href="{{ route('pasti.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti.*') ? 'menu-link-active' : '' }}">{{ __('messages.pasti') }}</a>
                         <a href="{{ route('users.gurus.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
                         @role('master_admin')
                             <a href="{{ route('users.admins.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('users.admins.*') ? 'menu-link-active' : '' }}">{{ __('messages.admin_accounts') }}</a>
@@ -297,8 +296,8 @@
                 
                 @role('master_admin|admin')
                     <!-- Group: Pengurusan -->
-                    <div x-data="{ open: {{ request()->routeIs(['kawasan.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'true' : 'false' }} }" class="space-y-1">
-                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kawasan.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'text-primary bg-primary/5' : '' }}">
+                    <div x-data="{ open: {{ request()->routeIs(['kawasan.*', 'pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kawasan.*', 'pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'text-primary bg-primary/5' : '' }}">
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                                 <span>{{ __('Pengurusan') }}</span>
@@ -307,6 +306,7 @@
                         </button>
                         <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
                             <a href="{{ route('kawasan.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kawasan.*') ? 'menu-link-active' : '' }}">{{ __('messages.kawasan') }}</a>
+                            <a href="{{ route('pasti.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti.*') ? 'menu-link-active' : '' }}">{{ __('messages.pasti') }}</a>
                             <a href="{{ route('users.gurus.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
                             @role('master_admin')
                                 <a href="{{ route('users.admins.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('users.admins.*') ? 'menu-link-active' : '' }}">{{ __('messages.admin_accounts') }}</a>
@@ -493,27 +493,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
