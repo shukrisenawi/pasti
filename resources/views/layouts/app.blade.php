@@ -15,7 +15,7 @@
     @livewireStyles
 </head>
 <body class="m-0">
-<div class="panel-shell relative overflow-hidden" x-data="{ mobileMenuOpen: false }">
+<div class="panel-shell relative overflow-x-hidden" x-data="{ mobileMenuOpen: false }">
     @php
         $authUser = auth()->user();
         $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
@@ -521,6 +521,7 @@
 </script>
 </body>
 </html>
+
 
 
 

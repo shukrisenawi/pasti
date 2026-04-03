@@ -11,7 +11,7 @@
     <div
         x-show="open"
         x-transition.origin.top.right
-        class="absolute right-0 z-[1000] mt-3 w-[min(22rem,calc(100vw-1.5rem))] max-h-96 overflow-y-auto rounded-3xl border border-slate-200 bg-white p-2 shadow-2xl"
+        class="absolute left-1/2 z-[1000] mt-3 max-h-96 w-[calc(100vw-1rem)] -translate-x-1/2 overflow-y-auto rounded-3xl border border-slate-200 bg-white p-2 shadow-2xl sm:left-auto sm:right-0 sm:w-[22rem] sm:translate-x-0"
         style="display: none;"
     >
         <p class="px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{{ __('messages.notifications') }}</p>
@@ -41,3 +41,4 @@
         @endforelse
     </div>
 </div>
+
