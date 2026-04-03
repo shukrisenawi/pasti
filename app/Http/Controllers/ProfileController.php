@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\Kawasan;
+use App\Models\Pasti;
 use App\Support\GuruProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -65,10 +66,10 @@ class ProfileController extends Controller
             'user' => $user,
             'onboardingStatus' => $onboardingStatus,
             'wizardStep' => $wizardStep,
-            'kawasans' => $user->hasRole('guru')
-                ? Kawasan::query()->orderBy('name')->get(['id', 'name'])
+            'pastis' => $user->hasRole('guru')
+                ? Pasti::query()->with('kawasan')->orderBy('name')->get(['id', 'kawasan_id', 'name'])
                 : collect(),
-            'guruPasti' => $user->hasRole('guru') ? $user->guru?->pasti : null,
+            'guruPastiId' => $user->hasRole('guru') ? $user->guru?->pasti_id : null,
         ]);
     }
 
@@ -126,7 +127,7 @@ class ProfileController extends Controller
                 return Redirect::route('profile.edit', ['step' => 'pasti'])
                     ->with('status_key', 'profile-updated')
                     ->with('status', __('messages.profile_updated'))
-                    ->with('wizard_notice', 'Profil berjaya dikemaskini. Seterusnya, sila kemaskini maklumat PASTI.');
+                    ->with('wizard_notice', 'Profil berjaya dikemaskini. Seterusnya, sila pilih PASTI anda.');
             }
 
             if ($status['profile_completed'] && $status['pasti_completed'] && $status['password_change_required']) {
@@ -140,5 +141,30 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')
             ->with('status_key', 'profile-updated')
             ->with('status', __('messages.profile_updated'));
+    }
+
+    public function updatePastiSelection(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasRole('guru') && $user->guru, 403);
+
+        $data = $request->validate([
+            'pasti_id' => ['required', 'integer', Rule::exists('pastis', 'id')],
+        ]);
+
+        $user->guru->update([
+            'pasti_id' => (int) $data['pasti_id'],
+        ]);
+
+        $status = $this->profileCompletionService->onboardingStatus($user->fresh()->loadMissing('guru.pasti'));
+
+        if ($status['profile_completed'] && $status['pasti_completed'] && $status['password_change_required']) {
+            return Redirect::route('profile.edit', ['step' => 'password'])
+                ->with('status', __('messages.saved'))
+                ->with('wizard_notice', 'PASTI berjaya dipilih. Seterusnya, sila tukar kata laluan anda.');
+        }
+
+        return Redirect::route('profile.edit', ['step' => 'pasti'])
+            ->with('status', __('messages.saved'));
     }
 }

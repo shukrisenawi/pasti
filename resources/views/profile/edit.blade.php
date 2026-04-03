@@ -36,7 +36,7 @@
                 <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
                     <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'profile' ? 'bg-primary text-white' : 'bg-emerald-100 text-emerald-800' }}">1. Kemaskini Profil</span>
                     <span class="text-slate-400">-></span>
-                    <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'pasti' ? 'bg-primary text-white' : (($onboardingStatus['pasti_completed'] ?? false) ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600') }}">2. Kemaskini PASTI</span>
+                    <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'pasti' ? 'bg-primary text-white' : (($onboardingStatus['pasti_completed'] ?? false) ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600') }}">2. Pilih PASTI</span>
                     <span class="text-slate-400">-></span>
                     <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'password' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600' }}">3. Tukar Kata Laluan</span>
                 </div>

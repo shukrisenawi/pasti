@@ -50,46 +50,11 @@ class GuruProfileCompletionService
      */
     public function missingPastiFields(User $user): array
     {
-        $pasti = $user->guru?->pasti;
-
-        if (blank($pasti)) {
-            return [
-                'kawasan_id',
-                'name',
-                'phone',
-                'manager_name',
-                'manager_phone',
-                'address',
-            ];
+        if (blank($user->guru?->pasti_id)) {
+            return ['pasti_id'];
         }
 
-        $missing = [];
-
-        if (blank($pasti->kawasan_id)) {
-            $missing[] = 'kawasan_id';
-        }
-
-        if (blank($pasti->name)) {
-            $missing[] = 'name';
-        }
-
-        if (blank($pasti->phone)) {
-            $missing[] = 'phone';
-        }
-
-        if (blank($pasti->manager_name)) {
-            $missing[] = 'manager_name';
-        }
-
-        if (blank($pasti->manager_phone)) {
-            $missing[] = 'manager_phone';
-        }
-
-        if (blank($pasti->address)) {
-            $missing[] = 'address';
-        }
-
-        return $missing;
+        return [];
     }
 
     public function isCompleted(User $user): bool
