@@ -10,6 +10,9 @@
         <a href="{{ route('financial.index', ['tab' => 'transaksi']) }}" class="btn {{ $activeTab === 'transaksi' ? 'btn-primary' : 'btn-outline' }}">
             {{ __('messages.financial_transactions') }}
         </a>
+        <a href="{{ route('financial.index', ['tab' => 'tambah-transaksi']) }}" class="btn {{ $activeTab === 'tambah-transaksi' ? 'btn-primary' : 'btn-outline' }}">
+            {{ __('messages.add_financial_transaction') }}
+        </a>
         @if($canManageTypes)
             <a href="{{ route('financial.index', ['tab' => 'jenis-transaksi']) }}" class="btn {{ $activeTab === 'jenis-transaksi' ? 'btn-primary' : 'btn-outline' }}">
                 {{ __('messages.financial_type') }}
@@ -95,7 +98,7 @@
                 </table>
             </div>
         </section>
-    @else
+    @elseif($activeTab === 'tambah-transaksi')
         <section class="card">
             <h3 class="text-base font-bold text-slate-900">{{ __('messages.add_financial_transaction') }}</h3>
             <form method="POST" action="{{ route('financial.store') }}" class="mt-4 grid gap-4 md:grid-cols-2">
@@ -159,8 +162,8 @@
                 </div>
             </form>
         </section>
-
-        <section class="card mt-4">
+    @else
+        <section class="card">
             <h3 class="text-base font-bold text-slate-900">{{ __('messages.financial_transactions') }}</h3>
             <div class="mt-3 table-wrap">
                 <table class="table-base">

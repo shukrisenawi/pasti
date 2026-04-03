@@ -18,8 +18,8 @@ class FinancialController extends Controller
         abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
 
         $allowedTabs = $user->hasRole('master_admin')
-            ? ['ringkasan', 'transaksi', 'jenis-transaksi']
-            : ['ringkasan', 'transaksi'];
+            ? ['ringkasan', 'transaksi', 'tambah-transaksi', 'jenis-transaksi']
+            : ['ringkasan', 'transaksi', 'tambah-transaksi'];
         $activeTab = in_array($request->query('tab'), $allowedTabs, true)
             ? $request->query('tab')
             : 'ringkasan';
