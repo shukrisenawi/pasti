@@ -120,8 +120,8 @@
                 </div>
 
                 {{-- Laporan/Aktiviti Dropdown --}}
-                <div x-data="{ open: {{ request()->routeIs(['financial.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*']) ? 'true' : 'false' }} }" class="space-y-1">
-                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['financial.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*']) ? 'text-primary bg-primary/5' : '' }}">
+                <div x-data="{ open: {{ request()->routeIs(['financial.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['financial.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*']) ? 'text-primary bg-primary/5' : '' }}">
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                             <span>{{ __('Laporan/Aktiviti') }}</span>
@@ -140,6 +140,9 @@
                         <a href="{{ route('pasti-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.maklumat_pasti') }}</span>
                             @if($drawerPastiInfoPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerPastiInfoPendingCount > 99 ? '99+' : $drawerPastiInfoPendingCount }}</span>@endif
+                        </a>
+                        <a href="{{ route('guru-salary-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }}">
+                            {{ __('messages.guru_salary_information') }}
                         </a>
                         <a href="{{ route('kursus-guru.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                         <a href="{{ route('programs.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
@@ -169,6 +172,9 @@
                     <a href="{{ route('pasti-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                         <span>{{ __('messages.maklumat_pasti') }}</span>
                         @if($drawerPastiInfoPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerPastiInfoPendingCount > 99 ? '99+' : $drawerPastiInfoPendingCount }}</span>@endif
+                    </a>
+                    <a href="{{ route('guru-salary-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }}">
+                        {{ __('messages.guru_salary_information') }}
                     </a>
                     <a href="{{ route('kursus-guru.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                     <a href="{{ route('programs.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
@@ -343,8 +349,8 @@
                     </div>
 
                     <!-- Group: Laporan/Aktiviti -->
-                    <div x-data="{ open: {{ request()->routeIs(['financial.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*']) ? 'true' : 'false' }} }" class="space-y-1">
-                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['financial.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*']) ? 'text-primary bg-primary/5' : '' }}">
+                    <div x-data="{ open: {{ request()->routeIs(['financial.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['financial.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*']) ? 'text-primary bg-primary/5' : '' }}">
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                 <span>{{ __('Laporan/Aktiviti') }}</span>
@@ -372,6 +378,9 @@
                                 @if($menuPastiInfoPendingCount > 0)
                                     <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuPastiInfoPendingCount > 99 ? '99+' : $menuPastiInfoPendingCount }}</span>
                                 @endif
+                            </a>
+                            <a href="{{ route('guru-salary-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }}">
+                                {{ __('messages.guru_salary_information') }}
                             </a>
                             <a href="{{ route('kursus-guru.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                             
@@ -415,6 +424,9 @@
                             @if($menuPastiInfoPendingCount > 0)
                                 <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuPastiInfoPendingCount > 99 ? '99+' : $menuPastiInfoPendingCount }}</span>
                             @endif
+                        </a>
+                        <a href="{{ route('guru-salary-information.index') }}" wire:navigate class="menu-link {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }}">
+                            {{ __('messages.guru_salary_information') }}
                         </a>
                         <a href="{{ route('kursus-guru.index') }}" wire:navigate class="menu-link {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                         <a href="{{ route('programs.index') }}" wire:navigate class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
@@ -499,4 +511,5 @@
 </script>
 </body>
 </html>
+
 

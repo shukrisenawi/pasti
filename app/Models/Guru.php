@@ -75,6 +75,11 @@ class Guru extends Model
         return $this->hasMany(LeaveNotice::class);
     }
 
+    public function salaryRequests(): HasMany
+    {
+        return $this->hasMany(GuruSalaryRequest::class);
+    }
+
     public function scopeWithLeaveDaysForYear(Builder $query, int $year, string $alias = 'leave_notices_current_year_count'): Builder
     {
         $yearStart = sprintf('%d-01-01', $year);

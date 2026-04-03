@@ -14,6 +14,7 @@ class CurrentDataSeeder extends Seeder
         DB::table('program_title_options')->truncate();
         DB::table('program_statuses')->truncate();
         DB::table('pemarkahan_title_options')->truncate();
+        DB::table('guru_salary_requests')->truncate();
         DB::table('financial_transaction_types')->truncate();
         DB::table('ajk_positions')->truncate();
         DB::table('pastis')->truncate();
@@ -538,3 +539,4 @@ class CurrentDataSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
 }
+

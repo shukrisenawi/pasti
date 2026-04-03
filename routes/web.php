@@ -8,6 +8,7 @@ use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\GuruCourseController;
+use App\Http\Controllers\GuruSalaryInformationController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\KpiController;
 use App\Http\Controllers\LeaveNoticeController;
@@ -51,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('/kelas', KelasController::class)->except(['show']);
         Route::post('/kelas/{kela}/student-count', [KelasController::class, 'updateStudentCount'])->name('kelas.student-count.update');
         Route::post('/maklumat-pasti/request-all', [PastiInformationController::class, 'requestAllUpdates'])->name('pasti-information.request-all');
+        Route::post('/maklumat-gaji-guru/request-all', [GuruSalaryInformationController::class, 'requestAllUpdates'])->name('guru-salary-information.request-all');
         Route::resource('/programs', ProgramController::class)->except(['index', 'show']);
         Route::get('/kpi/gurus', [KpiController::class, 'index'])->name('kpi.gurus.index');
         Route::get('/messages/create', [AdminMessageController::class, 'create'])->name('messages.create');
@@ -70,6 +72,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/leave-notices', [LeaveNoticeController::class, 'store'])->name('leave-notices.store');
         Route::get('/maklumat-pasti/{pastiInformationRequest}/isi', [PastiInformationController::class, 'edit'])->name('pasti-information.edit');
         Route::post('/maklumat-pasti/{pastiInformationRequest}/isi', [PastiInformationController::class, 'update'])->name('pasti-information.update');
+        Route::get('/maklumat-gaji-guru/{guruSalaryRequest}/isi', [GuruSalaryInformationController::class, 'edit'])->name('guru-salary-information.edit');
+        Route::post('/maklumat-gaji-guru/{guruSalaryRequest}/isi', [GuruSalaryInformationController::class, 'update'])->name('guru-salary-information.update');
         Route::post('/kursus-guru/responses/{response}', [GuruCourseController::class, 'respond'])->name('kursus-guru.responses.respond');
     });
 
@@ -80,6 +84,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/pemarkahan', [PemarkahanController::class, 'index'])->name('pemarkahan.index');
         Route::post('/pemarkahan', [PemarkahanController::class, 'store'])->name('pemarkahan.store');
         Route::get('/maklumat-pasti', [PastiInformationController::class, 'index'])->name('pasti-information.index');
+        Route::get('/maklumat-gaji-guru', [GuruSalaryInformationController::class, 'index'])->name('guru-salary-information.index');
         Route::get('/kursus-guru', [GuruCourseController::class, 'index'])->name('kursus-guru.index');
         Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
         Route::get('/programs/{program}', [ProgramController::class, 'show'])->name('programs.show');
