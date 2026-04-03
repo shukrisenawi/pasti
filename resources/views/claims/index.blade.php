@@ -48,115 +48,95 @@
     @elseif($activeTab === 'pending' && $canApprove)
         <section class="card">
             <h3 class="text-base font-bold text-slate-900">{{ __('messages.pending_approval') }}</h3>
-            <div class="mt-3 table-wrap">
-                <table class="table-base">
-                    <thead>
-                    <tr>
-                        <th>{{ __('messages.date') }}</th>
-                        <th>{{ __('messages.name') }}</th>
-                        <th>{{ __('messages.pasti') }}</th>
-                        <th>{{ __('messages.amount') }}</th>
-                        <th>{{ __('messages.notes') }}</th>
-                        <th>{{ __('messages.image') }}</th>
-                        <th>{{ __('messages.actions') }}</th>
-                    </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                    @forelse($pendingClaims as $claim)
-                        <tr>
-                            <td>{{ $claim->claim_date?->format('d/m/Y') }}</td>
-                            <td>{{ $claim->user?->display_name ?? '-' }}</td>
-                            <td>{{ $claim->pasti?->name ?? '-' }}</td>
-                            <td>RM {{ number_format((float) $claim->amount, 2) }}</td>
-                            <td>{{ $claim->notes }}</td>
-                            <td>
+
+            @if($pendingClaims->count())
+                <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    @foreach($pendingClaims as $claim)
+                        <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="space-y-1 text-sm text-slate-600">
+                                <p><span class="font-semibold text-slate-700">{{ __('messages.date') }}:</span> {{ $claim->claim_date?->format('d/m/Y') }}</p>
+                                <p><span class="font-semibold text-slate-700">{{ __('messages.name') }}:</span> {{ $claim->user?->display_name ?? '-' }}</p>
+                                <p><span class="font-semibold text-slate-700">{{ __('messages.pasti') }}:</span> {{ $claim->pasti?->name ?? '-' }}</p>
+                                <p><span class="font-semibold text-slate-700">{{ __('messages.amount') }}:</span> RM {{ number_format((float) $claim->amount, 2) }}</p>
+                                <p><span class="font-semibold text-slate-700">{{ __('messages.notes') }}:</span> {{ $claim->notes }}</p>
+                            </div>
+
+                            <div class="mt-3">
                                 @if($claim->image_path)
-                                    <a href="{{ asset('uploads/' . $claim->image_path) }}" target="_blank" class="btn btn-outline btn-xs">{{ __('messages.view') }}</a>
+                                    <a href="{{ asset('uploads/' . $claim->image_path) }}" target="_blank" class="btn btn-outline btn-xs">{{ __('messages.view') }} {{ __('messages.image') }}</a>
                                 @else
-                                    -
+                                    <span class="text-xs text-slate-400">{{ __('messages.image') }}: -</span>
                                 @endif
-                            </td>
-                            <td>
-                                <div class="flex flex-col gap-2">
-                                    <form method="POST" action="{{ route('claims.approve', $claim) }}" class="flex min-w-[220px] flex-col gap-2">
-                                        @csrf
-                                        <select name="payment_method" class="input-base input-sm" required>
-                                            <option value="cash">{{ __('messages.cash') }}</option>
-                                            <option value="transfer" selected>{{ __('messages.transfer') }}</option>
-                                        </select>
-                                        <input class="input-base input-sm" type="number" step="0.01" min="0.01" name="approved_amount" value="{{ number_format((float) $claim->amount, 2, '.', '') }}" required>
-                                        <button class="btn btn-primary btn-xs">{{ __('messages.approve') }}</button>
-                                    </form>
-                                    <form method="POST" action="{{ route('claims.destroy', $claim) }}" onsubmit="return confirm('{{ __('Adakah anda pasti mahu memadam claim ini?') }}')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-error btn-xs w-full text-white">{{ __('messages.delete') }}</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="7" class="text-center">-</td></tr>
-                    @endforelse
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+
+                            <div class="mt-4 space-y-2 border-t border-slate-100 pt-3">
+                                <form method="POST" action="{{ route('claims.approve', $claim) }}" class="space-y-2">
+                                    @csrf
+                                    <select name="payment_method" class="input-base input-sm" required>
+                                        <option value="cash">{{ __('messages.cash') }}</option>
+                                        <option value="transfer" selected>{{ __('messages.transfer') }}</option>
+                                    </select>
+                                    <input class="input-base input-sm" type="number" step="0.01" min="0.01" name="approved_amount" value="{{ number_format((float) $claim->amount, 2, '.', '') }}" required>
+                                    <button class="btn btn-primary btn-sm w-full">{{ __('messages.approve') }}</button>
+                                </form>
+                                <form method="POST" action="{{ route('claims.destroy', $claim) }}" onsubmit="return confirm('{{ __('Adakah anda pasti mahu memadam claim ini?') }}')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-error btn-sm w-full text-white">{{ __('messages.delete') }}</button>
+                                </form>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <div class="mt-4 text-center text-slate-500">-</div>
+            @endif
+
             <div class="mt-4">{{ $pendingClaims->links() }}</div>
         </section>
     @else
         <section class="card">
             <h3 class="text-base font-bold text-slate-900">{{ __('messages.claim_list') }}</h3>
-            <div class="mt-3 table-wrap">
-                <table class="table-base">
-                    <thead>
-                    <tr>
-                        <th>{{ __('messages.date') }}</th>
-                        @unless(auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']))
-                            <th>{{ __('messages.name') }}</th>
-                            <th>{{ __('messages.pasti') }}</th>
-                        @endunless
-                        <th>{{ __('messages.amount') }}</th>
-                        <th>{{ __('messages.approved_amount') }}</th>
-                        <th>{{ __('messages.payment_method') }}</th>
-                        <th>{{ __('messages.status') }}</th>
-                        <th>{{ __('messages.image') }}</th>
-                        <th>{{ __('messages.actions') }}</th>
-                    </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                    @forelse($claims as $claim)
-                        <tr>
-                            <td>{{ $claim->claim_date?->format('d/m/Y') }}</td>
-                            @unless(auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']))
-                                <td>{{ $claim->user?->display_name ?? '-' }}</td>
-                                <td>{{ $claim->pasti?->name ?? '-' }}</td>
-                            @endunless
-                            <td>RM {{ number_format((float) $claim->amount, 2) }}</td>
-                            <td>{{ $claim->approved_amount ? 'RM '.number_format((float) $claim->approved_amount, 2) : '-' }}</td>
-                            <td>
-                                @if($claim->payment_method)
-                                    {{ $claim->payment_method === 'cash' ? __('messages.cash') : __('messages.transfer') }}
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td>
-                                @if($claim->status === 'approved')
-                                    <span class="font-semibold text-emerald-700">{{ __('messages.approved') }}</span>
-                                @elseif($claim->status === 'rejected')
-                                    <span class="font-semibold text-rose-600">{{ __('messages.rejected') }}</span>
-                                @else
-                                    <span class="font-semibold text-amber-600">{{ __('messages.pending') }}</span>
-                                @endif
-                            </td>
-                            <td>
+
+            @if($claims->count())
+                <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    @foreach($claims as $claim)
+                        <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="space-y-1 text-sm text-slate-600">
+                                <p><span class="font-semibold text-slate-700">{{ __('messages.date') }}:</span> {{ $claim->claim_date?->format('d/m/Y') }}</p>
+                                @unless(auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                                    <p><span class="font-semibold text-slate-700">{{ __('messages.name') }}:</span> {{ $claim->user?->display_name ?? '-' }}</p>
+                                    <p><span class="font-semibold text-slate-700">{{ __('messages.pasti') }}:</span> {{ $claim->pasti?->name ?? '-' }}</p>
+                                @endunless
+                                <p><span class="font-semibold text-slate-700">{{ __('messages.amount') }}:</span> RM {{ number_format((float) $claim->amount, 2) }}</p>
+                                <p><span class="font-semibold text-slate-700">{{ __('messages.approved_amount') }}:</span> {{ $claim->approved_amount ? 'RM '.number_format((float) $claim->approved_amount, 2) : '-' }}</p>
+                                <p>
+                                    <span class="font-semibold text-slate-700">{{ __('messages.payment_method') }}:</span>
+                                    @if($claim->payment_method)
+                                        {{ $claim->payment_method === 'cash' ? __('messages.cash') : __('messages.transfer') }}
+                                    @else
+                                        -
+                                    @endif
+                                </p>
+                                <p>
+                                    <span class="font-semibold text-slate-700">{{ __('messages.status') }}:</span>
+                                    @if($claim->status === 'approved')
+                                        <span class="font-semibold text-emerald-700">{{ __('messages.approved') }}</span>
+                                    @elseif($claim->status === 'rejected')
+                                        <span class="font-semibold text-rose-600">{{ __('messages.rejected') }}</span>
+                                    @else
+                                        <span class="font-semibold text-amber-600">{{ __('messages.pending') }}</span>
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="mt-3 flex items-center gap-2">
                                 @if($claim->image_path)
-                                    <a href="{{ asset('uploads/' . $claim->image_path) }}" target="_blank" class="btn btn-outline btn-xs">{{ __('messages.view') }}</a>
+                                    <a href="{{ asset('uploads/' . $claim->image_path) }}" target="_blank" class="btn btn-outline btn-xs">{{ __('messages.view') }} {{ __('messages.image') }}</a>
                                 @else
-                                    -
+                                    <span class="text-xs text-slate-400">{{ __('messages.image') }}: -</span>
                                 @endif
-                            </td>
-                            <td>
+
                                 @if($claim->status === 'pending')
                                     @php
                                         $canDelete = false;
@@ -178,27 +158,22 @@
                                     @endphp
 
                                     @if($canDelete)
-                                        <form method="POST" action="{{ route('claims.destroy', $claim) }}" onsubmit="return confirm('{{ __('Adakah anda pasti mahu memadam claim ini?') }}')">
+                                        <form method="POST" action="{{ route('claims.destroy', $claim) }}" onsubmit="return confirm('{{ __('Adakah anda pasti mahu memadam claim ini?') }}')" class="m-0">
                                             @csrf
                                             @method('DELETE')
                                             <button class="btn btn-error btn-xs text-white">{{ __('messages.delete') }}</button>
                                         </form>
-                                    @else
-                                        -
                                     @endif
-                                @else
-                                    -
                                 @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="{{ auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']) ? 7 : 9 }}" class="text-center">-</td></tr>
-                    @endforelse
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <div class="mt-4 text-center text-slate-500">-</div>
+            @endif
+
             <div class="mt-4">{{ $claims->links() }}</div>
         </section>
     @endif
 </x-app-layout>
-
