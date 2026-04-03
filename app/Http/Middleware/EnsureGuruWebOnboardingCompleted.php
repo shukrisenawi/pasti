@@ -29,6 +29,7 @@ class EnsureGuruWebOnboardingCompleted
         $allowed = [
             'profile.edit',
             'profile.update',
+            'profile.pasti-selection.update',
             'pasti.self.edit',
             'pasti.self.update',
             'password.update',
@@ -43,7 +44,7 @@ class EnsureGuruWebOnboardingCompleted
 
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Sila lengkapkan profil, kemaskini maklumat PASTI dan tukar kata laluan sebelum menggunakan fungsi lain.',
+                'message' => 'Sila lengkapkan profil, pilih PASTI dan tukar kata laluan sebelum menggunakan fungsi lain.',
                 'code' => 'ONBOARDING_INCOMPLETE',
                 'profile_completed' => $status['profile_completed'],
                 'pasti_completed' => $status['pasti_completed'],
@@ -55,6 +56,6 @@ class EnsureGuruWebOnboardingCompleted
 
         return redirect()
             ->route('profile.edit')
-            ->with('onboarding_notice', 'Sila lengkapkan profil, kemaskini maklumat PASTI dan tukar kata laluan dahulu sebelum menggunakan fungsi lain.');
+            ->with('onboarding_notice', 'Sila lengkapkan profil, pilih PASTI dan tukar kata laluan dahulu sebelum menggunakan fungsi lain.');
     }
 }
