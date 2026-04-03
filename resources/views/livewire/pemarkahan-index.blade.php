@@ -4,55 +4,18 @@
     @endif
 
     @if($isGuruOnly)
-        <div class="grid grid-cols-1 gap-4 md:hidden">
-            @forelse($scores as $score)
-                <div class="bg-white rounded-2xl p-5 shadow-card border border-slate-50 flex flex-col justify-between">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="pr-2">
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-none mb-1.5">{{ $score->year }}</p>
-                            <h3 class="font-extrabold text-slate-900 leading-tight">{{ $score->titleOption?->title ?? '-' }}</h3>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-[10px] font-bold text-primary uppercase leading-none mb-1">Skor</div>
-                            <div class="text-2xl font-black text-primary">{{ number_format((float) $score->score, 2) }}</div>
-                        </div>
+        <div class="card">
+            <h3 class="text-base font-bold">Markah PASTI Saya</h3>
+            <div class="mt-4 space-y-3">
+                @forelse($savedScores as $score)
+                    <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                        <p class="text-sm text-slate-600">Tajuk: <span class="font-semibold text-slate-800">{{ $score->titleOption?->title ?? '-' }}</span></p>
+                        <p class="mt-1 text-sm text-slate-600">Markah: <span class="font-bold text-primary">{{ number_format((float) $score->score, 2) }}</span></p>
                     </div>
-
-                    <div class="flex items-center gap-2 text-xs text-slate-400 mt-2 border-t border-slate-50 pt-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        <span>{{ __('messages.updated_at_label') }}: {{ $score->updated_at?->format('d/m/Y H:i') }}</span>
-                    </div>
-                </div>
-            @empty
-                <div class="text-center py-10 bg-white rounded-2xl border-2 border-dashed border-slate-100 text-slate-400 font-medium font-manrope">
-                    -
-                </div>
-            @endforelse
-        </div>
-
-        <div class="table-wrap hidden md:block">
-            <table class="table-base">
-                <thead>
-                <tr>
-                    <th>{{ __('messages.title') }}</th>
-                    <th>{{ __('messages.year') }}</th>
-                    <th class="text-center">{{ __('messages.total_score') }}</th>
-                    <th class="text-right">{{ __('messages.updated_at_label') }}</th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50">
-                @forelse($scores as $score)
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="font-semibold text-slate-700">{{ $score->titleOption?->title ?? '-' }}</td>
-                        <td class="text-slate-500 font-medium">{{ $score->year }}</td>
-                        <td class="text-center font-bold text-primary">{{ number_format((float) $score->score, 2) }}</td>
-                        <td class="text-right text-slate-400 text-sm font-medium">{{ $score->updated_at?->format('d/m/Y H:i') }}</td>
-                    </tr>
                 @empty
-                    <tr><td colspan="4" class="text-center py-8 text-slate-400">-</td></tr>
+                    <p class="text-sm text-slate-500">-</p>
                 @endforelse
-                </tbody>
-            </table>
+            </div>
         </div>
     @else
         <div class="mb-4 flex flex-wrap gap-2">
