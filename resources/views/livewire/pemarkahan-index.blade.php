@@ -125,13 +125,9 @@
                 <div class="mt-4 space-y-3">
                     @forelse($savedScores as $score)
                         <div class="rounded-2xl border border-slate-200 bg-white p-4">
-                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                <p class="text-base font-bold text-slate-900">{{ $score->pasti?->name ?? '-' }}</p>
-                                <span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{{ $score->year }}</span>
-                            </div>
-                            <p class="mt-2 text-sm text-slate-600">Tajuk Permarkahan: <span class="font-semibold text-slate-800">{{ $score->titleOption?->title ?? '-' }}</span></p>
-                            <p class="mt-1 text-sm text-slate-600">Kawasan: <span class="font-semibold text-slate-800">{{ $score->pasti?->kawasan?->name ?? '-' }}</span></p>
-                            <p class="mt-1 text-sm text-slate-600">Jumlah Markah: <span class="font-bold text-primary">{{ number_format((float) $score->score, 2) }}</span></p>
+                            <p class="text-base font-bold text-slate-900">{{ $score->pasti?->name ?? '-' }}</p>
+                            <p class="mt-2 text-sm text-slate-600">Tajuk: <span class="font-semibold text-slate-800">{{ $score->titleOption?->title ?? '-' }}</span></p>
+                            <p class="mt-1 text-sm text-slate-600">Markah: <span class="font-bold text-primary">{{ number_format((float) $score->score, 2) }}</span></p>
                         </div>
                     @empty
                         <p class="text-sm text-slate-500">-</p>
