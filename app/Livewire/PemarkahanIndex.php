@@ -222,62 +222,75 @@ class PemarkahanIndex extends Component
         $user = auth()->user();
         abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
 
+        $titleOptionIds = PemarkahanTitleOption::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->pluck('id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
         $validated = $this->validate([
             'pastiScoresForm' => ['nullable', 'array'],
-            'pastiScoresForm.*.title_option_id' => ['nullable', 'integer', Rule::exists('pemarkahan_title_options', 'id')],
-            'pastiScoresForm.*.score' => ['nullable', 'numeric', 'min:0'],
+            'pastiScoresForm.*' => ['nullable', 'array'],
+            'pastiScoresForm.*.*' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $allowedPastis = $this->accessiblePastisForUser($user);
         $allowedPastiIds = $allowedPastis->pluck('id')->all();
 
         $rowsToUpsert = [];
+        $pairsToDelete = [];
         $now = now();
-        $hasInvalidPartialRow = false;
 
         foreach ($allowedPastiIds as $pastiId) {
             $row = $validated['pastiScoresForm'][(string) $pastiId]
                 ?? $validated['pastiScoresForm'][$pastiId]
                 ?? [];
 
-            $titleOptionId = (int) ($row['title_option_id'] ?? 0);
-            $rawScore = $row['score'] ?? null;
-            $scoreFilled = ! ($rawScore === null || $rawScore === '');
-            $titleFilled = $titleOptionId > 0;
+            foreach ($titleOptionIds as $titleOptionId) {
+                $rawScore = $row[(string) $titleOptionId] ?? $row[$titleOptionId] ?? null;
 
-            if (! $scoreFilled && ! $titleFilled) {
-                continue;
+                if ($rawScore === null || $rawScore === '') {
+                    $pairsToDelete[] = [
+                        'pasti_id' => (int) $pastiId,
+                        'title_option_id' => (int) $titleOptionId,
+                    ];
+
+                    continue;
+                }
+
+                $rowsToUpsert[] = [
+                    'pasti_id' => (int) $pastiId,
+                    'pemarkahan_title_option_id' => (int) $titleOptionId,
+                    'year' => $this->currentYear,
+                    'score' => (float) $rawScore,
+                    'updated_by' => $user->id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
             }
-
-            if (! $scoreFilled || ! $titleFilled) {
-                $hasInvalidPartialRow = true;
-                continue;
-            }
-
-            $rowsToUpsert[] = [
-                'pasti_id' => $pastiId,
-                'pemarkahan_title_option_id' => $titleOptionId,
-                'year' => $this->currentYear,
-                'score' => (float) $rawScore,
-                'updated_by' => $user->id,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
         }
 
-        if ($hasInvalidPartialRow) {
-            $this->addError('pastiScoresForm', 'Setiap baris perlu lengkapkan tajuk permarkahan dan jumlah markah.');
+        DB::transaction(function () use ($rowsToUpsert, $pairsToDelete): void {
+            if ($rowsToUpsert !== []) {
+                PastiScore::query()->upsert(
+                    $rowsToUpsert,
+                    ['pasti_id', 'pemarkahan_title_option_id', 'year'],
+                    ['score', 'updated_by', 'updated_at']
+                );
+            }
 
-            return;
-        }
+            foreach ($pairsToDelete as $pair) {
+                PastiScore::query()
+                    ->where('pasti_id', (int) $pair['pasti_id'])
+                    ->where('pemarkahan_title_option_id', (int) $pair['title_option_id'])
+                    ->where('year', $this->currentYear)
+                    ->delete();
+            }
+        });
 
         if ($rowsToUpsert !== []) {
-            PastiScore::query()->upsert(
-                $rowsToUpsert,
-                ['pasti_id', 'pemarkahan_title_option_id', 'year'],
-                ['score', 'updated_by', 'updated_at']
-            );
-
             $this->sendPastiScoreNotifications($rowsToUpsert);
         }
 
@@ -405,20 +418,28 @@ class PemarkahanIndex extends Component
             return;
         }
 
-        $latestScoresByPasti = PastiScore::query()
+        $titleOptions = PemarkahanTitleOption::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id']);
+
+        $existingScores = PastiScore::query()
             ->where('year', $this->currentYear)
             ->whereIn('pasti_id', $pastis->pluck('id')->all())
-            ->orderByDesc('updated_at')
+            ->whereIn('pemarkahan_title_option_id', $titleOptions->pluck('id')->all())
             ->get()
-            ->groupBy('pasti_id')
-            ->map(fn (Collection $rows): ?PastiScore => $rows->first());
+            ->groupBy('pasti_id');
 
         foreach ($pastis as $pasti) {
-            $latestScore = $latestScoresByPasti->get($pasti->id);
-            $this->pastiScoresForm[(string) $pasti->id] = [
-                'title_option_id' => $latestScore?->pemarkahan_title_option_id ?? '',
-                'score' => $latestScore?->score ?? '',
-            ];
+            $scoresByTitle = $existingScores
+                ->get($pasti->id, collect())
+                ->pluck('score', 'pemarkahan_title_option_id');
+
+            foreach ($titleOptions as $titleOption) {
+                $titleOptionId = (int) $titleOption->id;
+                $this->pastiScoresForm[(string) $pasti->id][(string) $titleOptionId] = $scoresByTitle[$titleOptionId] ?? '';
+            }
         }
     }
 
@@ -533,8 +554,4 @@ class PemarkahanIndex extends Component
         }
     }
 }
-
-
-
-
 

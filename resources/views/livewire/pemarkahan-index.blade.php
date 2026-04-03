@@ -148,31 +148,25 @@
                             <p class="text-base font-bold text-slate-900">{{ $pasti->name }}</p>
                             <p class="mt-1 text-xs text-slate-500">{{ $pasti->kawasan?->name ?? '-' }}</p>
 
-                            <div class="mt-3 grid gap-3 md:grid-cols-3">
-                                <div>
-                                    <label class="label-base">Tajuk Permarkahan</label>
-                                    <select class="input-base" wire:model.defer="pastiScoresForm.{{ $pasti->id }}.title_option_id">
-                                        <option value="">-- {{ __('messages.select') }} --</option>
-                                        @foreach($titleOptions as $option)
-                                            <option value="{{ $option->id }}">{{ $option->title }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="label-base">Jumlah Markah</label>
-                                    <input
-                                        class="input-base"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        wire:model.defer="pastiScoresForm.{{ $pasti->id }}.score"
-                                        placeholder="0.00"
-                                    >
-                                </div>
-                                <div>
-                                    <label class="label-base">Tahun</label>
-                                    <input class="input-base bg-slate-100" type="text" value="{{ $currentYear }}" disabled>
-                                </div>
+                            <div class="mt-3 grid gap-3 md:grid-cols-2">
+                                @foreach($titleOptions as $option)
+                                    <div>
+                                        <label class="label-base">{{ $option->title }}</label>
+                                        <input
+                                            class="input-base"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            wire:model.defer="pastiScoresForm.{{ $pasti->id }}.{{ $option->id }}"
+                                            placeholder="0.00"
+                                        >
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div class="mt-3">
+                                <label class="label-base">Tahun</label>
+                                <input class="input-base bg-slate-100 max-w-xs" type="text" value="{{ $currentYear }}" disabled>
                             </div>
                         </div>
                     @endforeach
@@ -180,10 +174,7 @@
                     @error('pastiScoresForm')
                         <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                     @enderror
-                    @error('pastiScoresForm.*.title_option_id')
-                        <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
-                    @enderror
-                    @error('pastiScoresForm.*.score')
+                    @error('pastiScoresForm.*.*')
                         <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                     @enderror
 
@@ -195,5 +186,4 @@
         @endif
     @endif
 </div>
-
 
