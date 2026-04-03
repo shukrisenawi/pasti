@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
                     <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">KPI Saya</p>
                     <p class="mt-2 text-3xl font-black text-primary">{{ number_format($user->guru?->kpiSnapshot?->score ?? 0, 1) }}<span class="text-sm font-bold text-slate-400">%</span></p>
@@ -96,14 +96,6 @@
                 <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
                     <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Jumlah Cuti</p>
                     <p class="mt-2 text-3xl font-black text-orange-600">{{ $guruLeaveDays }}</p>
-                </div>
-                <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Tugasan</p>
-                    <p class="mt-2 text-3xl font-black {{ $pendingPastiInfoCount > 0 ? 'text-rose-600' : 'text-emerald-600' }}">{{ $pendingPastiInfoCount }}</p>
-                </div>
-                <div class="rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Notifikasi</p>
-                    <p class="mt-2 text-3xl font-black text-blue-600">{{ $user->unreadNotifications()->count() }}</p>
                 </div>
             </div>
 
