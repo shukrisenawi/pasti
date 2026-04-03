@@ -123,11 +123,23 @@
             <div class="card">
                 <h3 class="text-base font-bold">Senarai Markah Disimpan</h3>
                 <div class="mt-4 space-y-3">
-                    @forelse($savedScores as $score)
+                    @php
+                        $scoresByPasti = $savedScores->groupBy(fn ($score) => $score->pasti_id ?? 0);
+                    @endphp
+                    @forelse($scoresByPasti as $pastiScores)
+                        @php
+                            $firstScore = $pastiScores->first();
+                        @endphp
                         <div class="rounded-2xl border border-slate-200 bg-white p-4">
-                            <p class="text-base font-bold text-slate-900">{{ $score->pasti?->name ?? '-' }}</p>
-                            <p class="mt-2 text-sm text-slate-600">Tajuk: <span class="font-semibold text-slate-800">{{ $score->titleOption?->title ?? '-' }}</span></p>
-                            <p class="mt-1 text-sm text-slate-600">Markah: <span class="font-bold text-primary">{{ number_format((float) $score->score, 2) }}</span></p>
+                            <p class="text-base font-bold text-slate-900">{{ $firstScore?->pasti?->name ?? '-' }}</p>
+                            <div class="mt-2 space-y-1">
+                                @foreach($pastiScores as $score)
+                                    <p class="text-sm text-slate-600">
+                                        <span class="font-semibold text-slate-800">{{ $score->titleOption?->title ?? '-' }}</span>:
+                                        <span class="font-bold text-primary">{{ number_format((float) $score->score, 2) }}</span>
+                                    </p>
+                                @endforeach
+                            </div>
                         </div>
                     @empty
                         <p class="text-sm text-slate-500">-</p>
