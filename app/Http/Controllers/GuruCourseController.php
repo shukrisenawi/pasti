@@ -61,49 +61,89 @@ class GuruCourseController extends Controller
         abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
 
         $data = $request->validate([
-            'target_semester' => ['required', 'integer', 'min:2', 'max:' . self::MAX_SEMESTER],
-            'registration_deadline' => ['required', 'date', 'after_or_equal:today'],
+            'deadlines' => ['required', 'array'],
+            'deadlines.*' => ['nullable', 'date', 'after_or_equal:today'],
+            'notes' => ['nullable', 'array'],
+            'notes.*' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $targetSemester = (int) $data['target_semester'];
-        $sourceSemester = $targetSemester - 1;
+        $deadlines = collect($data['deadlines'] ?? [])
+            ->mapWithKeys(fn ($deadline, $semester) => [(int) $semester => $deadline])
+            ->filter(fn ($deadline, $semester) => (int) $semester >= 2 && (int) $semester <= self::MAX_SEMESTER && filled($deadline));
 
-        $recipientGurus = $this->eligibleGurusForOffer($user, $sourceSemester)->get();
-
-        if ($recipientGurus->isEmpty()) {
+        if ($deadlines->isEmpty()) {
             return back()->withErrors([
-                'kursus_guru' => 'Tiada guru aktif ditemui untuk Semester ' . $sourceSemester . '.',
-            ]);
+                'kursus_guru' => 'Sila isi sekurang-kurangnya satu tarikh untuk dihantar.',
+            ])->withInput();
         }
 
-        DB::transaction(function () use ($data, $user, $recipientGurus): void {
-            $offer = GuruCourseOffer::query()->create([
-                'target_semester' => $data['target_semester'],
-                'registration_deadline' => $data['registration_deadline'],
-                'sent_by' => $user->id,
-                'sent_at' => now(),
-            ]);
+        $latestOffers = $this->latestOffersBySemester();
+        $createdCount = 0;
+        $issues = [];
 
-            $responseRows = $recipientGurus->map(fn (Guru $guru): array => [
-                'guru_course_offer_id' => $offer->id,
-                'guru_id' => $guru->id,
-                'user_id' => $guru->user_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ])->all();
+        foreach ($deadlines as $targetSemester => $deadline) {
+            $latest = $latestOffers->get((int) $targetSemester);
+            $isLocked = $latest
+                && (int) $latest->responses_count > 0
+                && (int) $latest->responded_count < (int) $latest->responses_count;
 
-            GuruCourseOfferResponse::query()->insert($responseRows);
-
-            $recipientUsers = $recipientGurus
-                ->map(fn (Guru $guru) => $guru->user)
-                ->filter()
-                ->unique('id')
-                ->values();
-
-            if ($recipientUsers->isNotEmpty()) {
-                Notification::send($recipientUsers, new GuruCourseOfferNotification($offer));
+            if ($isLocked) {
+                $issues[] = 'Semester ' . $targetSemester . ' masih menunggu jawapan guru.';
+                continue;
             }
-        });
+
+            $sourceSemester = (int) $targetSemester - 1;
+            $recipientGurus = $this->eligibleGurusForOffer($user, $sourceSemester)->get();
+
+            if ($recipientGurus->isEmpty()) {
+                $issues[] = 'Tiada guru aktif ditemui untuk Semester ' . $sourceSemester . '.';
+                continue;
+            }
+
+            DB::transaction(function () use ($user, $targetSemester, $deadline, $data, $recipientGurus): void {
+                $offer = GuruCourseOffer::query()->create([
+                    'target_semester' => (int) $targetSemester,
+                    'registration_deadline' => $deadline,
+                    'note' => trim((string) ($data['notes'][$targetSemester] ?? '')) ?: null,
+                    'sent_by' => $user->id,
+                    'sent_at' => now(),
+                ]);
+
+                $responseRows = $recipientGurus->map(fn (Guru $guru): array => [
+                    'guru_course_offer_id' => $offer->id,
+                    'guru_id' => $guru->id,
+                    'user_id' => $guru->user_id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])->all();
+
+                GuruCourseOfferResponse::query()->insert($responseRows);
+
+                $recipientUsers = $recipientGurus
+                    ->map(fn (Guru $guru) => $guru->user)
+                    ->filter()
+                    ->unique('id')
+                    ->values();
+
+                if ($recipientUsers->isNotEmpty()) {
+                    Notification::send($recipientUsers, new GuruCourseOfferNotification($offer));
+                }
+            });
+
+            $createdCount++;
+        }
+
+        if ($createdCount === 0) {
+            return back()->withErrors([
+                'kursus_guru' => implode(' ', $issues) ?: 'Tiada semester berjaya dihantar.',
+            ])->withInput();
+        }
+
+        if ($issues !== []) {
+            return back()
+                ->with('status', __('messages.saved'))
+                ->with('kursus_guru_warning', implode(' ', $issues));
+        }
 
         return back()->with('status', __('messages.saved'));
     }
@@ -119,6 +159,8 @@ class GuruCourseController extends Controller
         $data = $request->validate([
             'decision' => ['required', 'in:continue,stop'],
             'stop_reason' => ['nullable', 'string', 'max:1000', 'required_if:decision,stop'],
+        ], [
+            'stop_reason.required_if' => 'Sila nyatakan alasan jika tidak mahu sambung.',
         ]);
 
         DB::transaction(function () use ($response, $data): void {
@@ -171,4 +213,3 @@ class GuruCourseController extends Controller
             ->keyBy(fn (GuruCourseOffer $offer) => (int) $offer->target_semester);
     }
 }
-

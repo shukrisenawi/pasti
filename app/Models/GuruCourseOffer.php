@@ -11,6 +11,7 @@ class GuruCourseOffer extends Model
     protected $fillable = [
         'target_semester',
         'registration_deadline',
+        'note',
         'sent_by',
         'sent_at',
     ];

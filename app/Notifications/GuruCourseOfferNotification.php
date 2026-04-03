@@ -23,12 +23,13 @@ class GuruCourseOfferNotification extends Notification
     {
         $targetSemester = (int) $this->offer->target_semester;
         $sourceSemester = max(1, $targetSemester - 1);
+        $noteText = $this->offer->note ? (' Nota: ' . $this->offer->note) : '';
 
         return [
             'guru_course_offer_id' => $this->offer->id,
             'notification_title' => 'Tawaran Kursus Guru',
             'notification_meta' => 'Semester ' . $sourceSemester . ' -> Semester ' . $targetSemester,
-            'notification_message' => 'Adakah anda mahu sambung ke Semester ' . $targetSemester . '? Sila jawab sebelum ' . optional($this->offer->registration_deadline)?->format('d/m/Y') . '.',
+            'notification_message' => 'Adakah anda mahu sambung ke Semester ' . $targetSemester . '? Sila jawab sebelum ' . optional($this->offer->registration_deadline)?->format('d/m/Y') . '.' . $noteText,
             'url' => route('kursus-guru.index'),
         ];
     }
