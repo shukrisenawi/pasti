@@ -39,11 +39,19 @@ class GuruController extends Controller
             $scopeQuery->whereIn('pasti_id', $this->assignedPastiIds($user));
         }
 
-        $query = (clone $scopeQuery)->with(['user', 'pasti', 'kpiSnapshot']);
-        $query->where('is_assistant', $activeTab === 'assistant');
+        $query = (clone $scopeQuery)
+            ->with(['user', 'pasti', 'kpiSnapshot'])
+            ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
+            ->select('gurus.*');
+        $query->where('gurus.is_assistant', $activeTab === 'assistant');
 
         return view('gurus.index', [
-            'gurus' => $query->latest()->paginate(10)->withQueryString(),
+            'gurus' => $query
+                ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
+                ->orderBy('pastis.name')
+                ->orderBy('gurus.name')
+                ->paginate(10)
+                ->withQueryString(),
             'activeTab' => $activeTab,
             'guruCount' => (clone $scopeQuery)->where('is_assistant', false)->count(),
             'assistantCount' => (clone $scopeQuery)->where('is_assistant', true)->count(),
