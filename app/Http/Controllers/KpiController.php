@@ -18,6 +18,7 @@ class KpiController extends Controller
     {
         $user = $request->user();
         $currentYear = (int) now()->year;
+        $search = trim((string) $request->query('search', ''));
 
         if ($user->hasRole('guru')) {
             abort(403);
@@ -26,6 +27,15 @@ class KpiController extends Controller
         $query = Guru::query()
             ->with(['user', 'pasti', 'kpiSnapshot'])
             ->withLeaveDaysForYear($currentYear);
+        $query->when($search !== '', function ($builder) use ($search): void {
+            $keyword = '%' . $search . '%';
+
+            $builder->where(function ($q) use ($keyword): void {
+                $q->where('gurus.name', 'like', $keyword)
+                    ->orWhere('gurus.email', 'like', $keyword)
+                    ->orWhereHas('user', fn ($userQuery) => $userQuery->where('email', 'like', $keyword));
+            });
+        });
 
         if ($user->hasRole('admin')) {
             $query->whereIn('pasti_id', $this->assignedPastiIds($user));
@@ -42,6 +52,7 @@ class KpiController extends Controller
         return view('kpi.index', [
             'gurus' => $gurus,
             'currentYear' => $currentYear,
+            'search' => $search,
         ]);
     }
 

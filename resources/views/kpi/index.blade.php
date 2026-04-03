@@ -1,8 +1,23 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h2 class="text-lg font-bold">{{ __('messages.kpi_guru') }}</h2>
-            <p class="text-sm text-slate-500">{{ __('messages.current_year') }}: {{ $currentYear }}</p>
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <h2 class="text-lg font-bold">{{ __('messages.kpi_guru') }}</h2>
+                <p class="text-sm text-slate-500">{{ __('messages.current_year') }}: {{ $currentYear }}</p>
+            </div>
+            <form method="GET" action="{{ route('kpi.gurus.index') }}" class="flex w-full max-w-md items-center gap-2">
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ $search }}"
+                    placeholder="{{ __('messages.search') }}..."
+                    class="input-base"
+                >
+                <button class="btn btn-primary" type="submit">{{ __('messages.search') }}</button>
+                @if($search !== '')
+                    <a href="{{ route('kpi.gurus.index') }}" class="btn btn-outline">{{ __('messages.cancel') }}</a>
+                @endif
+            </form>
         </div>
     </x-slot>
 
