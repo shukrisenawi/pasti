@@ -10,6 +10,7 @@
         <table class="table-base">
             <thead>
             <tr>
+                <th>Gambar</th>
                 <th>{{ __('messages.name') }}</th>
                 <th>{{ __('messages.kawasan') }}</th>
                 <th>{{ __('messages.code') }}</th>
@@ -22,6 +23,13 @@
             <tbody class="divide-y divide-slate-100">
             @forelse($pastis as $pasti)
                 <tr>
+                    <td>
+                        @if($pasti->image_url)
+                            <img src="{{ $pasti->image_url }}" alt="Gambar {{ $pasti->name }}" class="h-12 w-16 rounded-md border border-slate-200 object-cover">
+                        @else
+                            -
+                        @endif
+                    </td>
                     <td>{{ $pasti->name }}</td>
                     <td>{{ $pasti->kawasan?->name }}</td>
                     <td>{{ $pasti->code ?: '-' }}</td>
@@ -48,7 +56,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="text-center">-</td></tr>
+                <tr><td colspan="8" class="text-center">-</td></tr>
             @endforelse
             </tbody>
         </table>

@@ -18,7 +18,7 @@
     @endif
 
     <div class="card">
-        <form method="POST" action="{{ ($isOwnUpdate ?? false) ? route('pasti.self.update') : ($pasti->exists ? route('pasti.update', $pasti) : route('pasti.store')) }}" class="grid gap-4 md:grid-cols-2">
+        <form method="POST" enctype="multipart/form-data" action="{{ ($isOwnUpdate ?? false) ? route('pasti.self.update') : ($pasti->exists ? route('pasti.update', $pasti) : route('pasti.store')) }}" class="grid gap-4 md:grid-cols-2">
             @csrf
             @if($pasti->exists)
                 @method('PUT')
@@ -56,6 +56,17 @@
                 <label class="label-base">{{ __('messages.address') }}</label>
                 <input class="input-base" name="address" value="{{ old('address', $pasti->address) }}" @required($isOwnUpdate ?? false)>
             </div>
+            <div class="md:col-span-2">
+                <label class="label-base">Gambar PASTI</label>
+                @if($pasti->image_url)
+                    <img src="{{ $pasti->image_url }}" alt="Gambar {{ $pasti->name }}" class="mb-2 h-28 w-44 rounded-lg border border-slate-200 object-cover">
+                @endif
+                <input class="input-base" type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/*">
+                <p class="mt-1 text-xs text-slate-500">Format: JPG, PNG, WEBP (maks 3MB).</p>
+                @error('image')
+                    <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                @enderror
+            </div>
             <div class="md:col-span-2 flex gap-2">
                 <button class="btn btn-primary">{{ __('messages.save') }}</button>
                 <a href="{{ ($isOwnUpdate ?? false) ? route('pasti.self.edit') : route('pasti.index') }}" class="btn btn-outline">{{ __('messages.cancel') }}</a>
@@ -63,4 +74,3 @@
         </form>
     </div>
 </x-app-layout>
-

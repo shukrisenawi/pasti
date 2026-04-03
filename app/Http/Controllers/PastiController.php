@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Support\GuruProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -55,6 +56,7 @@ class PastiController extends Controller
         $data = $request->validate($this->validationRules());
 
         $pasti = Pasti::query()->create($data);
+        $this->syncPastiImage($request, $pasti);
 
         User::query()
             ->role('admin')
@@ -95,6 +97,7 @@ class PastiController extends Controller
         $data = $request->validate($this->validationRules($pasti->id));
 
         $pasti->update($data);
+        $this->syncPastiImage($request, $pasti);
 
         return redirect()->route('pasti.index')->with('status', __('messages.saved'));
     }
@@ -126,6 +129,7 @@ class PastiController extends Controller
 
         $data = $request->validate($this->ownValidationRules($pasti->id));
         $pasti->update($data);
+        $this->syncPastiImage($request, $pasti);
 
         $status = $this->profileCompletionService->onboardingStatus($user->fresh()->loadMissing('guru.pasti'));
 
@@ -168,6 +172,7 @@ class PastiController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'manager_name' => ['nullable', 'string', 'max:255'],
             'manager_phone' => ['nullable', 'string', 'max:30'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
         ];
     }
 
@@ -181,6 +186,22 @@ class PastiController extends Controller
             'phone' => ['required', 'string', 'max:30'],
             'manager_name' => ['required', 'string', 'max:255'],
             'manager_phone' => ['required', 'string', 'max:30'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
         ];
+    }
+
+    private function syncPastiImage(Request $request, Pasti $pasti): void
+    {
+        if (! $request->hasFile('image')) {
+            return;
+        }
+
+        if ($pasti->image_path) {
+            Storage::disk('public')->delete($pasti->image_path);
+        }
+
+        $pasti->update([
+            'image_path' => $request->file('image')->store('pasti-images', 'public'),
+        ]);
     }
 }

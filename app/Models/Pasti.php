@@ -17,7 +17,15 @@ class Pasti extends Model
         'phone',
         'manager_name',
         'manager_phone',
+        'image_path',
     ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path
+            ? '/uploads/' . ltrim($this->image_path, '/')
+            : null;
+    }
 
     public function kawasan(): BelongsTo
     {
