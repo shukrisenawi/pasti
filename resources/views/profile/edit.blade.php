@@ -32,7 +32,6 @@
 
         @if($isGuru && $needsOnboarding)
             <div class="mx-auto mb-4 max-w-7xl rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Wizard Onboarding Guru</p>
                 <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
                     <span class="inline-flex items-center rounded-full px-3 py-1 font-semibold {{ $wizardStep === 'profile' ? 'bg-primary text-white' : 'bg-emerald-100 text-emerald-800' }}">1. Kemaskini Profil</span>
                     <span class="text-slate-400">-></span>
