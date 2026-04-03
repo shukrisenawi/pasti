@@ -27,7 +27,11 @@
                     <td>{{ $admin->email }}</td>
                     <td>{{ $admin->tarikh_lahir?->format('d/m/Y') ?: '-' }}</td>
                     <td>
-                        @if($pastiCount > 0 && $admin->assignedPastis->count() === $pastiCount)
+                        @php
+                            $isAllAssignment = $admin->admin_assignment_scope === 'all'
+                                || ($admin->admin_assignment_scope === null && $pastiCount > 0 && $admin->assignedPastis->count() === $pastiCount);
+                        @endphp
+                        @if($isAllAssignment)
                             <span class="badge badge-primary">{{ __('messages.all_pasti') }}</span>
                         @else
                             {{ $admin->assignedPastis->pluck('name')->implode(', ') ?: '-' }}
@@ -59,3 +63,4 @@
 
     <div class="mt-4">{{ $admins->links() }}</div>
 </x-app-layout>
+

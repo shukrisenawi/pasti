@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kawasan;
 use App\Models\Pasti;
+use App\Models\User;
 use App\Support\GuruProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -54,6 +55,12 @@ class PastiController extends Controller
         $data = $request->validate($this->validationRules());
 
         $pasti = Pasti::query()->create($data);
+
+        User::query()
+            ->role('admin')
+            ->where('admin_assignment_scope', 'all')
+            ->get()
+            ->each(fn (User $admin) => $admin->assignedPastis()->syncWithoutDetaching([$pasti->id]));
 
         if ($user->hasRole('admin')) {
             $user->assignedPastis()->syncWithoutDetaching([$pasti->id]);

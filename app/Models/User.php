@@ -32,6 +32,7 @@ class User extends Authenticatable
         'tarikh_exp_skim_pas',
         'email',
         'locale',
+        'admin_assignment_scope',
         'avatar_path',
         'force_password_change',
         'password',

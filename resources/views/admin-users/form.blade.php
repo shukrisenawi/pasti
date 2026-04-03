@@ -97,7 +97,7 @@
                     </div>
                 </section>
 
-                <section class="admin-form-section" x-data="{ assignmentScope: '{{ old('assignment_scope', ($adminUser->exists && count($selectedPastis) !== $pastiCount) ? 'selected' : 'all') }}' }">
+                <section class="admin-form-section" x-data="{ assignmentScope: '{{ old('assignment_scope', $adminUser->admin_assignment_scope ?: (($adminUser->exists && count($selectedPastis) !== $pastiCount) ? 'selected' : 'all')) }}' }">
                     <h3 class="admin-form-section-title">{{ __('messages.admin_assignment') }}</h3>
                     <div class="admin-field">
                         <label class="admin-field-label">Skop Penugasan PASTI</label>

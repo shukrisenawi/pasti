@@ -55,6 +55,7 @@ class AdminUserController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'locale' => 'ms',
+            'admin_assignment_scope' => $data['assignment_scope'],
         ]);
 
         $isGuru = false;
@@ -103,6 +104,7 @@ class AdminUserController extends Controller
         $users_admin->tarikh_lahir = $data['tarikh_lahir'];
         $users_admin->tarikh_exp_skim_pas = $data['tarikh_exp_skim_pas'];
         $users_admin->email = $data['email'];
+        $users_admin->admin_assignment_scope = $data['assignment_scope'];
 
         if (! empty($data['password'])) {
             $users_admin->password = Hash::make($data['password']);
