@@ -34,6 +34,18 @@ class FinancialController extends Controller
             ->get();
 
         $accessiblePastiIds = $pastis->pluck('id')->all();
+        $transactionFilters = [
+            'tarikh_mula' => $request->query('tarikh_mula'),
+            'tarikh_akhir' => $request->query('tarikh_akhir'),
+            'pasti_id' => $request->filled('pasti_id') ? (int) $request->query('pasti_id') : null,
+            'financial_transaction_type_id' => $request->filled('financial_transaction_type_id') ? (int) $request->query('financial_transaction_type_id') : null,
+            'payment_method' => in_array($request->query('payment_method'), ['cash', 'transfer'], true)
+                ? $request->query('payment_method')
+                : null,
+        ];
+        if ($transactionFilters['pasti_id'] !== null && ! in_array($transactionFilters['pasti_id'], $accessiblePastiIds, true)) {
+            $transactionFilters['pasti_id'] = null;
+        }
 
         $transactions = FinancialTransaction::query()
             ->with(['pasti.kawasan', 'creator', 'transactionType'])
@@ -46,6 +58,26 @@ class FinancialController extends Controller
                         $q->orWhereIn('pasti_id', $accessiblePastiIds);
                     }
                 })
+            )
+            ->when(
+                filled($transactionFilters['tarikh_mula']),
+                fn ($query) => $query->whereDate('transaction_date', '>=', $transactionFilters['tarikh_mula'])
+            )
+            ->when(
+                filled($transactionFilters['tarikh_akhir']),
+                fn ($query) => $query->whereDate('transaction_date', '<=', $transactionFilters['tarikh_akhir'])
+            )
+            ->when(
+                $transactionFilters['pasti_id'] !== null,
+                fn ($query) => $query->where('pasti_id', $transactionFilters['pasti_id'])
+            )
+            ->when(
+                $transactionFilters['financial_transaction_type_id'] !== null,
+                fn ($query) => $query->where('financial_transaction_type_id', $transactionFilters['financial_transaction_type_id'])
+            )
+            ->when(
+                $transactionFilters['payment_method'] !== null,
+                fn ($query) => $query->where('payment_method', $transactionFilters['payment_method'])
             )
             ->orderByDesc('transaction_date')
             ->orderByDesc('id')
@@ -115,6 +147,7 @@ class FinancialController extends Controller
             'allTransactionTypes' => FinancialTransactionType::query()
                 ->orderBy('name')
                 ->get(),
+            'transactionFilters' => $transactionFilters,
             'editingTransactionType' => $this->editingTransactionType($request),
             'canManageTypes' => $user->hasRole('master_admin'),
         ]);

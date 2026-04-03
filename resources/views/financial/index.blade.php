@@ -35,6 +35,60 @@
                 </p>
             </section>
         </div>
+        <section class="card mt-4">
+            <h3 class="text-base font-bold text-slate-900">Carian Transaksi</h3>
+            <form method="GET" action="{{ route('financial.index') }}" class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <input type="hidden" name="tab" value="transaksi">
+
+                <div>
+                    <label class="label-base">Tarikh Mula</label>
+                    <input class="input-base" type="date" name="tarikh_mula" value="{{ $transactionFilters['tarikh_mula'] ?? '' }}">
+                </div>
+
+                <div>
+                    <label class="label-base">Tarikh Akhir</label>
+                    <input class="input-base" type="date" name="tarikh_akhir" value="{{ $transactionFilters['tarikh_akhir'] ?? '' }}">
+                </div>
+
+                <div>
+                    <label class="label-base">{{ __('messages.related_pasti') }}</label>
+                    <select class="input-base" name="pasti_id">
+                        <option value="">-- {{ __('messages.select') }} --</option>
+                        @foreach($pastis as $pasti)
+                            <option value="{{ $pasti->id }}" @selected((int) ($transactionFilters['pasti_id'] ?? 0) === (int) $pasti->id)>
+                                {{ $pasti->name }} ({{ $pasti->kawasan?->name ?? '-' }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="label-base">{{ __('messages.financial_type') }}</label>
+                    <select class="input-base" name="financial_transaction_type_id">
+                        <option value="">-- {{ __('messages.select') }} --</option>
+                        @foreach($transactionTypes as $type)
+                            <option value="{{ $type->id }}" @selected((int) ($transactionFilters['financial_transaction_type_id'] ?? 0) === (int) $type->id)>
+                                {{ $type->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="label-base">{{ __('messages.payment_method') }}</label>
+                    <select class="input-base" name="payment_method">
+                        <option value="">-- {{ __('messages.select') }} --</option>
+                        <option value="cash" @selected(($transactionFilters['payment_method'] ?? null) === 'cash')>{{ __('messages.cash') }}</option>
+                        <option value="transfer" @selected(($transactionFilters['payment_method'] ?? null) === 'transfer')>{{ __('messages.transfer') }}</option>
+                    </select>
+                </div>
+
+                <div class="flex items-end gap-2 md:col-span-2 xl:col-span-3">
+                    <button class="btn btn-primary" type="submit">Cari Transaksi</button>
+                    <a href="{{ route('financial.index', ['tab' => 'ringkasan']) }}" class="btn btn-outline">Reset</a>
+                </div>
+            </form>
+        </section>
     @elseif($activeTab === 'jenis-transaksi' && $canManageTypes)
         <section class="card">
             <h3 class="text-base font-bold text-slate-900">{{ __('messages.financial_type') }}</h3>
