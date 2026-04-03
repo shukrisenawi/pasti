@@ -28,12 +28,13 @@
                 @endphp
 
                 <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                    @unless($isGuru)
-                        <div class="mb-2">
-                            <h3 class="text-base font-extrabold text-slate-800">{{ $guru->display_name }}</h3>
-                            <p class="text-xs text-slate-500">{{ __('messages.pasti') }}: {{ $guru->pasti?->name ?? '-' }}</p>
+                    <div class="mb-3 flex items-center gap-3">
+                        <x-avatar :guru="$guru" size="h-11 w-11" rounded="rounded-xl" />
+                        <div class="min-w-0">
+                            <h3 class="truncate text-base font-extrabold text-slate-800">{{ $guru->display_name }}</h3>
+                            <p class="truncate text-xs text-slate-500">{{ __('messages.pasti') }}: {{ $guru->pasti?->name ?? '-' }}</p>
                         </div>
-                    @endunless
+                    </div>
 
                     <div class="mb-3 rounded-xl bg-slate-50 p-3 text-sm">
                         <p class="font-semibold text-slate-700">{{ __('messages.request_status') }}</p>
