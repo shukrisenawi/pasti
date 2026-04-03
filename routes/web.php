@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\GuruController;
+use App\Http\Controllers\GuruCourseController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\KpiController;
 use App\Http\Controllers\LeaveNoticeController;
@@ -69,6 +70,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/leave-notices', [LeaveNoticeController::class, 'store'])->name('leave-notices.store');
         Route::get('/maklumat-pasti/{pastiInformationRequest}/isi', [PastiInformationController::class, 'edit'])->name('pasti-information.edit');
         Route::post('/maklumat-pasti/{pastiInformationRequest}/isi', [PastiInformationController::class, 'update'])->name('pasti-information.update');
+        Route::post('/kursus-guru/responses/{response}', [GuruCourseController::class, 'respond'])->name('kursus-guru.responses.respond');
     });
 
     Route::middleware('role:master_admin|admin|guru')->group(function () {
@@ -78,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/pemarkahan', [PemarkahanController::class, 'index'])->name('pemarkahan.index');
         Route::post('/pemarkahan', [PemarkahanController::class, 'store'])->name('pemarkahan.store');
         Route::get('/maklumat-pasti', [PastiInformationController::class, 'index'])->name('pasti-information.index');
+        Route::get('/kursus-guru', [GuruCourseController::class, 'index'])->name('kursus-guru.index');
         Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
         Route::get('/programs/{program}', [ProgramController::class, 'show'])->name('programs.show');
         Route::post('/programs/{program}/teachers/{guruId}/status', [ProgramParticipationController::class, 'updateStatus'])
@@ -92,6 +95,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('role:master_admin|admin')->group(function () {
         Route::post('/claims/{claim}/approve', [ClaimController::class, 'approve'])->name('claims.approve');
+        Route::post('/kursus-guru/offers', [GuruCourseController::class, 'sendOffer'])->name('kursus-guru.offers.send');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
