@@ -37,7 +37,6 @@
                     $latestCompleted = $latestCompletedRequests->get($pasti->id);
                     $isPending = $latestRequest && $latestRequest->completed_at === null;
                     $canGuruFill = $isGuru && (int) $guruPastiId === (int) $pasti->id && $isPending;
-                    $canGuruUpdate = $isGuru && (int) $guruPastiId === (int) $pasti->id && $latestCompleted;
                 @endphp
                 <tr>
                     @unless($isGuru)
@@ -83,10 +82,10 @@
                                 </a>
                             @endif
 
-                            @if($canGuruUpdate)
-                                <a href="{{ route('pasti-information.edit', $latestCompleted) }}" wire:navigate class="btn btn-outline">
-                                    {{ __('messages.update_pasti_info') }}
-                                </a>
+                            @if($isGuru && (int) $guruPastiId === (int) $pasti->id && $latestCompleted && ! $isPending)
+                                <span class="text-xs font-medium text-emerald-700">
+                                    {{ __('messages.pasti_info_already_completed') }}
+                                </span>
                             @endif
                         </div>
                     </td>

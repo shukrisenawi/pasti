@@ -63,11 +63,17 @@ class PastiInformationController extends Controller
         return back()->with('status', __('messages.pasti_info_request_sent'));
     }
 
-    public function edit(Request $request, PastiInformationRequest $pastiInformationRequest): View
+    public function edit(Request $request, PastiInformationRequest $pastiInformationRequest): View|RedirectResponse
     {
         $user = $request->user();
         abort_unless($user->hasRole('guru'), 403);
         $this->ensureGuruCanFill($user, $pastiInformationRequest);
+
+        if ($pastiInformationRequest->completed_at !== null) {
+            return redirect()
+                ->route('pasti-information.index')
+                ->withErrors(['pasti_information' => __('messages.pasti_info_already_completed')]);
+        }
 
         return view('pasti-information.form', [
             'infoRequest' => $pastiInformationRequest->load('pasti'),
@@ -91,27 +97,19 @@ class PastiInformationController extends Controller
             'murid_perempuan_6_tahun' => ['required', 'integer', 'min:0'],
         ]);
 
-        if ($pastiInformationRequest->completed_at === null) {
-            $affectedRows = PastiInformationRequest::query()
-                ->whereKey($pastiInformationRequest->id)
-                ->whereNull('completed_at')
-                ->update([
-                    ...$data,
-                    'completed_by' => $user->id,
-                    'completed_at' => now(),
-                ]);
-
-            if ($affectedRows === 0) {
-                return redirect()
-                    ->route('pasti-information.index')
-                    ->withErrors(['pasti_information' => __('messages.pasti_info_already_completed')]);
-            }
-        } else {
-            $pastiInformationRequest->update([
+        $affectedRows = PastiInformationRequest::query()
+            ->whereKey($pastiInformationRequest->id)
+            ->whereNull('completed_at')
+            ->update([
                 ...$data,
                 'completed_by' => $user->id,
                 'completed_at' => now(),
             ]);
+
+        if ($affectedRows === 0) {
+            return redirect()
+                ->route('pasti-information.index')
+                ->withErrors(['pasti_information' => __('messages.pasti_info_already_completed')]);
         }
 
         $pastiInformationRequest->loadMissing(['pasti', 'completedBy']);
