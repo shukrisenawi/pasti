@@ -6,7 +6,7 @@
         </div>
     </x-slot>
 
-    <div class="mb-6">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div class="flex p-1 bg-slate-100 rounded-xl w-fit">
             <a href="{{ route('users.gurus.index', ['tab' => 'guru']) }}"
                class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'guru' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
@@ -19,6 +19,21 @@
                 <span class="ml-1 opacity-60">({{ $assistantCount }})</span>
             </a>
         </div>
+
+        <form method="GET" action="{{ route('users.gurus.index') }}" class="flex w-full max-w-md items-center gap-2">
+            <input type="hidden" name="tab" value="{{ $activeTab }}">
+            <input
+                type="text"
+                name="search"
+                value="{{ $search }}"
+                placeholder="{{ __('messages.search') }}..."
+                class="input-base"
+            >
+            <button class="btn btn-primary" type="submit">{{ __('messages.search') }}</button>
+            @if($search !== '')
+                <a href="{{ route('users.gurus.index', ['tab' => $activeTab]) }}" class="btn btn-outline">{{ __('messages.cancel') }}</a>
+            @endif
+        </form>
     </div>
 
     @if($gurus->count())

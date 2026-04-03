@@ -32,6 +32,7 @@ class GuruController extends Controller
         if (! in_array($activeTab, ['guru', 'assistant'], true)) {
             $activeTab = 'guru';
         }
+        $search = trim((string) $request->query('search', ''));
 
         $scopeQuery = Guru::query();
 
@@ -44,6 +45,15 @@ class GuruController extends Controller
             ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
             ->select('gurus.*');
         $query->where('gurus.is_assistant', $activeTab === 'assistant');
+        $query->when($search !== '', function ($builder) use ($search): void {
+            $keyword = '%' . $search . '%';
+
+            $builder->where(function ($q) use ($keyword): void {
+                $q->where('gurus.name', 'like', $keyword)
+                    ->orWhere('gurus.email', 'like', $keyword)
+                    ->orWhere('pastis.name', 'like', $keyword);
+            });
+        });
 
         return view('gurus.index', [
             'gurus' => $query
@@ -53,6 +63,7 @@ class GuruController extends Controller
                 ->paginate(9)
                 ->withQueryString(),
             'activeTab' => $activeTab,
+            'search' => $search,
             'guruCount' => (clone $scopeQuery)->where('is_assistant', false)->count(),
             'assistantCount' => (clone $scopeQuery)->where('is_assistant', true)->count(),
         ]);
