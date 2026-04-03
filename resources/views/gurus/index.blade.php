@@ -8,12 +8,12 @@
 
     <div class="mb-6">
         <div class="flex p-1 bg-slate-100 rounded-xl w-fit">
-            <a href="{{ route('users.gurus.index', ['tab' => 'guru']) }}" 
+            <a href="{{ route('users.gurus.index', ['tab' => 'guru']) }}"
                class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'guru' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
-                {{ __('messages.main_teacher') }} 
+                {{ __('messages.main_teacher') }}
                 <span class="ml-1 opacity-60">({{ $guruCount }})</span>
             </a>
-            <a href="{{ route('users.gurus.index', ['tab' => 'assistant']) }}" 
+            <a href="{{ route('users.gurus.index', ['tab' => 'assistant']) }}"
                class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'assistant' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
                 {{ __('messages.assistant_teacher') }}
                 <span class="ml-1 opacity-60">({{ $assistantCount }})</span>
@@ -21,64 +21,44 @@
         </div>
     </div>
 
-    <div class="table-wrap">
-        <table class="table-base">
-            <thead>
-            <tr>
-                <th>{{ __('messages.name') }}</th>
-                <th>{{ __('messages.pasti') }}</th>
-                <th>{{ __('messages.phone') }}</th>
-                <th>{{ __('messages.status') }}</th>
-                <th>{{ __('messages.kpi_score') }}</th>
-                <th class="text-right">{{ __('messages.actions') }}</th>
-            </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-            @forelse($gurus as $guru)
-                <tr>
-                    <td>
-                        <div class="flex items-center gap-2">
-                            <x-avatar :guru="$guru" />
-                            <span>{{ $guru->display_name }}</span>
+    @if($gurus->count())
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            @foreach($gurus as $guru)
+                <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <x-avatar :guru="$guru" size="h-12 w-12" rounded="rounded-xl" border="border border-slate-200" />
+                        <div class="min-w-0">
+                            <h3 class="truncate text-base font-extrabold text-slate-800">{{ $guru->display_name }}</h3>
+                            <p class="truncate text-sm text-slate-500">{{ $guru->pasti?->name ?? '-' }}</p>
                         </div>
-                    </td>
-                    <td>{{ $guru->pasti?->name ?? '-' }}</td>
-                    <td>{{ $guru->phone ?? '-' }}</td>
-                    <td>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $guru->active ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800' }}">
-                            {{ $guru->active ? __('messages.active') : __('messages.inactive') }}
-                        </span>
-                    </td>
-                    <td>{{ number_format((float) ($guru->kpiSnapshot?->score ?? 0), 2) }}%</td>
-                    <td class="flex items-center justify-end gap-1">
-                        <a href="{{ route('kpi.guru.show', $guru) }}" class="btn btn-ghost btn-xs btn-circle text-primary" title="{{ __('messages.view') }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.644C3.399 8.049 7.306 5 12 5c4.694 0 8.601 3.049 9.964 6.678a1.012 1.012 0 010 .644C20.601 15.951 16.694 19 12 19c-4.694 0-8.601-3.049-9.964-6.678z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </a>
-                        <a href="{{ route('users.gurus.edit', $guru) }}" class="btn btn-ghost btn-xs btn-circle text-amber-600" title="{{ __('messages.edit') }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                            </svg>
-                        </a>
+                    </div>
+
+                    <div class="mt-4 space-y-1.5 text-sm text-slate-600">
+                        <p><span class="font-semibold text-slate-700">{{ __('messages.phone') }}:</span> {{ $guru->phone ?? '-' }}</p>
+                        <p>
+                            <span class="font-semibold text-slate-700">{{ __('messages.status') }}:</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $guru->active ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800' }}">
+                                {{ $guru->active ? __('messages.active') : __('messages.inactive') }}
+                            </span>
+                        </p>
+                        <p><span class="font-semibold text-slate-700">{{ __('messages.kpi_score') }}:</span> {{ number_format((float) ($guru->kpiSnapshot?->score ?? 0), 2) }}%</p>
+                    </div>
+
+                    <div class="mt-4 flex items-center gap-2">
+                        <a href="{{ route('kpi.guru.show', $guru) }}" class="btn btn-ghost btn-sm text-primary">{{ __('messages.view') }}</a>
+                        <a href="{{ route('users.gurus.edit', $guru) }}" class="btn btn-outline btn-sm">{{ __('messages.edit') }}</a>
                         <form method="POST" action="{{ route('users.gurus.destroy', $guru) }}" class="inline m-0">
                             @csrf
                             @method('DELETE')
-                            <button class="btn btn-ghost btn-xs btn-circle text-rose-600" onclick="return confirm('Delete?')" title="{{ __('messages.delete') }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                </svg>
-                            </button>
+                            <button class="btn btn-ghost btn-sm text-rose-600" onclick="return confirm('Delete?')">{{ __('messages.delete') }}</button>
                         </form>
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="6" class="text-center">-</td></tr>
-            @endforelse
-            </tbody>
-        </table>
-    </div>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    @else
+        <div class="card text-center text-slate-500">-</div>
+    @endif
 
     <div class="mt-4">{{ $gurus->links() }}</div>
 </x-app-layout>
