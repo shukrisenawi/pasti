@@ -25,14 +25,20 @@ class PastiController extends Controller
         $user = $request->user();
         abort_if($user->hasRole('guru'), 403);
 
-        $query = Pasti::query()->with('kawasan');
+        $query = Pasti::query()
+            ->with('kawasan')
+            ->leftJoin('kawasans', 'kawasans.id', '=', 'pastis.kawasan_id')
+            ->select('pastis.*');
 
         if ($user->hasRole('admin')) {
-            $query->whereIn('id', $this->assignedPastiIds($user));
+            $query->whereIn('pastis.id', $this->assignedPastiIds($user));
         }
 
         return view('pasti.index', [
-            'pastis' => $query->latest()->paginate(10),
+            'pastis' => $query
+                ->orderBy('kawasans.dun')
+                ->orderBy('pastis.name')
+                ->paginate(10),
         ]);
     }
 
