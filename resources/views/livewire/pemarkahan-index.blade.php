@@ -142,7 +142,10 @@
 
         @if($activeTab === 'pasti-scores' && $pastis->isNotEmpty())
             <div class="card mt-4">
-                <form wire:submit.prevent="savePastiScores" class="space-y-4">
+                <form method="POST" action="{{ route('pemarkahan.store') }}" class="space-y-4">
+                    @csrf
+                    <input type="hidden" name="form_type" value="pasti_scores_matrix">
+                    <input type="hidden" name="year" value="{{ $currentYear }}">
                     @foreach($pastis as $pasti)
                         <div class="rounded-2xl border border-slate-200 bg-white p-4">
                             <p class="text-base font-bold text-slate-900">{{ $pasti->name }}</p>
@@ -157,7 +160,8 @@
                                             type="number"
                                             step="0.01"
                                             min="0"
-                                            wire:model.defer="pastiScoresForm.{{ $pasti->id }}.{{ $option->id }}"
+                                            name="pasti_scores[{{ $pasti->id }}][{{ $option->id }}]"
+                                            value="{{ old('pasti_scores.'.$pasti->id.'.'.$option->id, data_get($pastiScoresForm, $pasti->id.'.'.$option->id)) }}"
                                             placeholder="0.00"
                                         >
                                     </div>
