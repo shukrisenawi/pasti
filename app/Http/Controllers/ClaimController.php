@@ -65,8 +65,8 @@ class ClaimController extends Controller
 
         return view('claims.index', [
             'activeTab' => $activeTab,
-            'claims' => $claimsQuery->paginate(10)->withQueryString(),
-            'pendingClaims' => $pendingClaimsQuery->paginate(10, ['*'], 'pending_page')->withQueryString(),
+            'claims' => $claimsQuery->paginate(9)->withQueryString(),
+            'pendingClaims' => $pendingClaimsQuery->paginate(9, ['*'], 'pending_page')->withQueryString(),
             'canApprove' => $user->hasAnyRole(['master_admin', 'admin']),
         ]);
     }

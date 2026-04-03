@@ -50,7 +50,7 @@ class GuruController extends Controller
                 ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
                 ->orderBy('pastis.name')
                 ->orderBy('gurus.name')
-                ->paginate(10)
+                ->paginate(9)
                 ->withQueryString(),
             'activeTab' => $activeTab,
             'guruCount' => (clone $scopeQuery)->where('is_assistant', false)->count(),

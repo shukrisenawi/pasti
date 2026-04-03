@@ -42,7 +42,7 @@ class PastiInformationIndex extends Component
                 fn (Builder $query) => $query->where('name', 'like', '%' . trim($this->search) . '%')
             )
             ->orderBy('name')
-            ->paginate(10);
+            ->paginate(9);
 
         $pastiIds = collect($pastis->items())->pluck('id')->all();
 

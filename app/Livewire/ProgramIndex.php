@@ -41,7 +41,7 @@ class ProgramIndex extends Component
             ->latest('program_date');
 
         return view('livewire.program-index', [
-            'programs' => $query->paginate(10),
+            'programs' => $query->paginate(9),
             'canManageProgram' => $user->hasAnyRole(['master_admin', 'admin']),
         ]);
     }

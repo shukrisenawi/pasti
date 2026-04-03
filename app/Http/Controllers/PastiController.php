@@ -38,7 +38,7 @@ class PastiController extends Controller
             'pastis' => $query
                 ->orderBy('kawasans.dun')
                 ->orderBy('pastis.name')
-                ->paginate(10),
+                ->paginate(9),
         ]);
     }
 
