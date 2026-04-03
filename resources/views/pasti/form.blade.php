@@ -33,7 +33,7 @@
                 </select>
             </div>
             <div>
-                <label class="label-base">{{ __('messages.name') }}</label>
+                <label class="label-base">Nama PASTI</label>
                 <input class="input-base" name="name" value="{{ old('name', $pasti->name) }}" required>
             </div>
             <div>
@@ -63,3 +63,4 @@
         </form>
     </div>
 </x-app-layout>
+
