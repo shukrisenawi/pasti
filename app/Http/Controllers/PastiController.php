@@ -14,6 +14,8 @@ use Illuminate\View\View;
 
 class PastiController extends Controller
 {
+    private const DUN_OPTIONS = ['JENERI', 'BELANTEK'];
+
     public function __construct(private readonly GuruProfileCompletionService $profileCompletionService)
     {
     }
@@ -41,7 +43,7 @@ class PastiController extends Controller
 
         return view('pasti.form', [
             'pasti' => new Pasti(),
-            'kawasans' => Kawasan::query()->orderBy('name')->get(),
+            'dunOptions' => self::DUN_OPTIONS,
             'adminIds' => [],
             'isOwnUpdate' => false,
             'isOnboardingStep' => false,
@@ -53,7 +55,8 @@ class PastiController extends Controller
         $user = $request->user();
         abort_if($user->hasRole('guru'), 403);
 
-        $data = $request->validate($this->validationRules());
+        $validated = $request->validate($this->validationRules());
+        $data = $this->preparePastiPayload($validated);
 
         $pasti = Pasti::query()->create($data);
         $this->syncPastiImage($request, $pasti);
@@ -80,7 +83,7 @@ class PastiController extends Controller
 
         return view('pasti.form', [
             'pasti' => $pasti,
-            'kawasans' => Kawasan::query()->orderBy('name')->get(),
+            'dunOptions' => self::DUN_OPTIONS,
             'adminIds' => $pasti->admins()->pluck('users.id')->all(),
             'isOwnUpdate' => false,
             'isOnboardingStep' => false,
@@ -94,7 +97,8 @@ class PastiController extends Controller
 
         $this->ensurePastiAllowed($user, $pasti);
 
-        $data = $request->validate($this->validationRules($pasti->id));
+        $validated = $request->validate($this->validationRules($pasti->id));
+        $data = $this->preparePastiPayload($validated);
 
         $pasti->update($data);
         $this->syncPastiImage($request, $pasti);
@@ -112,7 +116,7 @@ class PastiController extends Controller
 
         return view('pasti.form', [
             'pasti' => $pasti,
-            'kawasans' => Kawasan::query()->orderBy('name')->get(),
+            'dunOptions' => self::DUN_OPTIONS,
             'adminIds' => [],
             'isOwnUpdate' => true,
             'isOnboardingStep' => $request->query('step') === 'onboarding',
@@ -127,7 +131,8 @@ class PastiController extends Controller
         $pasti = $user->guru?->pasti;
         abort_unless($pasti, 403);
 
-        $data = $request->validate($this->ownValidationRules($pasti->id));
+        $validated = $request->validate($this->ownValidationRules($pasti->id));
+        $data = $this->preparePastiPayload($validated);
         $pasti->update($data);
         $this->syncPastiImage($request, $pasti);
 
@@ -165,7 +170,7 @@ class PastiController extends Controller
     private function validationRules(?int $pastiId = null): array
     {
         return [
-            'kawasan_id' => ['required', 'integer', 'exists:kawasans,id'],
+            'dun' => ['required', 'string', Rule::in(self::DUN_OPTIONS)],
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:50', $pastiId ? Rule::unique('pastis', 'code')->ignore($pastiId) : 'unique:pastis,code'],
             'address' => ['nullable', 'string', 'max:255'],
@@ -179,7 +184,7 @@ class PastiController extends Controller
     private function ownValidationRules(?int $pastiId = null): array
     {
         return [
-            'kawasan_id' => ['required', 'integer', 'exists:kawasans,id'],
+            'dun' => ['required', 'string', Rule::in(self::DUN_OPTIONS)],
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:50', $pastiId ? Rule::unique('pastis', 'code')->ignore($pastiId) : 'unique:pastis,code'],
             'address' => ['required', 'string', 'max:255'],
@@ -188,6 +193,20 @@ class PastiController extends Controller
             'manager_phone' => ['required', 'string', 'max:30'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
         ];
+    }
+
+    private function preparePastiPayload(array $validated): array
+    {
+        $dun = $validated['dun'];
+        $kawasan = Kawasan::query()->firstOrCreate(
+            ['dun' => $dun],
+            ['name' => $dun]
+        );
+
+        unset($validated['dun']);
+        $validated['kawasan_id'] = $kawasan->id;
+
+        return $validated;
     }
 
     private function syncPastiImage(Request $request, Pasti $pasti): void

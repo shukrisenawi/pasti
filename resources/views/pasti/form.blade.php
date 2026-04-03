@@ -25,10 +25,10 @@
             @endif
 
             <div>
-                <label class="label-base">{{ __('messages.kawasan') }}</label>
-                <select class="input-base" name="kawasan_id" required>
-                    @foreach($kawasans as $kawasan)
-                        <option value="{{ $kawasan->id }}" @selected((int) old('kawasan_id', $pasti->kawasan_id) === $kawasan->id)>{{ $kawasan->name }}</option>
+                <label class="label-base">DUN</label>
+                <select class="input-base" name="dun" required>
+                    @foreach($dunOptions as $dunOption)
+                        <option value="{{ $dunOption }}" @selected(old('dun', $pasti->kawasan?->dun) === $dunOption)>{{ $dunOption }}</option>
                     @endforeach
                 </select>
             </div>

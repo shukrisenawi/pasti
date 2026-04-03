@@ -29,13 +29,12 @@
                     @if(auth()->user()->hasAnyRole(['master_admin', 'admin']))
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
-                                <button class="btn btn-sm btn-ghost gap-1 {{ request()->routeIs(['users.*', 'kawasan.*', 'pasti.*', 'kelas.*']) ? 'bg-base-200' : '' }}">
+                                <button class="btn btn-sm btn-ghost gap-1 {{ request()->routeIs(['users.*', 'pasti.*', 'kelas.*']) ? 'bg-base-200' : '' }}">
                                     <span>{{ __('Pengurusan') }}</span>
                                     <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
                                 </button>
                             </x-slot>
                             <x-slot name="content">
-                                <x-dropdown-link :href="route('kawasan.index')">{{ __('Kawasan') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('pasti.index')">{{ __('PASTI') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('kelas.index')">{{ __('Kelas') }}</x-dropdown-link>
                                 <div class="divider my-0"></div>
@@ -132,12 +131,11 @@
 
             @if(auth()->user()->hasAnyRole(['master_admin', 'admin']))
                 <div x-data="{ open: false }" class="space-y-1">
-                    <button @click="open = !open" class="btn btn-sm btn-ghost w-full justify-between {{ request()->routeIs(['users.*', 'kawasan.*', 'pasti.*', 'kelas.*']) ? 'bg-base-200' : '' }}">
+                    <button @click="open = !open" class="btn btn-sm btn-ghost w-full justify-between {{ request()->routeIs(['users.*', 'pasti.*', 'kelas.*']) ? 'bg-base-200' : '' }}">
                         <span>{{ __('Pengurusan') }}</span>
                         <svg class="h-4 w-4 transform transition-transform" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
                     </button>
                     <div x-show="open" class="ps-4 space-y-1" style="display: none;">
-                        <x-responsive-nav-link :href="route('kawasan.index')" :active="request()->routeIs('kawasan.*')">{{ __('Kawasan') }}</x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('pasti.index')" :active="request()->routeIs('pasti.index')">{{ __('PASTI') }}</x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('kelas.index')" :active="request()->routeIs('kelas.*')">{{ __('Kelas') }}</x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('users.gurus.index')" :active="request()->routeIs('users.gurus.*')">{{ __('Guru') }}</x-responsive-nav-link>
@@ -189,3 +187,4 @@
         </div>
     </div>
 </nav>
+

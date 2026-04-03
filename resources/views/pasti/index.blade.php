@@ -12,7 +12,7 @@
             <tr>
                 <th>Gambar</th>
                 <th>{{ __('messages.name') }}</th>
-                <th>{{ __('messages.kawasan') }}</th>
+                <th>DUN</th>
                 <th>{{ __('messages.code') }}</th>
                 <th>{{ __('messages.phone') }}</th>
                 <th>{{ __('messages.manager_name') }}</th>
@@ -31,7 +31,7 @@
                         @endif
                     </td>
                     <td>{{ $pasti->name }}</td>
-                    <td>{{ $pasti->kawasan?->name }}</td>
+                    <td>{{ $pasti->kawasan?->dun ?: '-' }}</td>
                     <td>{{ $pasti->code ?: '-' }}</td>
                     <td>{{ $pasti->phone ?: '-' }}</td>
                     <td>{{ $pasti->manager_name ?: '-' }}</td>
@@ -64,3 +64,6 @@
 
     <div class="mt-4">{{ $pastis->links() }}</div>
 </x-app-layout>
+
+
+

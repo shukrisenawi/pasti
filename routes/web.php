@@ -7,7 +7,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\GuruController;
-use App\Http\Controllers\KawasanController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\KpiController;
 use App\Http\Controllers\LeaveNoticeController;
@@ -47,7 +46,6 @@ Route::middleware(['auth'])->group(function () {
             ->except(['show'])
             ->names('users.gurus')
             ->parameters(['gurus' => 'users_guru']);
-        Route::resource('/kawasan', KawasanController::class)->except(['show']);
         Route::resource('/pasti', PastiController::class)->except(['show']);
         Route::resource('/kelas', KelasController::class)->except(['show']);
         Route::post('/kelas/{kela}/student-count', [KelasController::class, 'updateStudentCount'])->name('kelas.student-count.update');
@@ -103,4 +101,5 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
 
