@@ -53,6 +53,7 @@ class DatabaseSeeder extends Seeder
             AjkPositionSeeder::class,
             FinancialTransactionTypeSeeder::class,
             CurrentDataSeeder::class,
+            GuruBulkSeeder::class,
         ]);
     }
 }
