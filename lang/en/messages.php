@@ -209,7 +209,7 @@ return [
     'tarikh_exp_skim_pas' => 'PAS Scheme Expiry Date',
     'skim_pas_expired' => 'PAS Scheme has expired, please renew immediately',
     'skim_pas_expiring_soon' => 'PAS Scheme will expire in a week',
-    'skim_pas_expired_list' => 'Expired PAS Scheme List',
+    'skim_pas_expired_list' => 'PAS Scheme Expired',
     'add_pemarkahan_title_option' => 'Add Scoring Title Option',
     'all_pasti' => 'All PASTI',
     'divorced' => 'Divorced',
