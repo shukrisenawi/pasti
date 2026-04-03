@@ -8,7 +8,7 @@
 
     <div class="table-wrap">
         <table class="table-base">
-            <thead><tr><th>{{ __('messages.name') }}</th><th>{{ __('messages.pasti') }}</th><th>{{ __('messages.kpi_score') }}</th><th>{{ __('messages.total_leave_taken') }}</th><th>{{ __('messages.actions') }}</th></tr></thead>
+            <thead><tr><th>{{ __('messages.name') }}</th><th>{{ __('messages.kpi_score') }}</th><th>{{ __('messages.total_leave_taken') }}</th><th>{{ __('messages.actions') }}</th></tr></thead>
             <tbody class="divide-y divide-slate-100">
             @forelse($gurus as $guru)
                 <tr>
@@ -16,7 +16,6 @@
                         <x-avatar :guru="$guru" size="h-10 w-10" rounded="rounded-2xl" />
                         <span>{{ $guru->display_name }}</span>
                     </td>
-                    <td>{{ $guru->pasti?->name ?? '-' }}</td>
                     <td>{{ number_format((float) ($guru->kpiSnapshot?->score ?? 0), 0) }}</td>
                     <td>{{ $guru->leave_notices_current_year_count ?? 0 }}</td>
                     <td>
@@ -29,7 +28,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="text-center">-</td></tr>
+                <tr><td colspan="4" class="text-center">-</td></tr>
             @endforelse
             </tbody>
         </table>
