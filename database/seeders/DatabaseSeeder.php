@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AjkPositionSeeder::class,
             FinancialTransactionTypeSeeder::class,
+            CurrentDataSeeder::class,
         ]);
     }
 }
