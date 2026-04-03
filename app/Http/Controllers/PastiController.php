@@ -138,8 +138,7 @@ class PastiController extends Controller
         abort_unless($pasti, 403);
 
         $validated = $request->validate($this->ownValidationRules($pasti->id));
-        $data = $this->preparePastiPayload($validated);
-        $pasti->update($data);
+        $pasti->update($validated);
         $this->syncPastiImage($request, $pasti);
 
         $status = $this->profileCompletionService->onboardingStatus($user->fresh()->loadMissing('guru.pasti'));
@@ -190,9 +189,6 @@ class PastiController extends Controller
     private function ownValidationRules(?int $pastiId = null): array
     {
         return [
-            'dun' => ['required', 'string', Rule::in(self::DUN_OPTIONS)],
-            'name' => ['required', 'string', 'max:255'],
-            'code' => ['nullable', 'string', 'max:50', $pastiId ? Rule::unique('pastis', 'code')->ignore($pastiId) : 'unique:pastis,code'],
             'address' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:30'],
             'manager_name' => ['required', 'string', 'max:255'],
@@ -230,3 +226,4 @@ class PastiController extends Controller
         ]);
     }
 }
+

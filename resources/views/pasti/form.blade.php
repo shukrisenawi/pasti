@@ -26,7 +26,7 @@
 
             <div>
                 <label class="label-base">DUN</label>
-                <select class="input-base" name="dun" required>
+                <select class="input-base" name="dun" required @disabled($isOwnUpdate ?? false)>
                     @foreach($dunOptions as $dunOption)
                         <option value="{{ $dunOption }}" @selected(old('dun', $pasti->kawasan?->dun) === $dunOption)>{{ $dunOption }}</option>
                     @endforeach
@@ -34,11 +34,11 @@
             </div>
             <div>
                 <label class="label-base">Nama PASTI</label>
-                <input class="input-base" name="name" value="{{ old('name', $pasti->name) }}" required>
+                <input class="input-base" name="name" value="{{ old('name', $pasti->name) }}" required @disabled($isOwnUpdate ?? false)>
             </div>
             <div>
                 <label class="label-base">{{ __('messages.code') }}</label>
-                <input class="input-base" name="code" value="{{ old('code', $pasti->code) }}">
+                <input class="input-base" name="code" value="{{ old('code', $pasti->code) }}" @disabled($isOwnUpdate ?? false)>
             </div>
             <div>
                 <label class="label-base">{{ __('messages.phone') }}</label>
@@ -74,3 +74,4 @@
         </form>
     </div>
 </x-app-layout>
+
