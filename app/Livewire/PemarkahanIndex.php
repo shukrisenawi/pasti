@@ -222,6 +222,19 @@ class PemarkahanIndex extends Component
         $user = auth()->user();
         abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
 
+        // Normalise empty strings from input fields so nullable numeric validation can pass.
+        $this->pastiScoresForm = collect($this->pastiScoresForm)
+            ->map(function ($row) {
+                if (! is_array($row)) {
+                    return [];
+                }
+
+                return collect($row)
+                    ->map(fn ($value) => $value === '' ? null : $value)
+                    ->all();
+            })
+            ->all();
+
         $titleOptionIds = PemarkahanTitleOption::query()
             ->where('is_active', true)
             ->orderBy('sort_order')

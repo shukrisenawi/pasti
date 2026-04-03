@@ -177,6 +177,9 @@
                     @error('pastiScoresForm.*.*')
                         <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
                     @enderror
+                    @if(collect($errors->keys())->contains(fn ($key) => str_starts_with($key, 'pastiScoresForm.')))
+                        <p class="mt-2 text-xs text-rose-600">Sila isi markah dalam format nombor (contoh: 10 atau 10.5).</p>
+                    @endif
 
                     <div class="mt-4">
                         <button class="btn btn-primary" type="submit">{{ __('messages.save') }}</button>
