@@ -12,7 +12,7 @@
         </div>
     </x-slot>
 
-    <div class="admin-form-shell" x-data="{ isGuru: {{ old('is_guru', $isGuru ?? false) ? 'true' : 'false' }} }">
+    <div class="admin-form-shell">
         <div class="admin-form-panel">
             @if($adminUser->exists)
             <div class="admin-form-note">
@@ -97,56 +97,8 @@
                     </div>
                 </section>
 
-                <section class="admin-form-section" x-show="isGuru" x-cloak x-transition>
-                    <h3 class="admin-form-section-title">Profil Guru</h3>
-                    <div class="admin-field">
-                        <label class="admin-field-label">
-                            Guru PASTI Yang Mana?
-                        </label>
-                        <select class="admin-field-input" name="pasti_id">
-                            <option value="">- {{ __('messages.select') }} -</option>
-                            @foreach($pastis as $pasti)
-                                <option value="{{ $pasti->id }}" @selected(old('pasti_id', $guruPastiId) == $pasti->id)>{{ $pasti->name }}</option>
-                            @endforeach
-                        </select>
-                        <p class="admin-field-hint">Pilih PASTI di mana admin ini bertugas sebagai guru.</p>
-                        @error('pasti_id')
-                            <p class="admin-field-error">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="admin-field">
-                        <label class="admin-field-label">{{ __('messages.marital_status') }}</label>
-                        <select class="admin-field-input" name="marital_status">
-                            <option value="">- {{ __('messages.select') }} -</option>
-                            <option value="single" @selected(old('marital_status', $adminUser->guru?->marital_status) === 'single')>{{ __('messages.single') }}</option>
-                            <option value="married" @selected(old('marital_status', $adminUser->guru?->marital_status) === 'married')>{{ __('messages.married') }}</option>
-                            <option value="widowed" @selected(old('marital_status', $adminUser->guru?->marital_status) === 'widowed')>{{ __('messages.widowed') }}</option>
-                            <option value="divorced" @selected(old('marital_status', $adminUser->guru?->marital_status) === 'divorced')>{{ __('messages.divorced') }}</option>
-                        </select>
-                    </div>
-                </section>
-
                 <section class="admin-form-section" x-data="{ assignmentScope: '{{ old('assignment_scope', ($adminUser->exists && count($selectedPastis) !== $pastiCount) ? 'selected' : 'all') }}' }">
                     <h3 class="admin-form-section-title">{{ __('messages.admin_assignment') }}</h3>
-
-                    <div class="admin-field">
-                        <label class="admin-field-label">
-                            <input
-                                type="checkbox"
-                                name="is_guru"
-                                value="1"
-                                x-model="isGuru"
-                                @checked(old('is_guru', $isGuru ?? false))
-                            >
-                            <span>{{ __('messages.admin_is_guru') }}</span>
-                        </label>
-                        <p class="admin-field-hint">{{ __('messages.admin_is_guru_hint') }}</p>
-                        @error('is_guru')
-                            <p class="admin-field-error">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                     <div class="admin-field">
                         <label class="admin-field-label">Skop Penugasan PASTI</label>
                         <div class="mt-2 flex flex-wrap gap-6">
@@ -192,3 +144,4 @@
         </div>
     </div>
 </x-app-layout>
+

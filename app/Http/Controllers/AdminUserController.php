@@ -42,12 +42,9 @@ class AdminUserController extends Controller
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'is_guru' => ['nullable', 'boolean'],
-            'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'pasti_ids' => ['array'],
             'pasti_ids.*' => ['integer', 'exists:pastis,id'],
             'assignment_scope' => ['required', 'in:all,selected'],
-            'marital_status' => ['nullable', 'string', 'in:single,married,widowed,divorced'],
         ]);
 
         $admin = User::query()->create([
@@ -60,13 +57,8 @@ class AdminUserController extends Controller
             'locale' => 'ms',
         ]);
 
-        $isGuru = (bool) ($data['is_guru'] ?? false);
-        $roles = ['admin'];
-        if ($isGuru) {
-            $roles[] = 'guru';
-        }
-
-        $admin->syncRoles($roles);
+        $isGuru = false;
+        $admin->syncRoles(['admin']);
         
         if (($data['assignment_scope'] ?? 'selected') === 'all') {
             $allPastiIds = Pasti::pluck('id')->all();
@@ -75,7 +67,7 @@ class AdminUserController extends Controller
             $admin->assignedPastis()->sync($data['pasti_ids'] ?? []);
         }
 
-        $this->syncAdminGuruProfile($admin, $isGuru, $data['pasti_id'] ?? null, $data['marital_status'] ?? null);
+        $this->syncAdminGuruProfile($admin, $isGuru, null, null);
 
         return redirect()->route('users.admins.index')->with('status', __('messages.saved'));
     }
@@ -101,12 +93,9 @@ class AdminUserController extends Controller
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($users_admin->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'is_guru' => ['nullable', 'boolean'],
-            'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'pasti_ids' => ['array'],
             'pasti_ids.*' => ['integer', 'exists:pastis,id'],
             'assignment_scope' => ['required', 'in:all,selected'],
-            'marital_status' => ['nullable', 'string', 'in:single,married,widowed,divorced'],
         ]);
 
         $users_admin->name = $data['name'];
@@ -120,13 +109,8 @@ class AdminUserController extends Controller
         }
 
         $users_admin->save();
-        $isGuru = (bool) ($data['is_guru'] ?? false);
-        $roles = ['admin'];
-        if ($isGuru) {
-            $roles[] = 'guru';
-        }
-
-        $users_admin->syncRoles($roles);
+        $isGuru = false;
+        $users_admin->syncRoles(['admin']);
 
         if (($data['assignment_scope'] ?? 'selected') === 'all') {
             $allPastiIds = Pasti::pluck('id')->all();
@@ -135,7 +119,7 @@ class AdminUserController extends Controller
             $users_admin->assignedPastis()->sync($data['pasti_ids'] ?? []);
         }
 
-        $this->syncAdminGuruProfile($users_admin, $isGuru, $data['pasti_id'] ?? null, $data['marital_status'] ?? null);
+        $this->syncAdminGuruProfile($users_admin, $isGuru, null, null);
 
         return redirect()->route('users.admins.index')->with('status', __('messages.saved'));
     }
