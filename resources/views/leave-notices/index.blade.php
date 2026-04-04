@@ -87,7 +87,9 @@
                 <th>{{ __('messages.leave_until') }}</th>
                 <th>{{ __('messages.reason') }}</th>
                 <th class="text-center">{{ __('messages.mc_attachment') }}</th>
-                <th class="text-right">{{ __('messages.actions') }}</th>
+                @if($showAdminColumns)
+                    <th class="text-right">{{ __('messages.actions') }}</th>
+                @endif
             </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
@@ -114,6 +116,7 @@
                             <span class="text-slate-300">-</span>
                         @endif
                     </td>
+                    @if($showAdminColumns)
                     <td class="text-right">
                         @php
                             $canDeleteNotice = $canDeleteAll
@@ -133,9 +136,10 @@
                             <span class="text-slate-300">-</span>
                         @endif
                     </td>
+                    @endif
                 </tr>
             @empty
-                <tr><td colspan="{{ $showAdminColumns ? 6 : 5 }}" class="text-center py-8 text-slate-400">-</td></tr>
+                <tr><td colspan="{{ $showAdminColumns ? 6 : 4 }}" class="text-center py-8 text-slate-400">-</td></tr>
             @endforelse
             </tbody>
         </table>
