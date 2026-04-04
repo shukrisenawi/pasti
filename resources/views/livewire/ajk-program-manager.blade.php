@@ -101,8 +101,8 @@
                     <label class="label-base">{{ __('messages.select_user') }}</label>
                     <form method="GET" action="{{ route('ajk-program.index') }}" class="space-y-2">
                         <input type="hidden" name="tab" value="assignments">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <input type="text" name="user_search" value="{{ $userSearch }}" class="input-base min-w-[220px]" placeholder="Cari nama / email pengguna">
+                        <div class="flex items-center gap-2">
+                            <input type="text" name="user_search" value="{{ $userSearch }}" class="input-base w-full min-w-0" placeholder="Cari nama / email pengguna">
                             <button type="submit" class="btn btn-outline btn-sm">Search</button>
                         </div>
                         <select name="selected_user_id" class="input-base">
@@ -164,6 +164,7 @@
         </section>
     @endif
 </div>
+
 
 
 
