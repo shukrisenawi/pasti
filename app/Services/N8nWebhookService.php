@@ -68,10 +68,10 @@ class N8nWebhookService
         ];
 
         try {
-            $response = Http::asJson()
+            $response = Http::acceptJson()
                 ->acceptJson()
                 ->timeout(10)
-                ->post($webhookUrl, $payload);
+                ->get($webhookUrl, $payload);
 
             if ($response->failed()) {
                 Log::warning('Webhook n8n pulang status gagal.', [
