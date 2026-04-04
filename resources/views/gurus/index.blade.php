@@ -41,7 +41,14 @@
             @foreach($gurus as $guru)
                 <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div class="flex items-center gap-3">
-                        <x-avatar :guru="$guru" size="h-12 w-12" rounded="rounded-xl" border="border border-slate-200" />
+                        <div class="group relative">
+                            <a href="{{ route('kpi.guru.show', $guru) }}" class="block" aria-label="Lihat profil {{ $guru->display_name }}">
+                                <x-avatar :guru="$guru" size="h-12 w-12" rounded="rounded-xl" border="border border-slate-200" />
+                            </a>
+                            <div class="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden -translate-x-1/2 rounded-xl border border-slate-200 bg-white p-1 shadow-xl group-hover:block">
+                                <img src="{{ $guru->avatar_url }}" alt="{{ $guru->display_name }}" class="h-[150px] w-[150px] rounded-lg object-cover">
+                            </div>
+                        </div>
                         <div class="min-w-0">
                             <h3 class="truncate text-base font-extrabold text-slate-800">{{ $guru->display_name }}</h3>
                             <p class="truncate text-sm text-slate-500">{{ $guru->pasti?->name ?? '-' }}</p>
