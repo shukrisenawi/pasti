@@ -86,10 +86,12 @@ class AjkProgramController extends Controller
                 'tab' => 'assignments',
                 'selected_user_id' => $targetUsers->first()->id,
                 'selected_user_ids' => $targetUsers->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
+                'position_ids' => $newPositionIds,
                 'user_search' => (string) $request->input('user_search', ''),
             ])
             ->with('status', __('messages.saved'));
     }
 }
+
 
 

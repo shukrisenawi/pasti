@@ -115,6 +115,13 @@
                         'email' => $item->email,
                         'avatar' => $item->avatar_url,
                     ])->values();
+                    $checkedPositionIds = collect(request()->input('position_ids', $selectedUser->ajkPositions->pluck('id')->map(fn ($id) => (int) $id)->all()))
+                        ->map(fn ($id) => (int) $id)
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->all();
+
                 @endphp
 
                 <div class="mt-4">
@@ -182,7 +189,7 @@
                                         value="{{ $position->id }}"
                                         data-position-id="{{ $position->id }}"
                                         data-position-name="{{ $position->name }}"
-                                        @checked($selectedUser->ajkPositions->contains('id', $position->id))
+                                        @checked(in_array((int) $position->id, $checkedPositionIds, true))
                                         class="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
                                     >
                                     <span class="block">
@@ -348,5 +355,7 @@
         </section>
     @endif
 </div>
+
+
 
 
