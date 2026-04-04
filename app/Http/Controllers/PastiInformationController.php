@@ -66,10 +66,10 @@ class PastiInformationController extends Controller
             }
         }
 
-        $this->n8nWebhookService->send(
-            'Permintaan kemaskini maklumat PASTI telah dihantar. Sila lengkapkan maklumat terkini PASTI.',
-            $this->n8nWebhookService->toPublicUrl(route('pasti-information.index')),
-            null
+        $this->n8nWebhookService->sendByTemplate(
+            N8nWebhookService::KEY_TEXT_PASTI_INFO_REQUEST,
+            ['tarikh' => now()->format('d/m/Y')],
+            $this->n8nWebhookService->toPublicUrl(route('pasti-information.index'))
         );
 
         return back()->with('status', __('messages.pasti_info_request_sent'));

@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\SystemSetting;
+use App\Services\N8nWebhookService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class N8nSettingController extends Controller
+{
+    public function edit(Request $request, N8nWebhookService $n8nWebhookService): View
+    {
+        abort_unless($request->user()->hasRole('master_admin'), 403);
+
+        return view('n8n-settings.edit', [
+            'settings' => $n8nWebhookService->allSettings(),
+        ]);
+    }
+
+    public function update(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->hasRole('master_admin'), 403);
+
+        $validated = $request->validate([
+            'webhook_url' => ['required', 'url', 'max:2000'],
+            'text_program_created' => ['required', 'string', 'max:2000'],
+            'text_salary_request' => ['required', 'string', 'max:2000'],
+            'text_pasti_info_request' => ['required', 'string', 'max:2000'],
+            'text_guru_course_offer' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $mapping = [
+            'webhook_url' => 'n8n_webhook_url',
+            'text_program_created' => 'n8n_text_program_created',
+            'text_salary_request' => 'n8n_text_salary_request',
+            'text_pasti_info_request' => 'n8n_text_pasti_info_request',
+            'text_guru_course_offer' => 'n8n_text_guru_course_offer',
+        ];
+
+        foreach ($mapping as $inputKey => $settingKey) {
+            SystemSetting::query()->updateOrCreate(
+                ['key' => $settingKey],
+                ['value' => trim((string) $validated[$inputKey])]
+            );
+        }
+
+        return redirect()
+            ->route('n8n-settings.edit')
+            ->with('status', __('messages.saved'));
+    }
+}
+

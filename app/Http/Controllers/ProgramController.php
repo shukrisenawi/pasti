@@ -306,19 +306,31 @@ class ProgramController extends Controller
 
     private function sendProgramCreatedWebhook(Program $program): void
     {
-        $text = $this->buildProgramBroadcastText($program);
-        $gambar = $this->n8nWebhookService->toPublicUrl($program->banner_url);
-        $link = $this->n8nWebhookService->toPublicUrl(route('programs.show', $program));
-
-        $this->n8nWebhookService->send($text, $link, $gambar);
-    }
-
-    private function buildProgramBroadcastText(Program $program): string
-    {
         $date = $program->program_date instanceof Carbon
             ? $program->program_date
             : Carbon::parse((string) $program->program_date);
+        $dayName = $this->dayNameInMalay($date);
+        $timeText = $this->programTimeText($program);
+        $locationText = filled($program->location) ? ' di ' . trim((string) $program->location) : '';
+        $gambar = $this->n8nWebhookService->toPublicUrl($program->banner_url);
+        $link = $this->n8nWebhookService->toPublicUrl(route('programs.show', $program));
 
+        $this->n8nWebhookService->sendByTemplate(
+            N8nWebhookService::KEY_TEXT_PROGRAM_CREATED,
+            [
+                'tajuk' => trim((string) $program->title),
+                'tarikh' => $date->format('j/n/Y'),
+                'hari' => $dayName,
+                'masa' => $timeText,
+                'lokasi' => $locationText,
+            ],
+            $link,
+            $gambar
+        );
+    }
+
+    private function dayNameInMalay(Carbon $date): string
+    {
         $weekdayMap = [
             'Sunday' => 'Ahad',
             'Monday' => 'Isnin',
@@ -329,18 +341,18 @@ class ProgramController extends Controller
             'Saturday' => 'Sabtu',
         ];
 
-        $dayName = $weekdayMap[$date->englishDayOfWeek] ?? $date->englishDayOfWeek;
+        return $weekdayMap[$date->englishDayOfWeek] ?? $date->englishDayOfWeek;
+    }
 
-        $timeText = '';
+    private function programTimeText(Program $program): string
+    {
         if ($program->program_time) {
             $hour = (int) Carbon::parse((string) $program->program_time)->format('G');
             $suffix = $hour < 12 ? 'pg' : ($hour < 19 ? 'ptg' : 'mlm');
-            $timeText = ' jam ' . Carbon::parse((string) $program->program_time)->format('g:i') . $suffix;
+            return ' jam ' . Carbon::parse((string) $program->program_time)->format('g:i') . $suffix;
         }
 
-        $locationText = filled($program->location) ? ' di ' . trim((string) $program->location) : '';
-
-        return trim($program->title) . ' akan diadakan pada ' . $date->format('j/n/Y') . ' (' . $dayName . ')' . $timeText . $locationText . '.';
+        return '';
     }
 }
 

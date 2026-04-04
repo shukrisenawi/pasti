@@ -101,8 +101,8 @@
 
             @role('master_admin|admin')
                 {{-- Pengurusan Dropdown --}}
-                <div x-data="{ open: {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'true' : 'false' }} }" class="space-y-1">
-                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'text-primary bg-primary/5' : '' }}">
+                <div x-data="{ open: {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*', 'n8n-settings.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*', 'n8n-settings.*']) ? 'text-primary bg-primary/5' : '' }}">
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                             <span>{{ __('Pengurusan') }}</span>
@@ -114,6 +114,7 @@
                         <a href="{{ route('users.gurus.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
                         @role('master_admin')
                             <a href="{{ route('users.admins.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('users.admins.*') ? 'menu-link-active' : '' }}">{{ __('messages.admin_accounts') }}</a>
+                            <a href="{{ route('n8n-settings.edit') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('n8n-settings.*') ? 'menu-link-active' : '' }}">Setting n8n</a>
                         @endrole
                         <a href="{{ route('ajk-program.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('ajk-program.*') ? 'menu-link-active' : '' }}">{{ __('messages.ajk_program') }}</a>
                     </div>
@@ -334,8 +335,8 @@
                 
                 @role('master_admin|admin')
                     <!-- Group: Pengurusan -->
-                    <div x-data="{ open: {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'true' : 'false' }} }" class="space-y-1">
-                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*']) ? 'text-primary bg-primary/5' : '' }}">
+                    <div x-data="{ open: {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*', 'n8n-settings.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*', 'n8n-settings.*']) ? 'text-primary bg-primary/5' : '' }}">
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                                 <span>{{ __('Pengurusan') }}</span>
@@ -347,6 +348,7 @@
                             <a href="{{ route('users.gurus.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('users.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.guru') }}</a>
                             @role('master_admin')
                                 <a href="{{ route('users.admins.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('users.admins.*') ? 'menu-link-active' : '' }}">{{ __('messages.admin_accounts') }}</a>
+                                <a href="{{ route('n8n-settings.edit') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('n8n-settings.*') ? 'menu-link-active' : '' }}">Setting n8n</a>
                             @endrole
                             <a href="{{ route('ajk-program.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('ajk-program.*') ? 'menu-link-active' : '' }}">{{ __('messages.ajk_program') }}</a>
                         </div>
@@ -521,6 +523,7 @@
 </script>
 </body>
 </html>
+
 
 
 

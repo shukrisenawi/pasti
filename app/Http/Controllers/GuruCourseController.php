@@ -140,18 +140,14 @@ class GuruCourseController extends Controller
             });
 
             if ($createdOffer) {
-                $note = filled($createdOffer->note) ? ' Nota: ' . trim((string) $createdOffer->note) . '.' : '';
-                $text = 'Permintaan sambung Kursus Guru ke Semester '
-                    . (int) $createdOffer->target_semester
-                    . ' telah dihantar. Tarikh akhir pendaftaran: '
-                    . $createdOffer->registration_deadline?->format('d/m/Y')
-                    . '.'
-                    . $note;
-
-                $this->n8nWebhookService->send(
-                    $text,
-                    $this->n8nWebhookService->toPublicUrl(route('kursus-guru.index')),
-                    null
+                $this->n8nWebhookService->sendByTemplate(
+                    N8nWebhookService::KEY_TEXT_GURU_COURSE_OFFER,
+                    [
+                        'semester' => (int) $createdOffer->target_semester,
+                        'tarikh_akhir' => $createdOffer->registration_deadline?->format('d/m/Y') ?? '-',
+                        'nota' => filled($createdOffer->note) ? (' Nota: ' . trim((string) $createdOffer->note)) : '',
+                    ],
+                    $this->n8nWebhookService->toPublicUrl(route('kursus-guru.index'))
                 );
             }
 

@@ -14,6 +14,7 @@ use App\Http\Controllers\KpiController;
 use App\Http\Controllers\LeaveNoticeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\N8nSettingController;
 use App\Http\Controllers\PemarkahanController;
 use App\Http\Controllers\PastiController;
 use App\Http\Controllers\PastiInformationController;
@@ -41,6 +42,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/kewangan/jenis-transaksi', [FinancialController::class, 'storeType'])->name('financial.types.store');
         Route::put('/kewangan/jenis-transaksi/{financialTransactionType}', [FinancialController::class, 'updateType'])->name('financial.types.update');
         Route::delete('/kewangan/jenis-transaksi/{financialTransactionType}', [FinancialController::class, 'destroyType'])->name('financial.types.destroy');
+        Route::get('/settings/n8n', [N8nSettingController::class, 'edit'])->name('n8n-settings.edit');
+        Route::put('/settings/n8n', [N8nSettingController::class, 'update'])->name('n8n-settings.update');
     });
 
     Route::middleware('role:master_admin|admin')->group(function () {
