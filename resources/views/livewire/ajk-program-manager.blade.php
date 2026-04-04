@@ -115,7 +115,7 @@
                         'email' => $item->email,
                         'avatar' => $item->avatar_url,
                     ])->values();
-                    $checkedPositionIds = collect(request()->input('position_ids', $selectedUser->ajkPositions->pluck('id')->map(fn ($id) => (int) $id)->all()))
+                    $checkedPositionIds = collect(request()->input('position_ids', []))
                         ->map(fn ($id) => (int) $id)
                         ->filter()
                         ->unique()
@@ -355,6 +355,7 @@
         </section>
     @endif
 </div>
+
 
 
 
