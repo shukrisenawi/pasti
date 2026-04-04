@@ -172,7 +172,7 @@
 
                     <div>
                         <p class="label-base">{{ __('messages.select_positions') }}</p>
-                        <div class="mt-2 space-y-2">
+                        <div class="mt-2 grid gap-2 md:grid-cols-2">
                             @forelse($positions as $position)
                                 <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 hover:border-primary/40">
                                     <input
@@ -281,3 +281,4 @@
         </section>
     @endif
 </div>
+
