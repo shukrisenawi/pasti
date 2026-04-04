@@ -96,6 +96,25 @@
         <section class="card">
             <h3 class="text-base font-bold text-slate-900">{{ __('messages.user_position_assignment') }}</h3>
 
+            <div class="mt-4">
+                <label class="label-base">{{ __('messages.select_user') }}</label>
+                <form id="selected-user-form" method="GET" action="{{ route('ajk-program.index') }}" class="space-y-2">
+                    <input type="hidden" name="tab" value="assignments">
+                    <div class="flex items-center gap-2">
+                        <input type="text" name="user_search" value="{{ $userSearch }}" class="input-base w-full min-w-0" placeholder="Cari nama / email pengguna">
+                        <button type="submit" class="btn btn-outline btn-sm">Search</button>
+                    </div>
+                    <select id="selected-user-picker" name="selected_user_id" class="input-base">
+                        <option value="">-- Pilih pengguna --</option>
+                        @foreach($users as $item)
+                            <option value="{{ $item->id }}" @selected($selectedUser && (int) $selectedUser->id === (int) $item->id)>
+                                {{ $item->display_name }} ({{ $item->email }})
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
+            </div>
+
             @if($selectedUser)
                 @php
                     $requestPositionIds = request()->input('position_ids', []);
@@ -120,27 +139,7 @@
 
                     $hasUploadedAvatar = filled($selectedUser->avatar_path)
                         || filled($selectedUser->guru?->avatar_path);
-
                 @endphp
-
-                <div class="mt-4">
-                    <label class="label-base">{{ __('messages.select_user') }}</label>
-                    <form id="selected-user-form" method="GET" action="{{ route('ajk-program.index') }}" class="space-y-2">
-                        <input type="hidden" name="tab" value="assignments">
-                        <div class="flex items-center gap-2">
-                            <input type="text" name="user_search" value="{{ $userSearch }}" class="input-base w-full min-w-0" placeholder="Cari nama / email pengguna">
-                            <button type="submit" class="btn btn-outline btn-sm">Search</button>
-                        </div>
-                        <select id="selected-user-picker" name="selected_user_id" class="input-base">
-                            <option value="">-- Pilih pengguna --</option>
-                            @foreach($users as $item)
-                                <option value="{{ $item->id }}" @selected((int) $selectedUser->id === (int) $item->id)>
-                                    {{ $item->display_name }} ({{ $item->email }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </form>
-                </div>
 
                 <form method="POST" action="{{ route('ajk-program.assignments.update') }}" class="mt-4 space-y-4">
                     @csrf
@@ -215,7 +214,7 @@
                     });
                 </script>
             @else
-                <p class="mt-4 text-sm text-slate-500">-</p>
+                <p class="mt-4 text-sm text-slate-500">Sila pilih pengguna terlebih dahulu.</p>
             @endif
         </section>
     @endif

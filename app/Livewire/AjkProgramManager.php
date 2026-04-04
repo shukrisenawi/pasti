@@ -71,10 +71,6 @@ class AjkProgramManager extends Component
             ->with(['roles', 'ajkPositions', 'guru'])
             ->find($this->selectedUserId);
 
-        if (! $selectedUser) {
-            $selectedUser = $users->first();
-            $this->selectedUserId = $selectedUser?->id;
-        }
 
         if ($selectedUser && $this->positionIds === []) {
             $this->positionIds = $selectedUser->ajkPositions->pluck('id')->map(fn ($id) => (int) $id)->all();
@@ -256,15 +252,13 @@ class AjkProgramManager extends Component
 
     private function ensureSelectedUser(): void
     {
-        if ($this->selectedUserId) {
-            return;
+        if ($this->selectedUserId && ! User::query()->whereKey($this->selectedUserId)->exists()) {
+            $this->selectedUserId = null;
         }
-
-        $this->selectedUserId = User::query()
-            ->orderByRaw("COALESCE(NULLIF(nama_samaran, ''), name)")
-            ->value('id');
     }
+
 }
+
 
 
 
