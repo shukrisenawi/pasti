@@ -60,17 +60,27 @@ class N8nWebhookService
             return;
         }
 
+        $text = trim($text);
         $payload = [
             'text' => $text,
-            'gambar' => $gambar,
-            'link' => $link,
+            'gambar' => $gambar ?? '',
+            'link' => $link ?? '',
         ];
 
         try {
-            Http::asJson()
+            $response = Http::asJson()
                 ->acceptJson()
                 ->timeout(10)
                 ->post($webhookUrl, $payload);
+
+            if ($response->failed()) {
+                Log::warning('Webhook n8n pulang status gagal.', [
+                    'status' => $response->status(),
+                    'webhook_url' => $webhookUrl,
+                    'payload' => $payload,
+                    'response_body' => $response->body(),
+                ]);
+            }
         } catch (Throwable $e) {
             Log::warning('Gagal hantar webhook n8n.', [
                 'message' => $e->getMessage(),
