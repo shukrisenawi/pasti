@@ -21,8 +21,9 @@ class N8nUserController extends Controller
             ->whereNotNull('tarikh_lahir')
             ->orderByRaw("DATE_FORMAT(tarikh_lahir, '%m-%d')")
             ->orderBy('name')
-            ->limit($limit)
             ->get()
+            ->unique(fn (User $user) => strtolower(trim((string) $user->display_name)) . '|' . optional($user->tarikh_lahir)?->format('Y-m-d'))
+            ->take($limit)
             ->map(fn (User $user): array => [
                 'id' => $user->id,
                 'nama' => $user->display_name,
