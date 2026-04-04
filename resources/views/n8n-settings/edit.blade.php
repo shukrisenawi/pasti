@@ -73,13 +73,13 @@
             </div>
 
             <div>
-                <label for="text_leave_notice_submitted" class="label-base">Teks Group 2 - Notis Cuti <span class="text-rose-600">*</span></label>
+                <label for="text_leave_notice_submitted" class="label-base">Teks Group AJK - Notis Cuti <span class="text-rose-600">*</span></label>
                 <textarea id="text_leave_notice_submitted" name="text_leave_notice_submitted" rows="3" required class="input-base">{{ old('text_leave_notice_submitted', $settings['text_leave_notice_submitted'] ?? '') }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_guru}</code>, <code>{tarikh_cuti}</code>, <code>{tarikh_hingga}</code>, <code>{sebab}</code></p>
             </div>
 
             <div>
-                <label for="text_claim_submitted" class="label-base">Teks Group 2 - Claim Guru <span class="text-rose-600">*</span></label>
+                <label for="text_claim_submitted" class="label-base">Teks Group AJK - Claim Guru <span class="text-rose-600">*</span></label>
                 <textarea id="text_claim_submitted" name="text_claim_submitted" rows="3" required class="input-base">{{ old('text_claim_submitted', $settings['text_claim_submitted'] ?? '') }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_guru}</code>, <code>{jumlah}</code>, <code>{tarikh_claim}</code>, <code>{catatan}</code></p>
             </div>
