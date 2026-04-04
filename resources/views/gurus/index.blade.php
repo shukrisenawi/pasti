@@ -40,14 +40,17 @@
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             @foreach($gurus as $guru)
                 <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    @php($hasUploadedAvatar = filled($guru->avatar_path) || filled($guru->user?->avatar_path))
                     <div class="flex items-center gap-3">
                         <div class="group relative">
                             <a href="{{ route('users.gurus.edit', $guru) }}" class="block" aria-label="Lihat profil {{ $guru->display_name }}">
                                 <x-avatar :guru="$guru" size="h-12 w-12" rounded="rounded-xl" border="border border-slate-200" />
                             </a>
+                            @if($hasUploadedAvatar)
                             <div class="pointer-events-none absolute left-1/2 top-0 z-30 hidden -translate-x-1/2 -translate-y-[calc(100%+0.5rem)] md:block md:invisible md:opacity-0 md:transition md:duration-150 md:group-hover:visible md:group-hover:opacity-100">
                                 <div class="h-[150px] w-[150px] overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl"><img src="{{ $guru->avatar_url }}" alt="{{ $guru->display_name }}" class="h-full w-full rounded-lg object-cover"></div>
                             </div>
+                            @endif
                         </div>
                         <div class="min-w-0">
                             <h3 class="truncate text-base font-extrabold text-slate-800">{{ $guru->display_name }}</h3>
@@ -84,6 +87,7 @@
 
     <div class="mt-4">{{ $gurus->links() }}</div>
 </x-app-layout>
+
 
 
 
