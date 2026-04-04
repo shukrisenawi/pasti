@@ -26,14 +26,29 @@ class AjkProgramController extends Controller
         abort_unless($actor->hasAnyRole(['master_admin', 'admin']), 403);
 
         $validated = $request->validate([
-            'selected_user_id' => ['required', 'integer', 'exists:users,id'],
+            'selected_user_ids' => ['required', 'array', 'min:1'],
+            'selected_user_ids.*' => ['integer', 'exists:users,id'],
             'position_ids' => ['nullable', 'array'],
             'position_ids.*' => ['integer', 'exists:ajk_positions,id'],
         ]);
 
-        $targetUser = User::query()->with('ajkPositions')->findOrFail((int) $validated['selected_user_id']);
+        $targetUserIds = collect($validated['selected_user_ids'] ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
 
-        if ($actor->hasRole('admin') && ! $actor->hasRole('master_admin') && $targetUser->hasRole('master_admin')) {
+        $targetUsers = User::query()->with('ajkPositions')->whereIn('id', $targetUserIds)->get();
+
+        if ($targetUsers->isEmpty()) {
+            return redirect()->route('ajk-program.index')->with('status', __('messages.saved'));
+        }
+
+        if (
+            $actor->hasRole('admin')
+            && ! $actor->hasRole('master_admin')
+            && $targetUsers->contains(fn (User $user) => $user->hasRole('master_admin'))
+        ) {
             abort(403);
         }
 
@@ -44,28 +59,31 @@ class AjkProgramController extends Controller
             ->values()
             ->all();
 
-        $currentPositionIds = $targetUser->ajkPositions->pluck('id')->map(fn ($id) => (int) $id)->all();
-        $addedIds = array_values(array_diff($newPositionIds, $currentPositionIds));
-        $removedIds = array_values(array_diff($currentPositionIds, $newPositionIds));
-
         $syncPayload = [];
         foreach ($newPositionIds as $positionId) {
             $syncPayload[$positionId] = ['assigned_by' => $actor->id];
         }
 
-        DB::transaction(function () use ($targetUser, $syncPayload): void {
-            $targetUser->ajkPositions()->sync($syncPayload);
-        });
+        foreach ($targetUsers as $targetUser) {
+            $currentPositionIds = $targetUser->ajkPositions->pluck('id')->map(fn ($id) => (int) $id)->all();
+            $addedIds = array_values(array_diff($newPositionIds, $currentPositionIds));
+            $removedIds = array_values(array_diff($currentPositionIds, $newPositionIds));
 
-        if ($addedIds !== [] || $removedIds !== []) {
-            $addedNames = AjkPosition::query()->whereIn('id', $addedIds)->orderBy('name')->pluck('name')->all();
-            $removedNames = AjkPosition::query()->whereIn('id', $removedIds)->orderBy('name')->pluck('name')->all();
+            DB::transaction(function () use ($targetUser, $syncPayload): void {
+                $targetUser->ajkPositions()->sync($syncPayload);
+            });
 
-            $targetUser->notify(new AjkPositionUpdatedNotification($actor, $addedNames, $removedNames));
+            if ($addedIds !== [] || $removedIds !== []) {
+                $addedNames = AjkPosition::query()->whereIn('id', $addedIds)->orderBy('name')->pluck('name')->all();
+                $removedNames = AjkPosition::query()->whereIn('id', $removedIds)->orderBy('name')->pluck('name')->all();
+
+                $targetUser->notify(new AjkPositionUpdatedNotification($actor, $addedNames, $removedNames));
+            }
         }
 
         return redirect()
-            ->route('ajk-program.index', ['selected_user_id' => $targetUser->id])
+            ->route('ajk-program.index', ['selected_user_id' => $targetUsers->first()->id])
             ->with('status', __('messages.saved'));
     }
 }
+

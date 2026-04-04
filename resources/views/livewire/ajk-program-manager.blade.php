@@ -119,7 +119,16 @@
                 </div>
                 <form method="POST" action="{{ route('ajk-program.assignments.update') }}" class="mt-4 space-y-4">
                     @csrf
-                    <input type="hidden" name="selected_user_id" value="{{ $selectedUser->id }}">
+                    <div>
+                        <label class="label-base">Pilih Pengguna (boleh lebih seorang)</label>
+                        <select name="selected_user_ids[]" class="input-base mt-2" multiple size="6" required>
+                            @foreach($users as $item)
+                                <option value="{{ $item->id }}" @selected((int) $selectedUserId === (int) $item->id || in_array((int) $item->id, collect(request()->input('selected_user_ids', []))->map(fn ($id) => (int) $id)->all(), true))>
+                                    {{ $item->display_name }} ({{ $item->email }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-semibold text-slate-700">{{ __('messages.selected_user') }}</p>
                         <div class="mt-2 flex items-center gap-3">
@@ -164,6 +173,8 @@
         </section>
     @endif
 </div>
+
+
 
 
 
