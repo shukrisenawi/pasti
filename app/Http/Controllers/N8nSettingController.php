@@ -6,6 +6,7 @@ use App\Models\SystemSetting;
 use App\Services\N8nWebhookService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class N8nSettingController extends Controller
@@ -22,6 +23,14 @@ class N8nSettingController extends Controller
     public function update(Request $request): RedirectResponse
     {
         abort_unless($request->user()->hasRole('master_admin'), 403);
+
+        if (! Schema::hasTable('system_settings')) {
+            return redirect()
+                ->route('n8n-settings.edit')
+                ->withErrors([
+                    'n8n_settings' => 'Jadual tetapan belum wujud. Sila jalankan migrate terlebih dahulu.',
+                ]);
+        }
 
         $validated = $request->validate([
             'webhook_url' => ['required', 'url', 'max:2000'],
