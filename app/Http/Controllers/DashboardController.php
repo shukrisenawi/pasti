@@ -7,6 +7,7 @@ use App\Models\FinancialTransaction;
 use App\Models\Guru;
 use App\Models\Program;
 use App\Models\ProgramStatus;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -21,6 +22,11 @@ class DashboardController extends Controller
         $isGuruOnly = $this->isGuruOnly($user);
         $adminCashBalance = 0.0;
         $adminBankBalance = 0.0;
+        $birthdayUsers = User::query()
+            ->whereNotNull('tarikh_lahir')
+            ->whereRaw("DATE_FORMAT(tarikh_lahir, '%m-%d') = ?", [now()->format('m-d')])
+            ->orderBy('name')
+            ->get();
 
         if ($isGuruOnly) {
             $guruId = $user->guru?->id;
@@ -195,6 +201,7 @@ class DashboardController extends Controller
             'userAjkPositions' => $user->ajkPositions->sortBy('name')->values(),
             'adminCashBalance' => $adminCashBalance,
             'adminBankBalance' => $adminBankBalance,
+            'birthdayUsers' => $birthdayUsers,
         ]);
     }
 

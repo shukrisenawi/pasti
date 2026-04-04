@@ -25,12 +25,6 @@
     @php
         $user = auth()->user();
         $skimPasAlert = null;
-        $isBirthdayToday = false;
-
-        if ($user->tarikh_lahir) {
-            $isBirthdayToday = $user->tarikh_lahir->format('m-d') === now()->format('m-d');
-        }
-
         if ($user->tarikh_exp_skim_pas) {
             $today = now()->startOfDay();
             $expiry = $user->tarikh_exp_skim_pas->startOfDay();
@@ -43,16 +37,20 @@
         }
     @endphp
 
-    @if($isBirthdayToday)
+    @if(($birthdayUsers ?? collect())->isNotEmpty())
         <div class="mb-6 flex items-center gap-4 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 p-4 shadow-sm">
             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m4-4H8m9-8H7a2 2 0 00-2 2v2h14V6a2 2 0 00-2-2zM5 10h14v8a2 2 0 01-2 2H7a2 2 0 01-2-2v-8z" />
                 </svg>
             </div>
-            <p class="text-sm font-semibold text-emerald-900 sm:text-base">
-                Selamat Hari Jadi {{ $user->display_name }}, ikhlas daripada PASTI Kawasan Sik semoga dipanjangkan umur dalam keberkatan dan dimurahkan rezeki.
-            </p>
+            <div class="space-y-1">
+                @foreach($birthdayUsers as $birthdayUser)
+                    <p class="text-sm font-semibold text-emerald-900 sm:text-base">
+                        Selamat Hari Jadi {{ $birthdayUser->display_name }}, ikhlas daripada PASTI Kawasan Sik semoga dipanjangkan umur dalam keberkatan dan dimurahkan rezeki.
+                    </p>
+                @endforeach
+            </div>
         </div>
     @endif
 
