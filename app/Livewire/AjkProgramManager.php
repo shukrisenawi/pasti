@@ -25,6 +25,8 @@ class AjkProgramManager extends Component
 
     public ?string $notice = null;
 
+    public string $userSearch = '';
+
     public function mount(): void
     {
         $requestedTab = (string) request()->query('tab', 'assignments');
@@ -41,6 +43,8 @@ class AjkProgramManager extends Component
             $this->selectedUserId = $requestedUserId;
         }
 
+        $this->userSearch = trim((string) request()->query('user_search', ''));
+
         $this->ensureSelectedUser();
     }
 
@@ -50,11 +54,22 @@ class AjkProgramManager extends Component
 
         $users = User::query()
             ->with(['roles', 'ajkPositions', 'guru'])
+            ->when($this->userSearch !== '', function ($query): void {
+                $keyword = '%' . $this->userSearch . '%';
+
+                $query->where(function ($inner) use ($keyword): void {
+                    $inner->where('name', 'like', $keyword)
+                        ->orWhere('nama_samaran', 'like', $keyword)
+                        ->orWhere('email', 'like', $keyword);
+                });
+            })
             ->orderByRaw("COALESCE(NULLIF(nama_samaran, ''), name)")
             ->get();
 
         $positions = AjkPosition::query()->orderBy('name')->get();
-        $selectedUser = $users->firstWhere('id', $this->selectedUserId);
+        $selectedUser = User::query()
+            ->with(['roles', 'ajkPositions', 'guru'])
+            ->find($this->selectedUserId);
 
         if (! $selectedUser) {
             $selectedUser = $users->first();
@@ -250,5 +265,6 @@ class AjkProgramManager extends Component
             ->value('id');
     }
 }
+
 
 

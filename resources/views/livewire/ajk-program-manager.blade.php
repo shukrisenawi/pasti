@@ -5,14 +5,14 @@
 
     <div class="flex flex-wrap gap-2">
         <a
-            href="{{ route('ajk-program.index', ['tab' => 'assignments', 'selected_user_id' => $selectedUserId]) }}"
+            href="{{ route('ajk-program.index', ['tab' => 'assignments', 'selected_user_id' => $selectedUserId, 'user_search' => $userSearch]) }}"
             class="btn {{ $activeTab === 'assignments' ? 'btn-primary' : 'btn-outline' }}"
         >
             {{ __('messages.user_position_assignment') }}
         </a>
         @if($canManagePositions)
             <a
-                href="{{ route('ajk-program.index', ['tab' => 'positions', 'selected_user_id' => $selectedUserId]) }}"
+                href="{{ route('ajk-program.index', ['tab' => 'positions', 'selected_user_id' => $selectedUserId, 'user_search' => $userSearch]) }}"
                 class="btn {{ $activeTab === 'positions' ? 'btn-primary' : 'btn-outline' }}"
             >
                 {{ __('messages.ajk_position') }}
@@ -99,8 +99,13 @@
             @if($selectedUser)
                 <div class="mt-4">
                     <label class="label-base">{{ __('messages.select_user') }}</label>
-                    <form method="GET" action="{{ route('ajk-program.index') }}">
-                        <select name="selected_user_id" onchange="this.form.submit()" class="input-base">
+                    <form method="GET" action="{{ route('ajk-program.index') }}" class="space-y-2">
+                        <input type="hidden" name="tab" value="assignments">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <input type="text" name="user_search" value="{{ $userSearch }}" class="input-base min-w-[220px]" placeholder="Cari nama / email pengguna">
+                            <button type="submit" class="btn btn-outline btn-sm">Search</button>
+                        </div>
+                        <select name="selected_user_id" class="input-base">
                             @foreach($users as $item)
                                 <option value="{{ $item->id }}" @selected((int) $selectedUserId === (int) $item->id)>
                                     {{ $item->display_name }} ({{ $item->email }})
@@ -159,6 +164,7 @@
         </section>
     @endif
 </div>
+
 
 
 
