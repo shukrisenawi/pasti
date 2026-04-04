@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AjkPositionSeeder::class,
             FinancialTransactionTypeSeeder::class,
+            N8nSettingsSeeder::class,
             CurrentDataSeeder::class,
             GuruBulkSeeder::class,
         ]);
