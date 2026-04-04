@@ -104,7 +104,7 @@
                         <input type="text" name="user_search" value="{{ $userSearch }}" class="input-base w-full min-w-0" placeholder="Cari nama / email pengguna">
                         <button type="submit" class="btn btn-outline btn-sm">Search</button>
                     </div>
-                    <select id="selected-user-picker" name="selected_user_id" class="input-base">
+                    <select id="selected-user-picker" name="selected_user_id" class="input-base" onchange="this.form.submit()">
                         <option value="">-- Pilih pengguna --</option>
                         @foreach($users as $item)
                             <option value="{{ $item->id }}" @selected($selectedUser && (int) $selectedUser->id === (int) $item->id)>
@@ -194,25 +194,6 @@
                         <button type="submit" class="btn btn-primary">{{ __('messages.save') }}</button>
                     </div>
                 </form>
-
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const picker = document.getElementById('selected-user-picker');
-                        const pickerForm = document.getElementById('selected-user-form');
-
-                        if (!picker || !pickerForm) {
-                            return;
-                        }
-
-                        picker.addEventListener('change', function () {
-                            if (!this.value) {
-                                return;
-                            }
-
-                            pickerForm.submit();
-                        });
-                    });
-                </script>
             @else
                 <p class="mt-4 text-sm text-slate-500">Sila pilih pengguna terlebih dahulu.</p>
             @endif
