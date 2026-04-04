@@ -26,7 +26,53 @@ class GuruSalaryInformationController extends Controller
         $user = $request->user();
         abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
-        return view('guru-salary-information.index');
+        $search = trim((string) $request->query('search', ''));
+        $accessibleGurusQuery = $this->accessibleGurusQueryForUser($user);
+        $allAccessibleGuruIds = (clone $accessibleGurusQuery)->pluck('gurus.id');
+        $hasPendingRequests = $allAccessibleGuruIds->isNotEmpty()
+            && GuruSalaryRequest::query()
+                ->whereIn('guru_id', $allAccessibleGuruIds->all())
+                ->whereNull('completed_at')
+                ->exists();
+
+        $gurus = (clone $accessibleGurusQuery)
+            ->with(['pasti', 'user'])
+            ->when(
+                $search !== '',
+                fn (Builder $query) => $query->where(function (Builder $searchQuery) use ($search): void {
+                    $keyword = '%' . $search . '%';
+                    $searchQuery
+                        ->where('gurus.name', 'like', $keyword)
+                        ->orWhereHas('pasti', fn (Builder $pastiQuery) => $pastiQuery->where('name', 'like', $keyword));
+                })
+            )
+            ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
+            ->select('gurus.*')
+            ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
+            ->orderBy('pastis.name')
+            ->orderBy('gurus.name')
+            ->paginate(9)
+            ->withQueryString();
+
+        $guruIds = collect($gurus->items())->pluck('id')->all();
+
+        $requestGroups = GuruSalaryRequest::query()
+            ->with(['requestedBy', 'completedBy'])
+            ->whereIn('guru_id', $guruIds)
+            ->orderByDesc('id')
+            ->get()
+            ->groupBy('guru_id');
+
+        return view('guru-salary-information.index', [
+            'gurus' => $gurus,
+            'latestRequests' => $requestGroups->map(fn ($items) => $items->first()),
+            'latestCompletedRequests' => $requestGroups->map(fn ($items) => $items->firstWhere(fn (GuruSalaryRequest $item) => $item->completed_at !== null)),
+            'canRequest' => $user->hasAnyRole(['master_admin', 'admin']),
+            'canRequestAll' => $user->hasAnyRole(['master_admin', 'admin']) && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
+            'isGuru' => $user->hasRole('guru'),
+            'guruId' => $user->guru?->id,
+            'search' => $search,
+        ]);
     }
 
     public function requestAllUpdates(Request $request): RedirectResponse
