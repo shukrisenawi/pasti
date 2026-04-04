@@ -98,15 +98,17 @@
 
             @if($selectedUser)
                 @php
-                    $requestedSelectedIds = collect(request()->input('selected_user_ids', []))
+                    $selectedUserIdsQuery = request()->query('selected_user_ids', []);
+                    if (! is_array($selectedUserIdsQuery)) {
+                        $selectedUserIdsQuery = [];
+                    }
+
+                    $requestedSelectedIds = collect($selectedUserIdsQuery)
                         ->map(fn ($id) => (int) $id)
                         ->filter()
                         ->unique()
                         ->values();
 
-                    if ($requestedSelectedIds->isEmpty()) {
-                        $requestedSelectedIds = collect([(int) $selectedUser->id]);
-                    }
 
                     $initialSelectedUsers = $users->whereIn('id', $requestedSelectedIds)->values();
                     $usersForJs = $users->map(fn ($item) => [
