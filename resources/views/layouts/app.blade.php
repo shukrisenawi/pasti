@@ -186,6 +186,7 @@
                         <span>{{ __('messages.programs') }}</span>
                         @if($drawerUpcomingProgramCount > 0)<span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerUpcomingProgramCount > 99 ? '99+' : $drawerUpcomingProgramCount }}</span>@endif
                     </a>
+                    <a href="{{ route('guru-directory.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('guru-directory.*') ? 'menu-link-active' : '' }}">Senarai Guru</a>
                     <a href="{{ route('messages.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                         <span>{{ __('messages.inbox') }}</span>
                         @if($drawerInboxCount > 0)<span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerInboxCount > 99 ? '99+' : $drawerInboxCount }}</span>@endif
@@ -447,6 +448,7 @@
                                 <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuUpcomingProgramCount > 99 ? '99+' : $menuUpcomingProgramCount }}</span>
                             @endif
                         </a>
+                        <a href="{{ route('guru-directory.index') }}" wire:navigate class="menu-link {{ request()->routeIs('guru-directory.*') ? 'menu-link-active' : '' }}">Senarai Guru</a>
                         <a href="{{ route('messages.index') }}" wire:navigate class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                             <span>{{ __('messages.inbox') }}</span>
                             @if($menuInboxCount > 0)
@@ -523,6 +525,7 @@
 </script>
 </body>
 </html>
+
 
 
 

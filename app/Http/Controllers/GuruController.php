@@ -354,6 +354,27 @@ class GuruController extends Controller
         return redirect()->route('users.gurus.index')->with('status', __('messages.deleted'));
     }
 
+    public function directory(Request $request): View
+    {
+        $user = $request->user();
+        abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
+
+        $gurus = Guru::query()
+            ->with(['user', 'pasti'])
+            ->where('is_assistant', false)
+            ->whereNotNull('pasti_id')
+            ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
+            ->select('gurus.*')
+            ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
+            ->orderBy('pastis.name')
+            ->orderBy('gurus.name')
+            ->paginate(9);
+
+        return view('guru-directory.index', [
+            'gurus' => $gurus,
+        ]);
+    }
+
     private function pastisForUser(User $user)
     {
         if ($this->isMasterAdmin($user)) {
