@@ -28,7 +28,17 @@
             @forelse($gurus as $guru)
                 <tr>
                     <td class="flex items-center gap-3">
-                        <x-avatar :guru="$guru" size="h-10 w-10" rounded="rounded-2xl" />
+                        @php($hasUploadedAvatar = filled($guru->avatar_path) || filled($guru->user?->avatar_path))
+                        <div class="group relative">
+                            <a href="{{ route('users.gurus.edit', $guru) }}" class="block" aria-label="Lihat profil {{ $guru->display_name }}">
+                                <x-avatar :guru="$guru" size="h-10 w-10" rounded="rounded-2xl" />
+                            </a>
+                            @if($hasUploadedAvatar)
+                                <div class="pointer-events-none absolute left-1/2 top-0 z-30 hidden -translate-x-1/2 -translate-y-[calc(100%+0.5rem)] md:block md:invisible md:opacity-0 md:transition md:duration-150 md:group-hover:visible md:group-hover:opacity-100">
+                                    <div class="h-[150px] w-[150px] overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl"><img src="{{ $guru->avatar_url }}" alt="{{ $guru->display_name }}" class="h-full w-full rounded-lg object-cover"></div>
+                                </div>
+                            @endif
+                        </div>
                         <span>{{ $guru->display_name }}</span>
                     </td>
                     <td>{{ number_format((float) ($guru->kpiSnapshot?->score ?? 0), 0) }}</td>
