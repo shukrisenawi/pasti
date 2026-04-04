@@ -33,8 +33,11 @@ class N8nSettingController extends Controller
         }
 
         $validated = $request->validate([
-            'webhook_url' => ['required', 'url', 'max:2000'],
-            'webhook_url_group2' => ['required', 'url', 'max:2000'],
+            'webhook_mode' => ['required', 'in:test,production'],
+            'webhook_url_test' => ['required', 'url', 'max:2000'],
+            'webhook_url_production' => ['required', 'url', 'max:2000'],
+            'webhook_url_group2_test' => ['required', 'url', 'max:2000'],
+            'webhook_url_group2_production' => ['required', 'url', 'max:2000'],
             'text_program_created' => ['required', 'string', 'max:2000'],
             'text_salary_request' => ['required', 'string', 'max:2000'],
             'text_pasti_info_request' => ['required', 'string', 'max:2000'],
@@ -44,8 +47,11 @@ class N8nSettingController extends Controller
         ]);
 
         $mapping = [
-            'webhook_url' => 'n8n_webhook_url',
-            'webhook_url_group2' => 'n8n_webhook_url_group2',
+            'webhook_mode' => N8nWebhookService::KEY_WEBHOOK_MODE,
+            'webhook_url_test' => N8nWebhookService::KEY_WEBHOOK_URL_TEST,
+            'webhook_url_production' => N8nWebhookService::KEY_WEBHOOK_URL_PRODUCTION,
+            'webhook_url_group2_test' => N8nWebhookService::KEY_WEBHOOK_URL_GROUP2_TEST,
+            'webhook_url_group2_production' => N8nWebhookService::KEY_WEBHOOK_URL_GROUP2_PRODUCTION,
             'text_program_created' => 'n8n_text_program_created',
             'text_salary_request' => 'n8n_text_salary_request',
             'text_pasti_info_request' => 'n8n_text_pasti_info_request',

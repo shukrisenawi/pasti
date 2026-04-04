@@ -13,12 +13,39 @@
             @method('PUT')
 
             <div>
-                <label for="webhook_url" class="label-base">Webhook URL <span class="text-rose-600">*</span></label>
-                <input id="webhook_url" name="webhook_url" type="url" required class="input-base" value="{{ old('webhook_url', $settings['webhook_url'] ?? '') }}">
+                <p class="label-base">Mode Hantar Webhook <span class="text-rose-600">*</span></p>
+                <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                    <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <input type="radio" name="webhook_mode" value="test" class="h-4 w-4 text-primary focus:ring-primary" @checked(old('webhook_mode', $settings['webhook_mode'] ?? 'production') === 'test')>
+                        <span class="text-sm font-semibold text-slate-700">Test</span>
+                    </label>
+                    <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <input type="radio" name="webhook_mode" value="production" class="h-4 w-4 text-primary focus:ring-primary" @checked(old('webhook_mode', $settings['webhook_mode'] ?? 'production') === 'production')>
+                        <span class="text-sm font-semibold text-slate-700">Production</span>
+                    </label>
+                </div>
             </div>
-            <div>
-                <label for="webhook_url_group2" class="label-base">Webhook URL Group 2 <span class="text-rose-600">*</span></label>
-                <input id="webhook_url_group2" name="webhook_url_group2" type="url" required class="input-base" value="{{ old('webhook_url_group2', $settings['webhook_url_group2'] ?? '') }}">
+
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <label for="webhook_url_test" class="label-base">Webhook Group 1 (Test) <span class="text-rose-600">*</span></label>
+                    <input id="webhook_url_test" name="webhook_url_test" type="url" required class="input-base" value="{{ old('webhook_url_test', $settings['webhook_url_test'] ?? '') }}">
+                </div>
+                <div>
+                    <label for="webhook_url_production" class="label-base">Webhook Group 1 (Production) <span class="text-rose-600">*</span></label>
+                    <input id="webhook_url_production" name="webhook_url_production" type="url" required class="input-base" value="{{ old('webhook_url_production', $settings['webhook_url_production'] ?? '') }}">
+                </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <label for="webhook_url_group2_test" class="label-base">Webhook Group 2 (Test) <span class="text-rose-600">*</span></label>
+                    <input id="webhook_url_group2_test" name="webhook_url_group2_test" type="url" required class="input-base" value="{{ old('webhook_url_group2_test', $settings['webhook_url_group2_test'] ?? '') }}">
+                </div>
+                <div>
+                    <label for="webhook_url_group2_production" class="label-base">Webhook Group 2 (Production) <span class="text-rose-600">*</span></label>
+                    <input id="webhook_url_group2_production" name="webhook_url_group2_production" type="url" required class="input-base" value="{{ old('webhook_url_group2_production', $settings['webhook_url_group2_production'] ?? '') }}">
+                </div>
             </div>
 
             <div>

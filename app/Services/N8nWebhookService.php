@@ -9,8 +9,13 @@ use Throwable;
 
 class N8nWebhookService
 {
-    public const KEY_WEBHOOK_URL = 'n8n_webhook_url';
-    public const KEY_WEBHOOK_URL_GROUP2 = 'n8n_webhook_url_group2';
+    public const KEY_WEBHOOK_MODE = 'n8n_webhook_mode';
+
+    public const KEY_WEBHOOK_URL_TEST = 'n8n_webhook_url_test';
+    public const KEY_WEBHOOK_URL_PRODUCTION = 'n8n_webhook_url_production';
+    public const KEY_WEBHOOK_URL_GROUP2_TEST = 'n8n_webhook_url_group2_test';
+    public const KEY_WEBHOOK_URL_GROUP2_PRODUCTION = 'n8n_webhook_url_group2_production';
+
     public const KEY_TEXT_PROGRAM_CREATED = 'n8n_text_program_created';
     public const KEY_TEXT_SALARY_REQUEST = 'n8n_text_salary_request';
     public const KEY_TEXT_PASTI_INFO_REQUEST = 'n8n_text_pasti_info_request';
@@ -27,14 +32,12 @@ class N8nWebhookService
 
     public function send(string $text, ?string $link = null, ?string $gambar = null): void
     {
-        $webhookUrl = $this->setting(self::KEY_WEBHOOK_URL, (string) config('services.n8n.webhook_url', ''));
-        $this->sendToWebhook($webhookUrl, $text, $link, $gambar);
+        $this->sendToWebhook($this->activeWebhookUrl(false), $text, $link, $gambar);
     }
 
     public function sendGroup2(string $text, ?string $link = null, ?string $gambar = null): void
     {
-        $webhookUrl = $this->setting(self::KEY_WEBHOOK_URL_GROUP2, (string) config('services.n8n.webhook_url_group2', ''));
-        $this->sendToWebhook($webhookUrl, $text, $link, $gambar);
+        $this->sendToWebhook($this->activeWebhookUrl(true), $text, $link, $gambar);
     }
 
     public function sendByTemplate(string $templateKey, array $variables, ?string $link = null, ?string $gambar = null): void
@@ -104,8 +107,23 @@ class N8nWebhookService
     public function allSettings(): array
     {
         return [
-            'webhook_url' => $this->setting(self::KEY_WEBHOOK_URL, (string) config('services.n8n.webhook_url', '')),
-            'webhook_url_group2' => $this->setting(self::KEY_WEBHOOK_URL_GROUP2, (string) config('services.n8n.webhook_url_group2', '')),
+            'webhook_mode' => $this->webhookMode(),
+            'webhook_url_test' => $this->setting(
+                self::KEY_WEBHOOK_URL_TEST,
+                (string) config('services.n8n.webhook_url_test', (string) config('services.n8n.webhook_url', ''))
+            ),
+            'webhook_url_production' => $this->setting(
+                self::KEY_WEBHOOK_URL_PRODUCTION,
+                (string) config('services.n8n.webhook_url_production', (string) config('services.n8n.webhook_url', ''))
+            ),
+            'webhook_url_group2_test' => $this->setting(
+                self::KEY_WEBHOOK_URL_GROUP2_TEST,
+                (string) config('services.n8n.webhook_url_group2_test', (string) config('services.n8n.webhook_url_group2', ''))
+            ),
+            'webhook_url_group2_production' => $this->setting(
+                self::KEY_WEBHOOK_URL_GROUP2_PRODUCTION,
+                (string) config('services.n8n.webhook_url_group2_production', (string) config('services.n8n.webhook_url_group2', ''))
+            ),
             'text_program_created' => $this->template(self::KEY_TEXT_PROGRAM_CREATED),
             'text_salary_request' => $this->template(self::KEY_TEXT_SALARY_REQUEST),
             'text_pasti_info_request' => $this->template(self::KEY_TEXT_PASTI_INFO_REQUEST),
@@ -113,6 +131,40 @@ class N8nWebhookService
             'text_leave_notice_submitted' => $this->template(self::KEY_TEXT_LEAVE_NOTICE_SUBMITTED),
             'text_claim_submitted' => $this->template(self::KEY_TEXT_CLAIM_SUBMITTED),
         ];
+    }
+
+    private function activeWebhookUrl(bool $isGroup2): string
+    {
+        $mode = $this->webhookMode();
+
+        if ($isGroup2) {
+            return $mode === 'test'
+                ? $this->setting(
+                    self::KEY_WEBHOOK_URL_GROUP2_TEST,
+                    (string) config('services.n8n.webhook_url_group2_test', (string) config('services.n8n.webhook_url_group2', ''))
+                )
+                : $this->setting(
+                    self::KEY_WEBHOOK_URL_GROUP2_PRODUCTION,
+                    (string) config('services.n8n.webhook_url_group2_production', (string) config('services.n8n.webhook_url_group2', ''))
+                );
+        }
+
+        return $mode === 'test'
+            ? $this->setting(
+                self::KEY_WEBHOOK_URL_TEST,
+                (string) config('services.n8n.webhook_url_test', (string) config('services.n8n.webhook_url', ''))
+            )
+            : $this->setting(
+                self::KEY_WEBHOOK_URL_PRODUCTION,
+                (string) config('services.n8n.webhook_url_production', (string) config('services.n8n.webhook_url', ''))
+            );
+    }
+
+    private function webhookMode(): string
+    {
+        $mode = strtolower($this->setting(self::KEY_WEBHOOK_MODE, 'production'));
+
+        return in_array($mode, ['test', 'production'], true) ? $mode : 'production';
     }
 
     private function template(string $key): string
