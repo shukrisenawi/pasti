@@ -161,6 +161,7 @@
                                             </svg>
                                         </button>
                                     </div>
+                                    <div class="mt-3 flex flex-wrap gap-1" data-position-tags></div>
                                 </div>
                             @endforeach
                         </div>
@@ -179,6 +180,8 @@
                                         type="checkbox"
                                         name="position_ids[]"
                                         value="{{ $position->id }}"
+                                        data-position-id="{{ $position->id }}"
+                                        data-position-name="{{ $position->name }}"
                                         @checked($selectedUser->ajkPositions->contains('id', $position->id))
                                         class="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
                                     >
@@ -205,6 +208,7 @@
                         const cards = document.getElementById('selected-users-cards');
                         const emptyState = document.getElementById('selected-users-empty');
                         const dataNode = document.getElementById('selected-users-data');
+                        const positionCheckboxes = Array.from(document.querySelectorAll('input[name="position_ids[]"]'));
 
                         if (!picker || !cards || !emptyState || !dataNode) {
                             return;
@@ -243,7 +247,47 @@
                                             '</svg>' +
                                         '</button>' +
                                     '</div>' +
+                                    '<div class="mt-3 flex flex-wrap gap-1" data-position-tags></div>' +
                                 '</div>';
+                        }
+
+                        function getSelectedPositions() {
+                            return positionCheckboxes
+                                .filter(function (checkbox) { return checkbox.checked; })
+                                .map(function (checkbox) {
+                                    return {
+                                        id: checkbox.getAttribute('data-position-id') || checkbox.value,
+                                        name: checkbox.getAttribute('data-position-name') || checkbox.value,
+                                    };
+                                });
+                        }
+
+                        function createPositionTag(position) {
+                            return '' +
+                                '<span class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">' +
+                                    '<span>' + position.name + '</span>' +
+                                    '<button type="button" data-remove-position="' + position.id + '" class="text-rose-600" title="Buang jawatan">' +
+                                        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-3.5 w-3.5">' +
+                                            '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />' +
+                                        '</svg>' +
+                                    '</button>' +
+                                '</span>';
+                        }
+
+                        function renderTagsForCard(card) {
+                            const tagsNode = card.querySelector('[data-position-tags]');
+                            if (!tagsNode) {
+                                return;
+                            }
+
+                            const selectedPositions = getSelectedPositions();
+                            tagsNode.innerHTML = selectedPositions.map(createPositionTag).join('');
+                        }
+
+                        function renderTagsAllCards() {
+                            cards.querySelectorAll('[data-selected-user-card]').forEach(function (card) {
+                                renderTagsForCard(card);
+                            });
                         }
 
                         function addUser(userId) {
@@ -252,6 +296,7 @@
                             }
 
                             cards.insertAdjacentHTML('beforeend', createUserCard(usersById[userId]));
+                            renderTagsAllCards();
                             syncEmptyState();
                         }
 
@@ -260,6 +305,21 @@
                         });
 
                         cards.addEventListener('click', function (event) {
+                            const removePositionButton = event.target.closest('[data-remove-position]');
+                            if (removePositionButton) {
+                                const positionId = removePositionButton.getAttribute('data-remove-position');
+                                const checkbox = positionCheckboxes.find(function (item) {
+                                    return String(item.value) === String(positionId);
+                                });
+
+                                if (checkbox) {
+                                    checkbox.checked = false;
+                                }
+
+                                renderTagsAllCards();
+                                return;
+                            }
+
                             const removeButton = event.target.closest('[data-remove-user]');
                             if (!removeButton) {
                                 return;
@@ -272,6 +332,13 @@
                             }
                         });
 
+                        positionCheckboxes.forEach(function (checkbox) {
+                            checkbox.addEventListener('change', function () {
+                                renderTagsAllCards();
+                            });
+                        });
+
+                        renderTagsAllCards();
                         syncEmptyState();
                     });
                 </script>
@@ -281,4 +348,5 @@
         </section>
     @endif
 </div>
+
 
