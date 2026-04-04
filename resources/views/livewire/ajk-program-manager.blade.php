@@ -143,6 +143,17 @@
                     @csrf
                     <input type="hidden" name="selected_user_ids[]" value="{{ $selectedUser->id }}">
 
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                        <p class="label-base">Pengguna Dipilih</p>
+                        <div class="mt-2 flex items-center gap-3">
+                            <img src="{{ $selectedUser->avatar_url }}" alt="{{ $selectedUser->display_name }}" class="h-12 w-12 rounded-xl border border-slate-200 object-cover">
+                            <div class="min-w-0">
+                                <p class="truncate text-sm font-bold text-slate-900">{{ $selectedUser->display_name }}</p>
+                                <p class="truncate text-xs text-slate-500">{{ $selectedUser->email }}</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <p class="label-base">{{ __('messages.select_positions') }}</p>
                         <div class="mt-2 grid gap-2 md:grid-cols-2">
