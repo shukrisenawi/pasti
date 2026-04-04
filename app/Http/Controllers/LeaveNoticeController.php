@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LeaveNotice;
 use App\Models\User;
 use App\Notifications\LeaveNoticeSubmittedNotification;
+use App\Services\N8nWebhookService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -13,6 +14,11 @@ use Illuminate\View\View;
 
 class LeaveNoticeController extends Controller
 {
+    public function __construct(
+        private readonly N8nWebhookService $n8nWebhookService,
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -88,6 +94,18 @@ class LeaveNoticeController extends Controller
         if ($recipients->isNotEmpty()) {
             Notification::send($recipients, new LeaveNoticeSubmittedNotification($leaveNotice));
         }
+
+        $this->n8nWebhookService->sendGroup2ByTemplate(
+            N8nWebhookService::KEY_TEXT_LEAVE_NOTICE_SUBMITTED,
+            [
+                'nama_guru' => (string) ($leaveNotice->guru?->display_name ?? $user->display_name),
+                'tarikh_cuti' => optional($leaveNotice->leave_date)->format('d/m/Y') ?? (string) $data['leave_date'],
+                'tarikh_hingga' => optional($leaveNotice->leave_until)->format('d/m/Y') ?? (string) $data['leave_until'],
+                'sebab' => trim((string) $leaveNotice->reason),
+            ],
+            $this->n8nWebhookService->toPublicUrl(route('leave-notices.index')),
+            $this->n8nWebhookService->toPublicUrl($leaveNotice->mc_image_url)
+        );
 
         return redirect()->route('leave-notices.index')->with('status', __('messages.saved'));
     }

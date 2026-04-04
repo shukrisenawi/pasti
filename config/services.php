@@ -38,6 +38,7 @@ return [
     'n8n' => [
         'api_token' => env('N8N_API_TOKEN'),
         'webhook_url' => env('N8N_WEBHOOK_URL', 'https://n8n-mt8umikivytz.n8x.biz.id/webhook/3caf9b20-d664-491b-81db-57984d626341'),
+        'webhook_url_group2' => env('N8N_WEBHOOK_URL_GROUP2', 'https://n8n-mt8umikivytz.n8x.biz.id/webhook-test/3caf9b20-d664-491b-81db-57984d626341'),
         'public_domain' => env('N8N_PUBLIC_DOMAIN', 'https://pastikawasansik.my.id'),
     ],
 

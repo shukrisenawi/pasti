@@ -8,6 +8,7 @@ use App\Models\FinancialTransactionType;
 use App\Models\User;
 use App\Notifications\ClaimApprovedNotification;
 use App\Notifications\ClaimSubmittedNotification;
+use App\Services\N8nWebhookService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,11 @@ use Illuminate\View\View;
 
 class ClaimController extends Controller
 {
+    public function __construct(
+        private readonly N8nWebhookService $n8nWebhookService,
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -114,6 +120,20 @@ class ClaimController extends Controller
         if ($recipients->isNotEmpty()) {
             Notification::send($recipients, new ClaimSubmittedNotification($claim));
         }
+
+        $this->n8nWebhookService->sendGroup2ByTemplate(
+            N8nWebhookService::KEY_TEXT_CLAIM_SUBMITTED,
+            [
+                'nama_guru' => (string) ($claim->user?->display_name ?? $user->display_name),
+                'jumlah' => number_format((float) $claim->amount, 2, '.', ''),
+                'tarikh_claim' => optional($claim->claim_date)->format('d/m/Y') ?? (string) $data['claim_date'],
+                'catatan' => trim((string) $claim->notes),
+            ],
+            $this->n8nWebhookService->toPublicUrl(route('claims.index')),
+            $this->n8nWebhookService->toPublicUrl(
+                $claim->image_path ? '/uploads/' . ltrim((string) $claim->image_path, '/') : null
+            )
+        );
 
         return redirect()
             ->route('claims.index', ['tab' => 'list'])

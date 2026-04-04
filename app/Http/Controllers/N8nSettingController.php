@@ -25,18 +25,24 @@ class N8nSettingController extends Controller
 
         $validated = $request->validate([
             'webhook_url' => ['required', 'url', 'max:2000'],
+            'webhook_url_group2' => ['required', 'url', 'max:2000'],
             'text_program_created' => ['required', 'string', 'max:2000'],
             'text_salary_request' => ['required', 'string', 'max:2000'],
             'text_pasti_info_request' => ['required', 'string', 'max:2000'],
             'text_guru_course_offer' => ['required', 'string', 'max:2000'],
+            'text_leave_notice_submitted' => ['required', 'string', 'max:2000'],
+            'text_claim_submitted' => ['required', 'string', 'max:2000'],
         ]);
 
         $mapping = [
             'webhook_url' => 'n8n_webhook_url',
+            'webhook_url_group2' => 'n8n_webhook_url_group2',
             'text_program_created' => 'n8n_text_program_created',
             'text_salary_request' => 'n8n_text_salary_request',
             'text_pasti_info_request' => 'n8n_text_pasti_info_request',
             'text_guru_course_offer' => 'n8n_text_guru_course_offer',
+            'text_leave_notice_submitted' => 'n8n_text_leave_notice_submitted',
+            'text_claim_submitted' => 'n8n_text_claim_submitted',
         ];
 
         foreach ($mapping as $inputKey => $settingKey) {
@@ -51,4 +57,3 @@ class N8nSettingController extends Controller
             ->with('status', __('messages.saved'));
     }
 }
-
