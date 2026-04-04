@@ -135,9 +135,9 @@
                             <button type="submit" class="btn btn-outline btn-sm">Search</button>
                         </div>
                         <select id="selected-user-picker" name="selected_user_id" class="input-base">
-                            <option value="">-- Pilih pengguna --</option>
+                            <option value="" selected>-- Pilih pengguna --</option>
                             @foreach($users as $item)
-                                <option value="{{ $item->id }}" @selected((int) $selectedUserId === (int) $item->id)>
+                                <option value="{{ $item->id }}">
                                     {{ $item->display_name }} ({{ $item->email }})
                                 </option>
                             @endforeach
