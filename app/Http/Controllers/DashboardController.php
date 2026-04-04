@@ -37,8 +37,7 @@ class DashboardController extends Controller
         if ($user->hasAnyRole(['master_admin', 'admin'])) {
             $topGuruQuery = Guru::query()
                 ->with(['user', 'pasti', 'kpiSnapshot'])
-                ->withLeaveDaysForYear($currentYear)
-                ->whereHas('kpiSnapshot');
+                ->withLeaveDaysForYear($currentYear);
 
             if ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
                 $topGuruQuery->whereIn('pasti_id', $this->assignedPastiIds($user));
