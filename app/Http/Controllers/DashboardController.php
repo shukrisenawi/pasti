@@ -25,8 +25,11 @@ class DashboardController extends Controller
         $birthdayUsers = User::query()
             ->whereNotNull('tarikh_lahir')
             ->whereRaw("DATE_FORMAT(tarikh_lahir, '%m-%d') = ?", [now()->format('m-d')])
+            ->orderByRaw("CASE WHEN avatar_path IS NULL OR avatar_path = '' THEN 1 ELSE 0 END")
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->unique(fn (User $birthdayUser) => strtolower(trim((string) $birthdayUser->display_name)))
+            ->values();
 
         if ($isGuruOnly) {
             $guruId = $user->guru?->id;
