@@ -82,8 +82,14 @@ class AjkProgramController extends Controller
         }
 
         return redirect()
-            ->route('ajk-program.index', ['selected_user_id' => $targetUsers->first()->id])
+            ->route('ajk-program.index', [
+                'tab' => 'assignments',
+                'selected_user_id' => $targetUsers->first()->id,
+                'selected_user_ids' => $targetUsers->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
+                'user_search' => (string) $request->input('user_search', ''),
+            ])
             ->with('status', __('messages.saved'));
     }
 }
+
 
