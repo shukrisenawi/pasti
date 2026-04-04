@@ -118,6 +118,9 @@
                             ->all();
                     }
 
+                    $hasUploadedAvatar = filled($selectedUser->avatar_path)
+                        || filled($selectedUser->guru?->avatar_path);
+
                 @endphp
 
                 <div class="mt-4">
@@ -146,7 +149,16 @@
                     <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
                         <p class="label-base">Pengguna Dipilih</p>
                         <div class="mt-2 flex items-center gap-3">
-                            <img src="{{ $selectedUser->avatar_url }}" alt="{{ $selectedUser->display_name }}" class="h-12 w-12 rounded-xl border border-slate-200 object-cover">
+                            <div class="group relative">
+                                <img src="{{ $selectedUser->avatar_url }}" alt="{{ $selectedUser->display_name }}" class="h-12 w-12 rounded-xl border border-slate-200 object-cover">
+                                @if($hasUploadedAvatar)
+                                    <div class="pointer-events-none absolute left-full top-1/2 z-30 hidden ml-2 -translate-y-1/2 md:block md:invisible md:opacity-0 md:transition md:duration-150 md:group-hover:visible md:group-hover:opacity-100">
+                                        <div class="h-[150px] w-[150px] overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
+                                            <img src="{{ $selectedUser->avatar_url }}" alt="{{ $selectedUser->display_name }}" class="h-full w-full rounded-lg object-cover">
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-bold text-slate-900">{{ $selectedUser->display_name }}</p>
                                 <p class="truncate text-xs text-slate-500">{{ $selectedUser->email }}</p>
