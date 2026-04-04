@@ -47,7 +47,7 @@
                                     name="deadlines[{{ $semester }}]"
                                     class="input-base input-sm"
                                     value="{{ $deadlineValue }}"
-                                    @disabled($isFirstSemester || $isLocked)
+                                    @disabled($isLocked)
                                 >
 
                                 <label class="label-base">Nota</label>
@@ -55,7 +55,7 @@
                                     name="notes[{{ $semester }}]"
                                     class="input-base min-h-[88px]"
                                     placeholder="Nota kepada guru semester ini"
-                                    @disabled($isFirstSemester || $isLocked)
+                                    @disabled($isLocked)
                                 >{{ $noteValue }}</textarea>
                             </div>
 

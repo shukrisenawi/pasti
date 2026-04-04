@@ -75,7 +75,7 @@ class GuruCourseController extends Controller
 
         $deadlines = collect($data['deadlines'] ?? [])
             ->mapWithKeys(fn ($deadline, $semester) => [(int) $semester => $deadline])
-            ->filter(fn ($deadline, $semester) => (int) $semester >= 2 && (int) $semester <= self::MAX_SEMESTER && filled($deadline));
+            ->filter(fn ($deadline, $semester) => (int) $semester >= self::MIN_SEMESTER && (int) $semester <= self::MAX_SEMESTER && filled($deadline));
 
         if ($deadlines->isEmpty()) {
             return back()->withErrors([
@@ -98,11 +98,12 @@ class GuruCourseController extends Controller
                 continue;
             }
 
-            $sourceSemester = (int) $targetSemester - 1;
-            $recipientGurus = $this->eligibleGurusForOffer($user, $sourceSemester)->get();
+            $recipientGurus = $this->eligibleGurusForOffer($user, (int) $targetSemester)->get();
 
             if ($recipientGurus->isEmpty()) {
-                $issues[] = 'Tiada guru aktif ditemui untuk Semester ' . $sourceSemester . '.';
+                $issues[] = (int) $targetSemester === self::MIN_SEMESTER
+                    ? 'Tiada guru aktif ditemui untuk kategori belum kursus.'
+                    : 'Tiada guru aktif ditemui untuk Semester ' . ((int) $targetSemester - 1) . '.';
                 continue;
             }
 
@@ -202,13 +203,20 @@ class GuruCourseController extends Controller
         return redirect()->route('kursus-guru.index')->with('status', __('messages.saved'));
     }
 
-    private function eligibleGurusForOffer(User $user, int $sourceSemester): Builder
+    private function eligibleGurusForOffer(User $user, int $targetSemester): Builder
     {
         return Guru::query()
             ->with('user')
             ->where('active', true)
             ->whereNotNull('user_id')
-            ->where('kursus_guru', 'semester_' . $sourceSemester)
+            ->when(
+                $targetSemester === self::MIN_SEMESTER,
+                fn (Builder $query) => $query->where(fn (Builder $subQuery) => $subQuery
+                    ->whereNull('kursus_guru')
+                    ->orWhere('kursus_guru', 'belum_kursus')
+                ),
+                fn (Builder $query) => $query->where('kursus_guru', 'semester_' . ($targetSemester - 1))
+            )
             ->when(
                 $user->hasRole('admin') && ! $user->hasRole('master_admin'),
                 fn (Builder $query) => $query->whereIn('pasti_id', $this->assignedPastiIds($user))
