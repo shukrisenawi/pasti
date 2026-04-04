@@ -116,13 +116,35 @@
                         'name' => $item->display_name,
                         'email' => $item->email,
                         'avatar' => $item->avatar_url,
+                        'positions' => $item->ajkPositions
+                            ->pluck('id')
+                            ->map(fn ($id) => (int) $id)
+                            ->values()
+                            ->all(),
                     ])->values();
-                    $checkedPositionIds = collect(request()->input('position_ids', []))
+
+                    $requestPositionIds = request()->input('position_ids', []);
+                    if (! is_array($requestPositionIds)) {
+                        $requestPositionIds = [];
+                    }
+
+                    $checkedPositionIds = collect($requestPositionIds)
                         ->map(fn ($id) => (int) $id)
                         ->filter()
                         ->unique()
                         ->values()
                         ->all();
+
+                    if ($checkedPositionIds === []) {
+                        $seedUser = $initialSelectedUsers->first() ?: $selectedUser;
+                        if ($seedUser) {
+                            $checkedPositionIds = $seedUser->ajkPositions
+                                ->pluck('id')
+                                ->map(fn ($id) => (int) $id)
+                                ->values()
+                                ->all();
+                        }
+                    }
 
                 @endphp
 
@@ -299,9 +321,24 @@
                             });
                         }
 
+                        function applyCheckedPositions(positionIds) {
+                            const idSet = new Set((positionIds || []).map(function (id) {
+                                return String(id);
+                            }));
+
+                            positionCheckboxes.forEach(function (checkbox) {
+                                checkbox.checked = idSet.has(String(checkbox.value));
+                            });
+                        }
+
                         function addUser(userId) {
                             if (!userId || hasUser(userId) || !usersById[userId]) {
                                 return;
+                            }
+
+                            const hadCards = cards.querySelectorAll('[data-selected-user-card]').length > 0;
+                            if (!hadCards) {
+                                applyCheckedPositions(usersById[userId].positions || []);
                             }
 
                             cards.insertAdjacentHTML('beforeend', createUserCard(usersById[userId]));
@@ -311,6 +348,7 @@
 
                         picker.addEventListener('change', function () {
                             addUser(this.value);
+                            this.value = '';
                         });
 
                         cards.addEventListener('click', function (event) {
@@ -357,6 +395,7 @@
         </section>
     @endif
 </div>
+
 
 
 
