@@ -46,9 +46,12 @@
             </div>
             <div class="space-y-1">
                 @foreach($birthdayUsers as $birthdayUser)
-                    <p class="text-sm font-semibold text-emerald-900 sm:text-base">
-                        Selamat Hari Jadi {{ $birthdayUser->display_name }}, ikhlas daripada PASTI Kawasan Sik semoga dipanjangkan umur dalam keberkatan dan dimurahkan rezeki.
-                    </p>
+                    <div class="flex items-center gap-3">
+                        <x-avatar :user="$birthdayUser" size="h-10 w-10" rounded="rounded-xl" border="border border-emerald-200" />
+                        <p class="text-sm font-semibold text-emerald-900 sm:text-base">
+                            Selamat Hari Jadi {{ $birthdayUser->display_name }}, ikhlas daripada PASTI Kawasan Sik. Semoga dipanjangkan umur dalam keberkatan dan dimurahkan rezeki.
+                        </p>
+                    </div>
                 @endforeach
             </div>
         </div>
