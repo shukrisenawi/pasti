@@ -7,6 +7,7 @@ use App\Models\GuruSalaryRequest;
 use App\Models\User;
 use App\Notifications\GuruSalaryRequestedNotification;
 use App\Notifications\GuruSalaryUpdatedNotification;
+use App\Services\N8nWebhookService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,11 @@ use Illuminate\View\View;
 
 class GuruSalaryInformationController extends Controller
 {
+    public function __construct(
+        private readonly N8nWebhookService $n8nWebhookService,
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -59,6 +65,12 @@ class GuruSalaryInformationController extends Controller
                 Notification::send($recipient, new GuruSalaryRequestedNotification($salaryRequest));
             }
         }
+
+        $this->n8nWebhookService->send(
+            'Permintaan kemaskini gaji guru telah dihantar. Sila kemaskini gaji dan elaun semasa.',
+            $this->n8nWebhookService->toPublicUrl(route('guru-salary-information.index')),
+            null
+        );
 
         return back()->with('status', __('messages.guru_salary_info_request_sent'));
     }
@@ -150,4 +162,3 @@ class GuruSalaryInformationController extends Controller
         abort_unless($latestRequestId && (int) $latestRequestId === (int) $salaryRequest->id, 403);
     }
 }
-

@@ -9,7 +9,9 @@ use App\Models\ProgramTitleOption;
 use App\Models\User;
 use App\Notifications\ProgramAssignedNotification;
 use App\Services\KpiCalculationService;
+use App\Services\N8nWebhookService;
 use App\Services\ProgramParticipationService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -20,6 +22,7 @@ class ProgramController extends Controller
     public function __construct(
         private readonly ProgramParticipationService $participationService,
         private readonly KpiCalculationService $kpiCalculationService,
+        private readonly N8nWebhookService $n8nWebhookService,
     ) {
     }
 
@@ -97,6 +100,7 @@ class ProgramController extends Controller
         $affectedGurus = Guru::query()->with('user')->whereIn('id', $guruIds)->get();
         $affectedGurus->each(fn (Guru $guru) => $this->kpiCalculationService->recalculateForGuru($guru));
         $this->notifyAssignedUsers($program, $affectedGurus, $user, 'ditambah');
+        $this->sendProgramCreatedWebhook($program);
 
         return redirect()->route('programs.index')->with('status', __('messages.saved'));
     }
@@ -298,6 +302,45 @@ class ProgramController extends Controller
         }
 
         return $tab;
+    }
+
+    private function sendProgramCreatedWebhook(Program $program): void
+    {
+        $text = $this->buildProgramBroadcastText($program);
+        $gambar = $this->n8nWebhookService->toPublicUrl($program->banner_url);
+        $link = $this->n8nWebhookService->toPublicUrl(route('programs.show', $program));
+
+        $this->n8nWebhookService->send($text, $link, $gambar);
+    }
+
+    private function buildProgramBroadcastText(Program $program): string
+    {
+        $date = $program->program_date instanceof Carbon
+            ? $program->program_date
+            : Carbon::parse((string) $program->program_date);
+
+        $weekdayMap = [
+            'Sunday' => 'Ahad',
+            'Monday' => 'Isnin',
+            'Tuesday' => 'Selasa',
+            'Wednesday' => 'Rabu',
+            'Thursday' => 'Khamis',
+            'Friday' => 'Jumaat',
+            'Saturday' => 'Sabtu',
+        ];
+
+        $dayName = $weekdayMap[$date->englishDayOfWeek] ?? $date->englishDayOfWeek;
+
+        $timeText = '';
+        if ($program->program_time) {
+            $hour = (int) Carbon::parse((string) $program->program_time)->format('G');
+            $suffix = $hour < 12 ? 'pg' : ($hour < 19 ? 'ptg' : 'mlm');
+            $timeText = ' jam ' . Carbon::parse((string) $program->program_time)->format('g:i') . $suffix;
+        }
+
+        $locationText = filled($program->location) ? ' di ' . trim((string) $program->location) : '';
+
+        return trim($program->title) . ' akan diadakan pada ' . $date->format('j/n/Y') . ' (' . $dayName . ')' . $timeText . $locationText . '.';
     }
 }
 

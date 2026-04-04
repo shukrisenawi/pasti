@@ -7,6 +7,7 @@ use App\Models\GuruCourseOffer;
 use App\Models\GuruCourseOfferResponse;
 use App\Models\User;
 use App\Notifications\GuruCourseOfferNotification;
+use App\Services\N8nWebhookService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,11 @@ class GuruCourseController extends Controller
 {
     private const MIN_SEMESTER = 1;
     private const MAX_SEMESTER = 7;
+
+    public function __construct(
+        private readonly N8nWebhookService $n8nWebhookService,
+    ) {
+    }
 
     public function index(Request $request): View
     {
@@ -100,7 +106,8 @@ class GuruCourseController extends Controller
                 continue;
             }
 
-            DB::transaction(function () use ($user, $targetSemester, $deadline, $data, $recipientGurus): void {
+            $createdOffer = null;
+            DB::transaction(function () use ($user, $targetSemester, $deadline, $data, $recipientGurus, &$createdOffer): void {
                 $offer = GuruCourseOffer::query()->create([
                     'target_semester' => (int) $targetSemester,
                     'registration_deadline' => $deadline,
@@ -128,7 +135,25 @@ class GuruCourseController extends Controller
                 if ($recipientUsers->isNotEmpty()) {
                     Notification::send($recipientUsers, new GuruCourseOfferNotification($offer));
                 }
+
+                $createdOffer = $offer;
             });
+
+            if ($createdOffer) {
+                $note = filled($createdOffer->note) ? ' Nota: ' . trim((string) $createdOffer->note) . '.' : '';
+                $text = 'Permintaan sambung Kursus Guru ke Semester '
+                    . (int) $createdOffer->target_semester
+                    . ' telah dihantar. Tarikh akhir pendaftaran: '
+                    . $createdOffer->registration_deadline?->format('d/m/Y')
+                    . '.'
+                    . $note;
+
+                $this->n8nWebhookService->send(
+                    $text,
+                    $this->n8nWebhookService->toPublicUrl(route('kursus-guru.index')),
+                    null
+                );
+            }
 
             $createdCount++;
         }

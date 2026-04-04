@@ -7,6 +7,7 @@ use App\Models\PastiInformationRequest;
 use App\Models\User;
 use App\Notifications\PastiInformationRequestedNotification;
 use App\Notifications\PastiInformationUpdatedNotification;
+use App\Services\N8nWebhookService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,11 @@ use Illuminate\View\View;
 
 class PastiInformationController extends Controller
 {
+    public function __construct(
+        private readonly N8nWebhookService $n8nWebhookService,
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -59,6 +65,12 @@ class PastiInformationController extends Controller
                 Notification::send($recipients, new PastiInformationRequestedNotification($infoRequest));
             }
         }
+
+        $this->n8nWebhookService->send(
+            'Permintaan kemaskini maklumat PASTI telah dihantar. Sila lengkapkan maklumat terkini PASTI.',
+            $this->n8nWebhookService->toPublicUrl(route('pasti-information.index')),
+            null
+        );
 
         return back()->with('status', __('messages.pasti_info_request_sent'));
     }
