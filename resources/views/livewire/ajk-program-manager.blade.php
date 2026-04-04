@@ -98,31 +98,6 @@
 
             @if($selectedUser)
                 @php
-                    $selectedUserIdsQuery = request()->query('selected_user_ids', []);
-                    if (! is_array($selectedUserIdsQuery)) {
-                        $selectedUserIdsQuery = [];
-                    }
-
-                    $requestedSelectedIds = collect($selectedUserIdsQuery)
-                        ->map(fn ($id) => (int) $id)
-                        ->filter()
-                        ->unique()
-                        ->values();
-
-
-                    $initialSelectedUsers = $users->whereIn('id', $requestedSelectedIds)->values();
-                    $usersForJs = $users->map(fn ($item) => [
-                        'id' => (int) $item->id,
-                        'name' => $item->display_name,
-                        'email' => $item->email,
-                        'avatar' => $item->avatar_url,
-                        'positions' => $item->ajkPositions
-                            ->pluck('id')
-                            ->map(fn ($id) => (int) $id)
-                            ->values()
-                            ->all(),
-                    ])->values();
-
                     $requestPositionIds = request()->input('position_ids', []);
                     if (! is_array($requestPositionIds)) {
                         $requestPositionIds = [];
@@ -136,30 +111,27 @@
                         ->all();
 
                     if ($checkedPositionIds === []) {
-                        $seedUser = $initialSelectedUsers->first() ?: $selectedUser;
-                        if ($seedUser) {
-                            $checkedPositionIds = $seedUser->ajkPositions
-                                ->pluck('id')
-                                ->map(fn ($id) => (int) $id)
-                                ->values()
-                                ->all();
-                        }
+                        $checkedPositionIds = $selectedUser->ajkPositions
+                            ->pluck('id')
+                            ->map(fn ($id) => (int) $id)
+                            ->values()
+                            ->all();
                     }
 
                 @endphp
 
                 <div class="mt-4">
                     <label class="label-base">{{ __('messages.select_user') }}</label>
-                    <form method="GET" action="{{ route('ajk-program.index') }}" class="space-y-2">
+                    <form id="selected-user-form" method="GET" action="{{ route('ajk-program.index') }}" class="space-y-2">
                         <input type="hidden" name="tab" value="assignments">
                         <div class="flex items-center gap-2">
                             <input type="text" name="user_search" value="{{ $userSearch }}" class="input-base w-full min-w-0" placeholder="Cari nama / email pengguna">
                             <button type="submit" class="btn btn-outline btn-sm">Search</button>
                         </div>
                         <select id="selected-user-picker" name="selected_user_id" class="input-base">
-                            <option value="" selected>-- Pilih pengguna --</option>
+                            <option value="">-- Pilih pengguna --</option>
                             @foreach($users as $item)
-                                <option value="{{ $item->id }}">
+                                <option value="{{ $item->id }}" @selected((int) $selectedUser->id === (int) $item->id)>
                                     {{ $item->display_name }} ({{ $item->email }})
                                 </option>
                             @endforeach
@@ -169,38 +141,7 @@
 
                 <form method="POST" action="{{ route('ajk-program.assignments.update') }}" class="mt-4 space-y-4">
                     @csrf
-
-                    <div>
-                        <p class="label-base">Pengguna Dipilih</p>
-                        <p id="selected-users-empty" class="mt-2 text-sm text-slate-500 {{ $initialSelectedUsers->isNotEmpty() ? 'hidden' : '' }}">Tiada pengguna dipilih.</p>
-
-                        <div id="selected-users-cards" class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                            @foreach($initialSelectedUsers as $item)
-                                <div data-selected-user-card class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                                    <input type="hidden" name="selected_user_ids[]" value="{{ $item->id }}">
-                                    <div class="flex items-start justify-between gap-2">
-                                        <div class="flex min-w-0 items-center gap-2">
-                                            <img src="{{ $item->avatar_url }}" alt="{{ $item->display_name }}" class="h-10 w-10 rounded-xl border border-slate-200 object-cover">
-                                            <div class="min-w-0">
-                                                <p class="truncate text-sm font-bold text-slate-900">{{ $item->display_name }}</p>
-                                                <p class="truncate text-xs text-slate-500">{{ $item->email }}</p>
-                                            </div>
-                                        </div>
-                                        <button type="button" data-remove-user="{{ $item->id }}" class="btn btn-ghost btn-xs btn-circle text-rose-600" title="Buang pengguna">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="mt-3 flex flex-wrap gap-1" data-position-tags></div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        @error('selected_user_ids')
-                            <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <input type="hidden" name="selected_user_ids[]" value="{{ $selectedUser->id }}">
 
                     <div>
                         <p class="label-base">{{ __('messages.select_positions') }}</p>
@@ -232,161 +173,22 @@
                     </div>
                 </form>
 
-                <script id="selected-users-data" type="application/json">@json($usersForJs)</script>
                 <script>
                     document.addEventListener('DOMContentLoaded', function () {
                         const picker = document.getElementById('selected-user-picker');
-                        const cards = document.getElementById('selected-users-cards');
-                        const emptyState = document.getElementById('selected-users-empty');
-                        const dataNode = document.getElementById('selected-users-data');
-                        const positionCheckboxes = Array.from(document.querySelectorAll('input[name="position_ids[]"]'));
+                        const pickerForm = document.getElementById('selected-user-form');
 
-                        if (!picker || !cards || !emptyState || !dataNode) {
+                        if (!picker || !pickerForm) {
                             return;
                         }
 
-                        const users = JSON.parse(dataNode.textContent || '[]');
-                        const usersById = {};
-                        users.forEach(function (user) {
-                            usersById[String(user.id)] = user;
-                        });
-
-                        function syncEmptyState() {
-                            const hasCards = cards.querySelectorAll('[data-selected-user-card]').length > 0;
-                            emptyState.classList.toggle('hidden', hasCards);
-                        }
-
-                        function hasUser(userId) {
-                            return !!cards.querySelector('input[name="selected_user_ids[]"][value="' + userId + '"]');
-                        }
-
-                        function createUserCard(user) {
-                            return '' +
-                                '<div data-selected-user-card class="rounded-2xl border border-slate-200 bg-slate-50 p-3">' +
-                                    '<input type="hidden" name="selected_user_ids[]" value="' + user.id + '">' +
-                                    '<div class="flex items-start justify-between gap-2">' +
-                                        '<div class="flex min-w-0 items-center gap-2">' +
-                                            '<img src="' + user.avatar + '" alt="' + user.name + '" class="h-10 w-10 rounded-xl border border-slate-200 object-cover">' +
-                                            '<div class="min-w-0">' +
-                                                '<p class="truncate text-sm font-bold text-slate-900">' + user.name + '</p>' +
-                                                '<p class="truncate text-xs text-slate-500">' + user.email + '</p>' +
-                                            '</div>' +
-                                        '</div>' +
-                                        '<button type="button" data-remove-user="' + user.id + '" class="btn btn-ghost btn-xs btn-circle text-rose-600" title="Buang pengguna">' +
-                                            '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">' +
-                                                '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />' +
-                                            '</svg>' +
-                                        '</button>' +
-                                    '</div>' +
-                                    '<div class="mt-3 flex flex-wrap gap-1" data-position-tags></div>' +
-                                '</div>';
-                        }
-
-                        function getSelectedPositions() {
-                            return positionCheckboxes
-                                .filter(function (checkbox) { return checkbox.checked; })
-                                .map(function (checkbox) {
-                                    return {
-                                        id: checkbox.getAttribute('data-position-id') || checkbox.value,
-                                        name: checkbox.getAttribute('data-position-name') || checkbox.value,
-                                    };
-                                });
-                        }
-
-                        function createPositionTag(position) {
-                            return '' +
-                                '<span class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">' +
-                                    '<span>' + position.name + '</span>' +
-                                    '<button type="button" data-remove-position="' + position.id + '" class="text-rose-600" title="Buang jawatan">' +
-                                        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-3.5 w-3.5">' +
-                                            '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />' +
-                                        '</svg>' +
-                                    '</button>' +
-                                '</span>';
-                        }
-
-                        function renderTagsForCard(card) {
-                            const tagsNode = card.querySelector('[data-position-tags]');
-                            if (!tagsNode) {
-                                return;
-                            }
-
-                            const selectedPositions = getSelectedPositions();
-                            tagsNode.innerHTML = selectedPositions.map(createPositionTag).join('');
-                        }
-
-                        function renderTagsAllCards() {
-                            cards.querySelectorAll('[data-selected-user-card]').forEach(function (card) {
-                                renderTagsForCard(card);
-                            });
-                        }
-
-                        function applyCheckedPositions(positionIds) {
-                            const idSet = new Set((positionIds || []).map(function (id) {
-                                return String(id);
-                            }));
-
-                            positionCheckboxes.forEach(function (checkbox) {
-                                checkbox.checked = idSet.has(String(checkbox.value));
-                            });
-                        }
-
-                        function addUser(userId) {
-                            if (!userId || hasUser(userId) || !usersById[userId]) {
-                                return;
-                            }
-
-                            const hadCards = cards.querySelectorAll('[data-selected-user-card]').length > 0;
-                            if (!hadCards) {
-                                applyCheckedPositions(usersById[userId].positions || []);
-                            }
-
-                            cards.insertAdjacentHTML('beforeend', createUserCard(usersById[userId]));
-                            renderTagsAllCards();
-                            syncEmptyState();
-                        }
-
                         picker.addEventListener('change', function () {
-                            addUser(this.value);
-                            this.value = '';
-                        });
-
-                        cards.addEventListener('click', function (event) {
-                            const removePositionButton = event.target.closest('[data-remove-position]');
-                            if (removePositionButton) {
-                                const positionId = removePositionButton.getAttribute('data-remove-position');
-                                const checkbox = positionCheckboxes.find(function (item) {
-                                    return String(item.value) === String(positionId);
-                                });
-
-                                if (checkbox) {
-                                    checkbox.checked = false;
-                                }
-
-                                renderTagsAllCards();
+                            if (!this.value) {
                                 return;
                             }
 
-                            const removeButton = event.target.closest('[data-remove-user]');
-                            if (!removeButton) {
-                                return;
-                            }
-
-                            const card = removeButton.closest('[data-selected-user-card]');
-                            if (card) {
-                                card.remove();
-                                syncEmptyState();
-                            }
+                            pickerForm.submit();
                         });
-
-                        positionCheckboxes.forEach(function (checkbox) {
-                            checkbox.addEventListener('change', function () {
-                                renderTagsAllCards();
-                            });
-                        });
-
-                        renderTagsAllCards();
-                        syncEmptyState();
                     });
                 </script>
             @else
