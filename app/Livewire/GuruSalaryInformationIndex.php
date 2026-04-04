@@ -14,11 +14,13 @@ class GuruSalaryInformationIndex extends Component
 {
     use WithPagination;
 
+    private const PAGE_NAME = 'guruSalaryPage';
+
     public string $search = '';
 
     public function updatingSearch(): void
     {
-        $this->resetPage();
+        $this->resetPage(self::PAGE_NAME);
     }
 
     public function render()
@@ -51,7 +53,7 @@ class GuruSalaryInformationIndex extends Component
             ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
             ->orderBy('pastis.name')
             ->orderBy('gurus.name')
-            ->paginate(9);
+            ->paginate(9, pageName: self::PAGE_NAME);
 
         $guruIds = collect($gurus->items())->pluck('id')->all();
 
