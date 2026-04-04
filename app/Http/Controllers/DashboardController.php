@@ -53,11 +53,11 @@ class DashboardController extends Controller
                     fn (Guru $guru) => abs((float) ($guru->kpiSnapshot?->score ?? 0) - $topScore) < 0.00001
                 );
 
-                $minimumLeaveCount = (int) $topScoreGurus->min('leave_notices_current_year_count');
-
                 $topKpiGurus = $topScoreGurus
-                    ->where('leave_notices_current_year_count', $minimumLeaveCount)
-                    ->sortBy(fn (Guru $guru) => $guru->display_name)
+                    ->sortBy([
+                        fn (Guru $guru) => (int) ($guru->leave_notices_current_year_count ?? 0),
+                        fn (Guru $guru) => $guru->display_name,
+                    ])
                     ->values();
             }
 
