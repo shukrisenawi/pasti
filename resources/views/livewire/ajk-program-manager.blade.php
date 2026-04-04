@@ -97,6 +97,26 @@
             <h3 class="text-base font-bold text-slate-900">{{ __('messages.user_position_assignment') }}</h3>
 
             @if($selectedUser)
+                @php
+                    $requestedSelectedIds = collect(request()->input('selected_user_ids', []))
+                        ->map(fn ($id) => (int) $id)
+                        ->filter()
+                        ->unique()
+                        ->values();
+
+                    if ($requestedSelectedIds->isEmpty()) {
+                        $requestedSelectedIds = collect([(int) $selectedUser->id]);
+                    }
+
+                    $initialSelectedUsers = $users->whereIn('id', $requestedSelectedIds)->values();
+                    $usersForJs = $users->map(fn ($item) => [
+                        'id' => (int) $item->id,
+                        'name' => $item->display_name,
+                        'email' => $item->email,
+                        'avatar' => $item->avatar_url,
+                    ])->values();
+                @endphp
+
                 <div class="mt-4">
                     <label class="label-base">{{ __('messages.select_user') }}</label>
                     <form method="GET" action="{{ route('ajk-program.index') }}" class="space-y-2">
@@ -105,7 +125,8 @@
                             <input type="text" name="user_search" value="{{ $userSearch }}" class="input-base w-full min-w-0" placeholder="Cari nama / email pengguna">
                             <button type="submit" class="btn btn-outline btn-sm">Search</button>
                         </div>
-                        <select name="selected_user_id" class="input-base">
+                        <select id="selected-user-picker" name="selected_user_id" class="input-base">
+                            <option value="">-- Pilih pengguna --</option>
                             @foreach($users as $item)
                                 <option value="{{ $item->id }}" @selected((int) $selectedUserId === (int) $item->id)>
                                     {{ $item->display_name }} ({{ $item->email }})
@@ -113,31 +134,40 @@
                             @endforeach
                         </select>
                     </form>
-                    @error('selectedUserId')
-                        <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
-                    @enderror
                 </div>
+
                 <form method="POST" action="{{ route('ajk-program.assignments.update') }}" class="mt-4 space-y-4">
                     @csrf
+
                     <div>
-                        <label class="label-base">Pilih Pengguna (boleh lebih seorang)</label>
-                        <select name="selected_user_ids[]" class="input-base mt-2" multiple size="6" required>
-                            @foreach($users as $item)
-                                <option value="{{ $item->id }}" @selected((int) $selectedUserId === (int) $item->id || in_array((int) $item->id, collect(request()->input('selected_user_ids', []))->map(fn ($id) => (int) $id)->all(), true))>
-                                    {{ $item->display_name }} ({{ $item->email }})
-                                </option>
+                        <p class="label-base">Pengguna Dipilih</p>
+                        <p id="selected-users-empty" class="mt-2 text-sm text-slate-500 {{ $initialSelectedUsers->isNotEmpty() ? 'hidden' : '' }}">Tiada pengguna dipilih.</p>
+
+                        <div id="selected-users-cards" class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                            @foreach($initialSelectedUsers as $item)
+                                <div data-selected-user-card class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                                    <input type="hidden" name="selected_user_ids[]" value="{{ $item->id }}">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex min-w-0 items-center gap-2">
+                                            <img src="{{ $item->avatar_url }}" alt="{{ $item->display_name }}" class="h-10 w-10 rounded-xl border border-slate-200 object-cover">
+                                            <div class="min-w-0">
+                                                <p class="truncate text-sm font-bold text-slate-900">{{ $item->display_name }}</p>
+                                                <p class="truncate text-xs text-slate-500">{{ $item->email }}</p>
+                                            </div>
+                                        </div>
+                                        <button type="button" data-remove-user="{{ $item->id }}" class="btn btn-ghost btn-xs btn-circle text-rose-600" title="Buang pengguna">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
                             @endforeach
-                        </select>
-                    </div>
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <p class="text-sm font-semibold text-slate-700">{{ __('messages.selected_user') }}</p>
-                        <div class="mt-2 flex items-center gap-3">
-                            <x-avatar :user="$selectedUser" size="h-12 w-12" rounded="rounded-2xl" border="border border-slate-200/70" />
-                            <div class="min-w-0">
-                                <p class="truncate text-base font-bold text-slate-900">{{ $selectedUser->display_name }}</p>
-                                <p class="truncate text-sm text-slate-500">{{ $selectedUser->email }}</p>
-                            </div>
                         </div>
+
+                        @error('selected_user_ids')
+                            <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
@@ -167,16 +197,87 @@
                         <button type="submit" class="btn btn-primary">{{ __('messages.save') }}</button>
                     </div>
                 </form>
+
+                <script id="selected-users-data" type="application/json">@json($usersForJs)</script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const picker = document.getElementById('selected-user-picker');
+                        const cards = document.getElementById('selected-users-cards');
+                        const emptyState = document.getElementById('selected-users-empty');
+                        const dataNode = document.getElementById('selected-users-data');
+
+                        if (!picker || !cards || !emptyState || !dataNode) {
+                            return;
+                        }
+
+                        const users = JSON.parse(dataNode.textContent || '[]');
+                        const usersById = {};
+                        users.forEach(function (user) {
+                            usersById[String(user.id)] = user;
+                        });
+
+                        function syncEmptyState() {
+                            const hasCards = cards.querySelectorAll('[data-selected-user-card]').length > 0;
+                            emptyState.classList.toggle('hidden', hasCards);
+                        }
+
+                        function hasUser(userId) {
+                            return !!cards.querySelector('input[name="selected_user_ids[]"][value="' + userId + '"]');
+                        }
+
+                        function createUserCard(user) {
+                            return '' +
+                                '<div data-selected-user-card class="rounded-2xl border border-slate-200 bg-slate-50 p-3">' +
+                                    '<input type="hidden" name="selected_user_ids[]" value="' + user.id + '">' +
+                                    '<div class="flex items-start justify-between gap-2">' +
+                                        '<div class="flex min-w-0 items-center gap-2">' +
+                                            '<img src="' + user.avatar + '" alt="' + user.name + '" class="h-10 w-10 rounded-xl border border-slate-200 object-cover">' +
+                                            '<div class="min-w-0">' +
+                                                '<p class="truncate text-sm font-bold text-slate-900">' + user.name + '</p>' +
+                                                '<p class="truncate text-xs text-slate-500">' + user.email + '</p>' +
+                                            '</div>' +
+                                        '</div>' +
+                                        '<button type="button" data-remove-user="' + user.id + '" class="btn btn-ghost btn-xs btn-circle text-rose-600" title="Buang pengguna">' +
+                                            '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">' +
+                                                '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />' +
+                                            '</svg>' +
+                                        '</button>' +
+                                    '</div>' +
+                                '</div>';
+                        }
+
+                        function addUser(userId) {
+                            if (!userId || hasUser(userId) || !usersById[userId]) {
+                                return;
+                            }
+
+                            cards.insertAdjacentHTML('beforeend', createUserCard(usersById[userId]));
+                            syncEmptyState();
+                        }
+
+                        picker.addEventListener('change', function () {
+                            addUser(this.value);
+                        });
+
+                        cards.addEventListener('click', function (event) {
+                            const removeButton = event.target.closest('[data-remove-user]');
+                            if (!removeButton) {
+                                return;
+                            }
+
+                            const card = removeButton.closest('[data-selected-user-card]');
+                            if (card) {
+                                card.remove();
+                                syncEmptyState();
+                            }
+                        });
+
+                        syncEmptyState();
+                    });
+                </script>
             @else
                 <p class="mt-4 text-sm text-slate-500">-</p>
             @endif
         </section>
     @endif
 </div>
-
-
-
-
-
-
-
