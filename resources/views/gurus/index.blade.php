@@ -42,7 +42,7 @@
                 <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div class="flex items-center gap-3">
                         <div class="group relative">
-                            <a href="{{ route('kpi.guru.show', $guru) }}" class="block" aria-label="Lihat profil {{ $guru->display_name }}">
+                            <a href="{{ route('users.gurus.edit', $guru) }}" class="block" aria-label="Lihat profil {{ $guru->display_name }}">
                                 <x-avatar :guru="$guru" size="h-12 w-12" rounded="rounded-xl" border="border border-slate-200" />
                             </a>
                             <div class="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden -translate-x-1/2 rounded-xl border border-slate-200 bg-white p-1 shadow-xl group-hover:block">
@@ -67,7 +67,7 @@
                     </div>
 
                     <div class="mt-4 flex items-center gap-2">
-                        <a href="{{ route('kpi.guru.show', $guru) }}" class="btn btn-ghost btn-sm text-primary">{{ __('messages.view') }}</a>
+                        <a href="{{ route('users.gurus.edit', $guru) }}" class="btn btn-ghost btn-sm text-primary">{{ __('messages.view') }}</a>
                         <a href="{{ route('users.gurus.edit', $guru) }}" class="btn btn-outline btn-sm">{{ __('messages.edit') }}</a>
                         <form method="POST" action="{{ route('users.gurus.destroy', $guru) }}" class="inline m-0">
                             @csrf
@@ -84,3 +84,6 @@
 
     <div class="mt-4">{{ $gurus->links() }}</div>
 </x-app-layout>
+
+
+
