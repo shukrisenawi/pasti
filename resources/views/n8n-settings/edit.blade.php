@@ -28,22 +28,22 @@
 
             <div class="grid gap-4 md:grid-cols-2">
                 <div>
-                    <label for="webhook_url_test" class="label-base">Webhook Group 1 (Test) <span class="text-rose-600">*</span></label>
+                    <label for="webhook_url_test" class="label-base">Webhook Group Guru (Test) <span class="text-rose-600">*</span></label>
                     <input id="webhook_url_test" name="webhook_url_test" type="url" required class="input-base" value="{{ old('webhook_url_test', $settings['webhook_url_test'] ?? '') }}">
                 </div>
                 <div>
-                    <label for="webhook_url_production" class="label-base">Webhook Group 1 (Production) <span class="text-rose-600">*</span></label>
+                    <label for="webhook_url_production" class="label-base">Webhook Group Guru (Production) <span class="text-rose-600">*</span></label>
                     <input id="webhook_url_production" name="webhook_url_production" type="url" required class="input-base" value="{{ old('webhook_url_production', $settings['webhook_url_production'] ?? '') }}">
                 </div>
             </div>
 
             <div class="grid gap-4 md:grid-cols-2">
                 <div>
-                    <label for="webhook_url_group2_test" class="label-base">Webhook Group 2 (Test) <span class="text-rose-600">*</span></label>
+                    <label for="webhook_url_group2_test" class="label-base">Webhook Group AJK (Test) <span class="text-rose-600">*</span></label>
                     <input id="webhook_url_group2_test" name="webhook_url_group2_test" type="url" required class="input-base" value="{{ old('webhook_url_group2_test', $settings['webhook_url_group2_test'] ?? '') }}">
                 </div>
                 <div>
-                    <label for="webhook_url_group2_production" class="label-base">Webhook Group 2 (Production) <span class="text-rose-600">*</span></label>
+                    <label for="webhook_url_group2_production" class="label-base">Webhook Group AJK (Production) <span class="text-rose-600">*</span></label>
                     <input id="webhook_url_group2_production" name="webhook_url_group2_production" type="url" required class="input-base" value="{{ old('webhook_url_group2_production', $settings['webhook_url_group2_production'] ?? '') }}">
                 </div>
             </div>
