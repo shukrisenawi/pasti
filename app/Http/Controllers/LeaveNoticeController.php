@@ -115,7 +115,7 @@ class LeaveNoticeController extends Controller
         $user = $request->user();
 
         if ($user->hasRole('guru')) {
-            abort_unless((int) ($user->guru?->id) === (int) $leaveNotice->guru_id, 403);
+            abort(403);
         } elseif ($user->hasRole('admin')) {
             $assignedPastiIds = $this->assignedPastiIds($user);
             abort_unless(
@@ -135,3 +135,4 @@ class LeaveNoticeController extends Controller
         return redirect()->route('leave-notices.index')->with('status', __('messages.deleted'));
     }
 }
+

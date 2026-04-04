@@ -49,7 +49,6 @@
 
                     @php
                         $canDeleteNotice = $canDeleteAll
-                            || ($currentGuruId && (int) $currentGuruId === (int) $notice->guru_id)
                             || (!empty($assignedPastiIds) && in_array((int) ($notice->guru?->pasti_id ?? 0), $assignedPastiIds, true));
                     @endphp
                     
@@ -118,7 +117,6 @@
                     <td class="text-right">
                         @php
                             $canDeleteNotice = $canDeleteAll
-                                || ($currentGuruId && (int) $currentGuruId === (int) $notice->guru_id)
                                 || (!empty($assignedPastiIds) && in_array((int) ($notice->guru?->pasti_id ?? 0), $assignedPastiIds, true));
                         @endphp
                         @if($canDeleteNotice)
@@ -145,3 +143,4 @@
 
     <div class="mt-4">{{ $leaveNotices->links() }}</div>
 </x-app-layout>
+
