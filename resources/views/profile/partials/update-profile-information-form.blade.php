@@ -23,6 +23,7 @@
                 <x-avatar :user="$user" size="h-16 w-16" rounded="rounded-2xl" />
                 <div class="w-full">
                     <input id="avatar" name="avatar" type="file" accept=".jpg,.jpeg,.png,.webp,image/*" class="file-input w-full" @required($user->hasRole('guru') && blank($user->avatar_path))>
+                    <p class="mt-1 text-xs text-slate-500">Format: JPG, PNG, WEBP (maks 7MB, minimum 300x300).</p>
                     <label class="mt-2 inline-flex items-center gap-2 text-sm text-slate-600">
                         <input type="checkbox" name="remove_avatar" value="1" class="checkbox checkbox-sm" @checked(old('remove_avatar'))>
                         <span>{{ __('Remove current avatar') }}</span>
@@ -125,3 +126,4 @@
         </div>
     </form>
 </section>
+
