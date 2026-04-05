@@ -25,20 +25,36 @@ class PastiController extends Controller
         $user = $request->user();
         abort_if($user->hasRole('guru'), 403);
 
-        $query = Pasti::query()
+        $activeTab = strtolower((string) $request->query('tab', 'jeneri'));
+        if (! in_array($activeTab, ['jeneri', 'belantek'], true)) {
+            $activeTab = 'jeneri';
+        }
+        $activeDun = strtoupper($activeTab);
+
+        $scopeQuery = Pasti::query();
+        if ($user->hasRole('admin')) {
+            $scopeQuery->whereIn('id', $this->assignedPastiIds($user));
+        }
+
+        $query = (clone $scopeQuery)
             ->with('kawasan')
             ->leftJoin('kawasans', 'kawasans.id', '=', 'pastis.kawasan_id')
-            ->select('pastis.*');
-
-        if ($user->hasRole('admin')) {
-            $query->whereIn('pastis.id', $this->assignedPastiIds($user));
-        }
+            ->select('pastis.*')
+            ->where('kawasans.dun', $activeDun);
 
         return view('pasti.index', [
             'pastis' => $query
                 ->orderBy('kawasans.dun')
                 ->orderBy('pastis.name')
-                ->paginate(9),
+                ->paginate(9)
+                ->withQueryString(),
+            'activeTab' => $activeTab,
+            'jeneriCount' => (clone $scopeQuery)
+                ->whereHas('kawasan', fn ($q) => $q->where('dun', 'JENERI'))
+                ->count(),
+            'belantekCount' => (clone $scopeQuery)
+                ->whereHas('kawasan', fn ($q) => $q->where('dun', 'BELANTEK'))
+                ->count(),
         ]);
     }
 

@@ -6,6 +6,20 @@
         </div>
     </x-slot>
 
+    <div class="mb-6 flex p-1 bg-slate-100 rounded-xl w-fit">
+        <a href="{{ route('pasti.index', ['tab' => 'jeneri']) }}"
+           class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'jeneri' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
+            JENERI
+            <span class="ml-1 opacity-60">({{ $jeneriCount }})</span>
+        </a>
+        <a href="{{ route('pasti.index', ['tab' => 'belantek']) }}"
+           class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'belantek' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
+            BELANTEK
+            <span class="ml-1 opacity-60">({{ $belantekCount }})</span>
+        </a>
+    </div>
+
+
     @if($pastis->count())
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             @foreach($pastis as $pasti)
@@ -53,6 +67,7 @@
 
     <div class="mt-4">{{ $pastis->links() }}</div>
 </x-app-layout>
+
 
 
 
