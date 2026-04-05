@@ -182,7 +182,7 @@ class PastiController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'manager_name' => ['nullable', 'string', 'max:255'],
             'manager_phone' => ['nullable', 'string', 'max:30'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168', 'dimensions:min_width=800,min_height=450'],
         ];
     }
 
@@ -193,7 +193,7 @@ class PastiController extends Controller
             'phone' => ['required', 'string', 'max:30'],
             'manager_name' => ['required', 'string', 'max:255'],
             'manager_phone' => ['required', 'string', 'max:30'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168', 'dimensions:min_width=800,min_height=450'],
         ];
     }
 
@@ -226,4 +226,5 @@ class PastiController extends Controller
         ]);
     }
 }
+
 
