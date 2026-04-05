@@ -20,7 +20,7 @@
         $authUser = auth()->user();
         $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
         $pastiMenuRoute = $authUser->hasRole('guru') ? route('pasti.self.edit') : null;
-        $isImpersonatingGuru = session()->has('impersonator_user_id');
+        $isImpersonatingGuru = session()->has('impersonator_user_id') || request()->hasCookie('impersonator_user_id');
     @endphp
     <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent"></div>
 
@@ -481,10 +481,7 @@
             @if ($isImpersonatingGuru)
                 <div class="alert border-amber-300 bg-amber-50 text-amber-900 flex items-center justify-between gap-3">
                     <span class="text-sm font-semibold">Anda sedang masuk sebagai guru: {{ $authUser->display_name }}</span>
-                    <form method="POST" action="{{ route('impersonation.stop') }}" class="m-0 inline">
-                        @csrf
-                        <button type="submit" class="btn btn-xs btn-outline border-amber-400 text-amber-900 hover:bg-amber-100">Kembali ke Admin</button>
-                    </form>
+                    <a href="{{ route('impersonation.stop') }}" class="btn btn-xs btn-outline border-amber-400 text-amber-900 hover:bg-amber-100">Kembali ke Admin</a>
                 </div>
             @endif
 
@@ -536,6 +533,10 @@
 </script>
 </body>
 </html>
+
+
+
+
 
 
 

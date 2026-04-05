@@ -114,7 +114,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::post('/impersonation/leave', [ImpersonationController::class, 'stop'])->name('impersonation.stop');
+    Route::match(['get', 'post'], '/impersonation/leave', [ImpersonationController::class, 'stop'])->name('impersonation.stop');
 });
 
 require __DIR__.'/auth.php';
