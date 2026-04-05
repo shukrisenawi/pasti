@@ -12,7 +12,7 @@
                 <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <div class="h-44 w-full bg-slate-100">
                         @if($pasti->image_url)
-                            <img src="{{ $pasti->image_url }}" alt="Gambar {{ $pasti->name }}" class="h-full w-full object-cover">
+                            <img src="{{ $pasti->image_url }}" alt="Gambar {{ $pasti->name }}" class="h-full w-full object-contain">
                         @else
                             <div class="flex h-full w-full items-center justify-center text-sm font-semibold text-slate-400">Tiada gambar</div>
                         @endif
@@ -51,3 +51,4 @@
 
     <div class="mt-4">{{ $pastis->links() }}</div>
 </x-app-layout>
+
