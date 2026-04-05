@@ -72,6 +72,13 @@
                     <div class="mt-4 flex items-center gap-2">
                         <a href="{{ route('users.gurus.edit', $guru) }}" class="btn btn-ghost btn-sm text-primary">{{ __('messages.view') }}</a>
                         <a href="{{ route('users.gurus.edit', $guru) }}" class="btn btn-outline btn-sm">{{ __('messages.edit') }}</a>
+                        @if($guru->user && $guru->user->hasRole('guru'))
+                            <form method="POST" action="{{ route('users.gurus.impersonate', $guru) }}" class="inline m-0">
+                                @csrf
+                                <input type="hidden" name="return_to" value="{{ url()->full() }}">
+                                <button class="btn btn-ghost btn-sm text-emerald-700" type="submit">Masuk</button>
+                            </form>
+                        @endif
                         <form method="POST" action="{{ route('users.gurus.destroy', $guru) }}" class="inline m-0">
                             @csrf
                             @method('DELETE')
@@ -87,6 +94,8 @@
 
     <div class="mt-4">{{ $gurus->links() }}</div>
 </x-app-layout>
+
+
 
 
 

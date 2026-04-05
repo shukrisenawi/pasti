@@ -15,6 +15,7 @@ use App\Http\Controllers\LeaveNoticeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\N8nSettingController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\PemarkahanController;
 use App\Http\Controllers\PastiController;
 use App\Http\Controllers\PastiInformationController;
@@ -51,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
             ->except(['show'])
             ->names('users.gurus')
             ->parameters(['gurus' => 'users_guru']);
+        Route::post('/users/gurus/{users_guru}/impersonate', [ImpersonationController::class, 'start'])->name('users.gurus.impersonate');
         Route::resource('/pasti', PastiController::class)->except(['show']);
         Route::resource('/kelas', KelasController::class)->except(['show']);
         Route::post('/kelas/{kela}/student-count', [KelasController::class, 'updateStudentCount'])->name('kelas.student-count.update');
@@ -112,6 +114,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/impersonation/leave', [ImpersonationController::class, 'stop'])->name('impersonation.stop');
 });
 
 require __DIR__.'/auth.php';
