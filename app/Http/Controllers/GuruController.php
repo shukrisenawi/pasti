@@ -34,7 +34,8 @@ class GuruController extends Controller
         }
         $search = trim((string) $request->query('search', ''));
 
-        $scopeQuery = Guru::query();
+        $scopeQuery = Guru::query()
+            ->whereNotNull('pasti_id');
 
         if ($user->hasRole('admin')) {
             $scopeQuery->whereIn('pasti_id', $this->assignedPastiIds($user));
