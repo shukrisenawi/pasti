@@ -70,19 +70,38 @@
                     </div>
 
                     <div class="mt-4 flex items-center gap-2">
-                        <a href="{{ route('users.gurus.edit', $guru) }}" class="btn btn-ghost btn-sm text-primary">{{ __('messages.view') }}</a>
-                        <a href="{{ route('users.gurus.edit', $guru) }}" class="btn btn-outline btn-sm">{{ __('messages.edit') }}</a>
+                        <a href="{{ route('users.gurus.edit', $guru) }}" class="btn btn-ghost btn-sm h-8 w-8 p-0 text-primary" title="{{ __('messages.view') }}" aria-label="{{ __('messages.view') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/>
+                                <circle cx="12" cy="12" r="3" stroke-width="2"/>
+                            </svg>
+                        </a>
+                        <a href="{{ route('users.gurus.edit', $guru) }}" class="btn btn-outline btn-sm h-8 w-8 p-0" title="{{ __('messages.edit') }}" aria-label="{{ __('messages.edit') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 3.487a2.1 2.1 0 0 1 2.971 2.971L8.36 17.93 4 19l1.07-4.36 11.792-11.153Z"/>
+                            </svg>
+                        </a>
                         @if($guru->user && $guru->user->hasRole('guru'))
                             <form method="POST" action="{{ route('users.gurus.impersonate', $guru) }}" class="inline m-0">
                                 @csrf
                                 <input type="hidden" name="return_to" value="{{ url()->full() }}">
-                                <button class="btn btn-ghost btn-sm text-emerald-700" type="submit">Masuk</button>
+                                <button class="btn btn-ghost btn-sm h-8 w-8 p-0 text-emerald-700" type="submit" title="Masuk sebagai guru" aria-label="Masuk sebagai guru">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 7V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1v-3"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H3m0 0 4-4m-4 4 4 4"/>
+                                    </svg>
+                                </button>
                             </form>
                         @endif
                         <form method="POST" action="{{ route('users.gurus.destroy', $guru) }}" class="inline m-0">
                             @csrf
                             @method('DELETE')
-                            <button class="btn btn-ghost btn-sm text-rose-600" onclick="return confirm('Delete?')">{{ __('messages.delete') }}</button>
+                            <button class="btn btn-ghost btn-sm h-8 w-8 p-0 text-rose-600" title="{{ __('messages.delete') }}" aria-label="{{ __('messages.delete') }}" onclick="return confirm('Delete?')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-8 0 1 12a1 1 0 0 0 1 .917h6a1 1 0 0 0 1-.917L17 7"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11v6M14 11v6"/>
+                                </svg>
+                            </button>
                         </form>
                     </div>
                 </article>
@@ -94,6 +113,7 @@
 
     <div class="mt-4">{{ $gurus->links() }}</div>
 </x-app-layout>
+
 
 
 
