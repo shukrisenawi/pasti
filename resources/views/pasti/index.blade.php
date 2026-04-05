@@ -10,11 +10,13 @@
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             @foreach($pastis as $pasti)
                 <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <div class="h-44 w-full bg-slate-100">
+                    <div class="w-full bg-slate-100 p-2">
                         @if($pasti->image_url)
-                            <img src="{{ $pasti->image_url }}" alt="Gambar {{ $pasti->name }}" class="h-full w-full object-contain">
+                            <a href="{{ $pasti->image_url }}" target="_blank" class="block">
+                                <img src="{{ $pasti->image_url }}" alt="Gambar {{ $pasti->name }}" class="mx-auto max-h-72 w-full rounded-xl object-contain object-center">
+                            </a>
                         @else
-                            <div class="flex h-full w-full items-center justify-center text-sm font-semibold text-slate-400">Tiada gambar</div>
+                            <div class="flex h-44 w-full items-center justify-center text-sm font-semibold text-slate-400">Tiada gambar</div>
                         @endif
                     </div>
 
@@ -51,4 +53,6 @@
 
     <div class="mt-4">{{ $pastis->links() }}</div>
 </x-app-layout>
+
+
 
