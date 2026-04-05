@@ -113,7 +113,7 @@ class GuruController extends Controller
             'is_assistant' => ['nullable', 'boolean'],
             'email' => $emailRules,
             'password' => $passwordRules,
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
             'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
@@ -219,7 +219,7 @@ class GuruController extends Controller
             'is_assistant' => ['nullable', 'boolean'],
             'email' => $emailRules,
             'password' => $passwordRules,
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
             'remove_avatar' => ['nullable', 'boolean'],
             'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'phone' => ['nullable', 'string', 'max:30'],
@@ -402,5 +402,6 @@ class GuruController extends Controller
         abort_unless(in_array((int) $guru->pasti_id, $this->assignedPastiIds($user), true), 403);
     }
 }
+
 
 
