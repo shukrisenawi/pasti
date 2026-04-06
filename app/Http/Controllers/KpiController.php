@@ -26,7 +26,8 @@ class KpiController extends Controller
 
         $query = Guru::query()
             ->with(['user', 'pasti', 'kpiSnapshot'])
-            ->withLeaveDaysForYear($currentYear);
+            ->withLeaveDaysForYear($currentYear)
+            ->whereNotNull('gurus.pasti_id');
         $query->when($search !== '', function ($builder) use ($search): void {
             $keyword = '%' . $search . '%';
 
