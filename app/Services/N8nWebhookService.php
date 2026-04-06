@@ -61,17 +61,18 @@ class N8nWebhookService
         }
 
         $text = trim($text);
-        $payload = [
-            'text' => $text,
-            'gambar' => $gambar ?? '',
-            'link' => $link ?? '',
-        ];
+        $payload = ['text' => $text];
+
+        if (filled($gambar)) {
+            $payload['gambar'] = $gambar;
+        }
+
+        if (filled($link)) {
+            $payload['link'] = $link;
+        }
 
         try {
-            $response = Http::asJson()
-                ->acceptJson()
-                ->timeout(10)
-                ->post($webhookUrl, $payload);
+            $response = Http::post($webhookUrl, $payload);
 
             if ($response->failed()) {
                 Log::warning('Webhook n8n pulang status gagal.', [
