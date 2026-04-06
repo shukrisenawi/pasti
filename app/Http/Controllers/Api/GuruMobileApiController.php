@@ -300,7 +300,7 @@ class GuruMobileApiController extends Controller
             return response()->json(['message' => 'Guru profile not found.'], 404);
         }
 
-        $avatarRules = ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168', 'dimensions:min_width=600,min_height=600'];
+        $avatarRules = ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'];
         if (blank($user->avatar_path)) {
             $avatarRules[0] = 'required';
         }
