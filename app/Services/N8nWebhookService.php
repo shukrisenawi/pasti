@@ -61,7 +61,10 @@ class N8nWebhookService
         }
 
         $text = trim($text);
-        $payload = ['text' => $text];
+        $payload = [
+            'text' => $text,
+            'type' => $this->webhookMode(),
+        ];
 
         if (filled($gambar)) {
             $payload['gambar'] = $gambar;
