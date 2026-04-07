@@ -28,6 +28,7 @@ class N8nUserController extends Controller
                 'id' => $user->id,
                 'nama' => $user->display_name,
                 'tarikh_lahir' => optional($user->tarikh_lahir)?->format('Y-m-d'),
+                'avatar_url' => $this->publicUrl($user->avatar_url),
             ]);
 
         return response()->json([
@@ -37,5 +38,24 @@ class N8nUserController extends Controller
                 'limit' => $limit,
             ],
         ]);
+    }
+
+    private function publicUrl(?string $path): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        $publicDomain = rtrim((string) config('services.n8n.public_domain', 'https://pastikawasansik.my.id'), '/');
+
+        if (str_starts_with($path, '/')) {
+            return $publicDomain . $path;
+        }
+
+        return $publicDomain . '/' . ltrim($path, '/');
     }
 }
