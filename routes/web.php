@@ -115,6 +115,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::delete('/notifications', [NotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
     Route::match(['get', 'post'], '/impersonation/leave', [ImpersonationController::class, 'stop'])->name('impersonation.stop');
 });
 

@@ -14,7 +14,22 @@
         class="absolute left-1/2 z-[1000] mt-3 max-h-96 w-[calc(100vw-1rem)] -translate-x-1/2 overflow-y-auto rounded-3xl border border-slate-200 bg-white p-2 shadow-2xl sm:left-auto sm:right-0 sm:w-[22rem] sm:translate-x-0"
         style="display: none;"
     >
-        <p class="px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{{ __('messages.notifications') }}</p>
+        <div class="flex items-center justify-between px-2 py-1.5">
+            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.notifications') }}</p>
+            @if($unreadNotificationsCount > 0)
+                <form method="POST" action="{{ route('notifications.destroy-all') }}">
+                    @csrf
+                    @method('DELETE')
+                    <button
+                        type="submit"
+                        class="text-xs font-semibold text-rose-600 transition hover:text-rose-700"
+                        onclick="return confirm('Padam semua notifikasi?')"
+                    >
+                        Padam semua notifikasi
+                    </button>
+                </form>
+            @endif
+        </div>
         @forelse($latestNotifications as $notification)
             @php
                 $notificationAvatar = $notification->data['guru_avatar_url'] ?? '/images/default-avatar.svg';
@@ -23,32 +38,36 @@
                 $notificationMessage = \Illuminate\Support\Str::limit($notification->data['notification_message'] ?? ($notification->data['reason'] ?? '-'), 70);
             @endphp
 
-            <div class="mt-1 rounded-2xl transition hover:bg-primary/5">
-                <form method="POST" action="{{ route('notifications.read', $notification) }}">
-                    @csrf
-                    <input type="hidden" name="redirect_to" value="{{ $notification->data['url'] ?? route('leave-notices.index') }}">
-                    <button type="submit" class="w-full px-3 pt-3 text-left">
-                        <div class="flex items-start gap-3">
-                            <img src="{{ $notificationAvatar }}" alt="avatar" class="h-10 w-10 rounded-xl border border-slate-200 object-cover">
-                            <div class="min-w-0">
-                                <p class="text-sm font-semibold text-slate-900">{{ $notificationTitle }}</p>
-                                <p class="mt-1 text-xs text-slate-500">{{ $notificationMeta }}</p>
-                                <p class="mt-2 text-xs leading-relaxed text-slate-600">{{ $notificationMessage }}</p>
+            <div class="mt-1 rounded-xl border border-slate-100 transition hover:bg-primary/5">
+                <div class="flex items-start gap-2 p-2">
+                    <form method="POST" action="{{ route('notifications.read', $notification) }}" class="min-w-0 flex-1">
+                        @csrf
+                        <input type="hidden" name="redirect_to" value="{{ $notification->data['url'] ?? route('leave-notices.index') }}">
+                        <button type="submit" class="w-full text-left">
+                            <div class="flex items-start gap-2.5">
+                                <img src="{{ $notificationAvatar }}" alt="avatar" class="h-8 w-8 rounded-lg border border-slate-200 object-cover">
+                                <div class="min-w-0">
+                                    <p class="truncate text-[13px] font-semibold leading-tight text-slate-900">{{ $notificationTitle }}</p>
+                                    <p class="mt-0.5 truncate text-[11px] text-slate-500">{{ $notificationMeta }}</p>
+                                    <p class="mt-1 text-[11px] leading-snug text-slate-600">{{ $notificationMessage }}</p>
+                                </div>
                             </div>
-                        </div>
-                    </button>
-                </form>
+                        </button>
+                    </form>
 
-                <div class="flex justify-end px-3 pb-3">
-                    <form method="POST" action="{{ route('notifications.destroy', $notification) }}">
+                    <form method="POST" action="{{ route('notifications.destroy', $notification) }}" class="shrink-0">
                         @csrf
                         @method('DELETE')
                         <button
                             type="submit"
-                            class="btn btn-ghost btn-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                            class="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
                             onclick="return confirm('Padam notifikasi ini?')"
+                            aria-label="Padam notifikasi"
+                            title="Padam notifikasi"
                         >
-                            Padam
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 01-2 2h-2a2 2 0 01-2-2V6h6z" />
+                            </svg>
                         </button>
                     </form>
                 </div>

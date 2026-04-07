@@ -36,4 +36,11 @@ class NotificationController extends Controller
 
         return back();
     }
+
+    public function destroyAll(Request $request): RedirectResponse
+    {
+        $request->user()->unreadNotifications()->delete();
+
+        return back();
+    }
 }
