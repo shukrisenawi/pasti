@@ -161,7 +161,7 @@
                         </a>
                         <a href="{{ route('leave-notices.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.leave_notice') }}</span>
-                            @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
+                            @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
                         </a>
                     </div>
                 </div>
@@ -194,7 +194,7 @@
                     </a>
                     <a href="{{ route('leave-notices.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                         <span>{{ __('messages.leave_notice') }}</span>
-                        @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
+                        @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
                     </a>
                     @if(auth()->user()->guru)
                         <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
@@ -415,7 +415,7 @@
                             <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.leave_notice') }}</span>
                                 @if($menuOnLeaveGuruCount > 0)
-                                    <span class="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuOnLeaveGuruCount > 99 ? '99+' : $menuOnLeaveGuruCount }}</span>
+                                    <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuOnLeaveGuruCount > 99 ? '99+' : $menuOnLeaveGuruCount }}</span>
                                 @endif
                             </a>
                         </div>
@@ -459,7 +459,7 @@
                         <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.leave_notice') }}</span>
                             @if($menuOnLeaveGuruCount > 0)
-                                <span class="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuOnLeaveGuruCount > 99 ? '99+' : $menuOnLeaveGuruCount }}</span>
+                                <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuOnLeaveGuruCount > 99 ? '99+' : $menuOnLeaveGuruCount }}</span>
                             @endif
                         </a>
                         @if(auth()->user()->guru)
