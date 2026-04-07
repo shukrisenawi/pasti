@@ -16,29 +16,45 @@
     >
         <p class="px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{{ __('messages.notifications') }}</p>
         @forelse($latestNotifications as $notification)
-            <form method="POST" action="{{ route('notifications.read', $notification) }}" class="mt-1">
-                @csrf
-                <input type="hidden" name="redirect_to" value="{{ $notification->data['url'] ?? route('leave-notices.index') }}">
-                @php
-                    $notificationAvatar = $notification->data['guru_avatar_url'] ?? '/images/default-avatar.svg';
-                    $notificationTitle = $notification->data['notification_title'] ?? __('messages.notifications');
-                    $notificationMeta = $notification->data['notification_meta'] ?? (($notification->data['guru_name'] ?? '-') . ' · ' . ($notification->data['pasti_name'] ?? '-'));
-                    $notificationMessage = \Illuminate\Support\Str::limit($notification->data['notification_message'] ?? ($notification->data['reason'] ?? '-'), 70);
-                @endphp
-                <button type="submit" class="w-full rounded-2xl px-3 py-3 text-left transition hover:bg-primary/5">
-                    <div class="flex items-start gap-3">
-                        <img src="{{ $notificationAvatar }}" alt="avatar" class="h-10 w-10 rounded-xl border border-slate-200 object-cover">
-                        <div class="min-w-0">
-                            <p class="text-sm font-semibold text-slate-900">{{ $notificationTitle }}</p>
-                            <p class="mt-1 text-xs text-slate-500">{{ $notificationMeta }}</p>
-                            <p class="mt-2 text-xs leading-relaxed text-slate-600">{{ $notificationMessage }}</p>
+            @php
+                $notificationAvatar = $notification->data['guru_avatar_url'] ?? '/images/default-avatar.svg';
+                $notificationTitle = $notification->data['notification_title'] ?? __('messages.notifications');
+                $notificationMeta = $notification->data['notification_meta'] ?? (($notification->data['guru_name'] ?? '-') . ' - ' . ($notification->data['pasti_name'] ?? '-'));
+                $notificationMessage = \Illuminate\Support\Str::limit($notification->data['notification_message'] ?? ($notification->data['reason'] ?? '-'), 70);
+            @endphp
+
+            <div class="mt-1 rounded-2xl transition hover:bg-primary/5">
+                <form method="POST" action="{{ route('notifications.read', $notification) }}">
+                    @csrf
+                    <input type="hidden" name="redirect_to" value="{{ $notification->data['url'] ?? route('leave-notices.index') }}">
+                    <button type="submit" class="w-full px-3 pt-3 text-left">
+                        <div class="flex items-start gap-3">
+                            <img src="{{ $notificationAvatar }}" alt="avatar" class="h-10 w-10 rounded-xl border border-slate-200 object-cover">
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-slate-900">{{ $notificationTitle }}</p>
+                                <p class="mt-1 text-xs text-slate-500">{{ $notificationMeta }}</p>
+                                <p class="mt-2 text-xs leading-relaxed text-slate-600">{{ $notificationMessage }}</p>
+                            </div>
                         </div>
-                    </div>
-                </button>
-            </form>
+                    </button>
+                </form>
+
+                <div class="flex justify-end px-3 pb-3">
+                    <form method="POST" action="{{ route('notifications.destroy', $notification) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button
+                            type="submit"
+                            class="btn btn-ghost btn-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                            onclick="return confirm('Padam notifikasi ini?')"
+                        >
+                            Padam
+                        </button>
+                    </form>
+                </div>
+            </div>
         @empty
             <p class="px-3 py-3 text-sm text-slate-500">{{ __('messages.no_notifications') }}</p>
         @endforelse
     </div>
 </div>
-
