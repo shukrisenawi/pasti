@@ -66,7 +66,10 @@
                             title="Padam notifikasi"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 01-2 2h-2a2 2 0 01-2-2V6h6z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7l.6 11.2A2 2 0 0010.6 20h2.8a2 2 0 002-1.8L16 7" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 11v5M14 11v5" />
                             </svg>
                         </button>
                     </form>
