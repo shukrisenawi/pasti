@@ -82,6 +82,22 @@
                             </svg>
                         </a>
                         @if($guru->user && $guru->user->hasRole('guru'))
+                            <form method="POST" action="{{ route('users.gurus.reset-password', $guru) }}" class="inline m-0">
+                                @csrf
+                                <button
+                                    class="btn btn-ghost btn-sm h-8 w-8 p-0 text-amber-600"
+                                    type="submit"
+                                    title="Reset password ke 123"
+                                    aria-label="Reset password ke 123"
+                                    onclick="return confirm('Reset password guru ini kepada 123?')"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3V6a3 3 0 10-6 0v2c0 1.657 1.343 3 3 3z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11h14a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1v-7a1 1 0 011-1z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16h8"/>
+                                    </svg>
+                                </button>
+                            </form>
                             <form method="POST" action="{{ route('users.gurus.impersonate', $guru) }}" class="inline m-0">
                                 @csrf
                                 <input type="hidden" name="return_to" value="{{ url()->full() }}">

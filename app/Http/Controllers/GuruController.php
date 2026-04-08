@@ -362,6 +362,29 @@ class GuruController extends Controller
         return redirect()->route('users.gurus.index')->with('status', __('messages.deleted'));
     }
 
+    public function resetPassword(Request $request, Guru $users_guru): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasRole('guru')) {
+            abort(403);
+        }
+
+        $this->ensureGuruAllowed($user, $users_guru);
+
+        $targetUser = $users_guru->user;
+        abort_unless($targetUser && $targetUser->hasRole('guru'), 404);
+
+        $targetUser->update([
+            'password' => Hash::make(GuruProfileCompletionService::DEFAULT_GURU_PASSWORD),
+            'force_password_change' => true,
+        ]);
+
+        return redirect()
+            ->route('users.gurus.index', $request->query())
+            ->with('status', 'Kata laluan guru berjaya direset kepada 123.');
+    }
+
     public function directory(Request $request): View
     {
         $user = $request->user();

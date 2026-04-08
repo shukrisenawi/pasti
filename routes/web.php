@@ -53,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
             ->names('users.gurus')
             ->parameters(['gurus' => 'users_guru']);
         Route::post('/users/gurus/{users_guru}/impersonate', [ImpersonationController::class, 'start'])->name('users.gurus.impersonate');
+        Route::post('/users/gurus/{users_guru}/reset-password', [GuruController::class, 'resetPassword'])->name('users.gurus.reset-password');
         Route::resource('/pasti', PastiController::class)->except(['show']);
         Route::resource('/kelas', KelasController::class)->except(['show']);
         Route::post('/kelas/{kela}/student-count', [KelasController::class, 'updateStudentCount'])->name('kelas.student-count.update');
