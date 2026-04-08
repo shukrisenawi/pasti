@@ -23,8 +23,11 @@
         $pastiMenuRoute = $authUser->hasRole('guru') ? route('pasti.self.edit') : null;
         $isImpersonatingGuru = session()->has('impersonator_user_id') || request()->hasCookie('impersonator_user_id');
         $sidebarKpi = number_format((float) ($authUser->guru?->kpiSnapshot?->score ?? 0), 1) . '%';
-        $sidebarLastLoginValue = $authUser->last_login_at
-            ? $authUser->last_login_at->timezone(config('app.timezone'))->format('d/m/Y h:i A')
+        $sidebarLastLoginDate = $authUser->last_login_at
+            ? $authUser->last_login_at->timezone(config('app.timezone'))->format('d/m/Y')
+            : '-';
+        $sidebarLastLoginTime = $authUser->last_login_at
+            ? $authUser->last_login_at->timezone(config('app.timezone'))->format('h:i A')
             : '-';
         $sidebarTeachingDuration = '-';
         if ($authUser->guru?->joined_at) {
@@ -95,7 +98,8 @@
                     <p class="truncate text-xs font-extrabold text-white">{{ $authUser->display_name }}</p>
                     @if($isAdminCardUser)
                         <p class="truncate text-xs font-semibold text-white/80">Akhir Login:</p>
-                        <p class="truncate text-xs font-semibold text-white/80">{{ $sidebarLastLoginValue }}</p>
+                        <p class="truncate text-xs font-semibold text-white/80">{{ $sidebarLastLoginDate }}</p>
+                        <p class="truncate text-xs font-semibold text-white/80">{{ $sidebarLastLoginTime }}</p>
                     @else
                         <p class="truncate text-xs font-semibold text-white/80">KPI: {{ $sidebarKpi }}</p>
                         <p class="truncate text-xs font-semibold text-white/80">{{ $sidebarTeachingDuration }}</p>
@@ -318,7 +322,8 @@
                         <p class="truncate text-sm font-extrabold text-white">{{ $authUser->display_name }}</p>
                         @if($isAdminCardUser)
                             <p class="truncate text-sm font-semibold text-white/80">Akhir Login:</p>
-                            <p class="truncate text-sm font-semibold text-white/80">{{ $sidebarLastLoginValue }}</p>
+                            <p class="truncate text-sm font-semibold text-white/80">{{ $sidebarLastLoginDate }}</p>
+                            <p class="truncate text-sm font-semibold text-white/80">{{ $sidebarLastLoginTime }}</p>
                         @else
                             <p class="truncate text-sm font-semibold text-white/80">KPI: {{ $sidebarKpi }}</p>
                             <p class="truncate text-sm font-semibold text-white/80">{{ $sidebarTeachingDuration }}</p>
@@ -567,7 +572,6 @@
 </script>
 </body>
 </html>
-
 
 
 
