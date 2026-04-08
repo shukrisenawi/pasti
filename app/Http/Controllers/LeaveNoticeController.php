@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LeaveNotice;
 use App\Models\User;
 use App\Notifications\LeaveNoticeSubmittedNotification;
+use App\Services\KpiCalculationService;
 use App\Services\N8nWebhookService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ class LeaveNoticeController extends Controller
 {
     public function __construct(
         private readonly N8nWebhookService $n8nWebhookService,
+        private readonly KpiCalculationService $kpiCalculationService,
     ) {
     }
 
@@ -52,7 +54,22 @@ class LeaveNoticeController extends Controller
     {
         abort_unless($request->user()->hasRole('guru'), 403);
 
-        return view('leave-notices.form');
+        return view('leave-notices.form', [
+            'leaveNotice' => new LeaveNotice(),
+            'formAction' => route('leave-notices.store'),
+            'formMethod' => 'POST',
+        ]);
+    }
+
+    public function edit(Request $request, LeaveNotice $leaveNotice): View
+    {
+        $this->ensureCanManageNotice($request, $leaveNotice);
+
+        return view('leave-notices.form', [
+            'leaveNotice' => $leaveNotice,
+            'formAction' => route('leave-notices.update', $leaveNotice),
+            'formMethod' => 'PUT',
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -65,7 +82,7 @@ class LeaveNoticeController extends Controller
 
         $data = $request->validate([
             'leave_date' => ['required', 'date'],
-            'leave_until' => ['required', 'date'],
+            'leave_until' => ['required', 'date', 'after_or_equal:leave_date'],
             'reason' => ['required', 'string'],
             'mc_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
@@ -81,6 +98,10 @@ class LeaveNoticeController extends Controller
             $leaveNotice->update([
                 'mc_image_path' => $request->file('mc_image')->store('leave-mc', 'public'),
             ]);
+        }
+
+        if ($leaveNotice->guru) {
+            $this->kpiCalculationService->recalculateForGuru($leaveNotice->guru);
         }
 
         $leaveNotice->loadMissing(['guru.user', 'guru.pasti']);
@@ -110,21 +131,50 @@ class LeaveNoticeController extends Controller
         return redirect()->route('leave-notices.index')->with('status', __('messages.saved'));
     }
 
+    public function update(Request $request, LeaveNotice $leaveNotice): RedirectResponse
+    {
+        $this->ensureCanManageNotice($request, $leaveNotice);
+
+        $data = $request->validate([
+            'leave_date' => ['required', 'date'],
+            'leave_until' => ['required', 'date', 'after_or_equal:leave_date'],
+            'reason' => ['required', 'string'],
+            'mc_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'remove_mc_image' => ['nullable', 'boolean'],
+        ]);
+
+        $leaveNotice->update([
+            'leave_date' => $data['leave_date'],
+            'leave_until' => $data['leave_until'],
+            'reason' => $data['reason'],
+        ]);
+
+        if ($request->hasFile('mc_image')) {
+            if ($leaveNotice->mc_image_path) {
+                Storage::disk('public')->delete($leaveNotice->mc_image_path);
+            }
+
+            $leaveNotice->update([
+                'mc_image_path' => $request->file('mc_image')->store('leave-mc', 'public'),
+            ]);
+        } elseif ($request->boolean('remove_mc_image') && $leaveNotice->mc_image_path) {
+            Storage::disk('public')->delete($leaveNotice->mc_image_path);
+            $leaveNotice->update(['mc_image_path' => null]);
+        }
+
+        $leaveNotice->loadMissing('guru');
+        if ($leaveNotice->guru) {
+            $this->kpiCalculationService->recalculateForGuru($leaveNotice->guru);
+        }
+
+        return redirect()->route('leave-notices.index')->with('status', __('messages.saved'));
+    }
+
     public function destroy(Request $request, LeaveNotice $leaveNotice): RedirectResponse
     {
-        $user = $request->user();
-
-        if ($user->hasRole('guru')) {
-            abort(403);
-        } elseif ($user->hasRole('admin')) {
-            $assignedPastiIds = $this->assignedPastiIds($user);
-            abort_unless(
-                $leaveNotice->guru()->whereIn('pasti_id', $assignedPastiIds)->exists(),
-                403
-            );
-        } elseif (! $user->hasRole('master_admin')) {
-            abort(403);
-        }
+        $this->ensureCanManageNotice($request, $leaveNotice);
+        $leaveNotice->loadMissing('guru');
+        $guru = $leaveNotice->guru;
 
         if ($leaveNotice->mc_image_path) {
             Storage::disk('public')->delete($leaveNotice->mc_image_path);
@@ -132,7 +182,32 @@ class LeaveNoticeController extends Controller
 
         $leaveNotice->delete();
 
+        if ($guru) {
+            $this->kpiCalculationService->recalculateForGuru($guru);
+        }
+
         return redirect()->route('leave-notices.index')->with('status', __('messages.deleted'));
+    }
+
+    private function ensureCanManageNotice(Request $request, LeaveNotice $leaveNotice): void
+    {
+        $user = $request->user();
+
+        if ($user->hasRole('master_admin')) {
+            return;
+        }
+
+        if ($user->hasRole('admin')) {
+            $assignedPastiIds = $this->assignedPastiIds($user);
+            abort_unless(
+                $leaveNotice->guru()->whereIn('pasti_id', $assignedPastiIds)->exists(),
+                403
+            );
+
+            return;
+        }
+
+        abort(403);
     }
 }
 

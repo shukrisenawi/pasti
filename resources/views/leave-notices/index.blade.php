@@ -53,7 +53,13 @@
                     @endphp
                     
                     @if($canDeleteNotice)
-                        <div class="flex justify-end pt-2">
+                        <div class="flex justify-end gap-2 pt-2">
+                            <a href="{{ route('leave-notices.edit', $notice) }}" class="flex items-center gap-2 px-4 py-2 rounded-xl text-amber-700 bg-amber-50 text-xs font-bold transition-colors active:bg-amber-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l2.651 2.651a1.875 1.875 0 010 2.651L9.75 19.552 5 20l.448-4.75 9.763-9.763a1.875 1.875 0 012.651 0z" />
+                                </svg>
+                                {{ __('messages.edit') }}
+                            </a>
                             <form method="POST" action="{{ route('leave-notices.destroy', $notice) }}" class="m-0">
                                 @csrf
                                 @method('DELETE')
@@ -123,6 +129,11 @@
                                 || (!empty($assignedPastiIds) && in_array((int) ($notice->guru?->pasti_id ?? 0), $assignedPastiIds, true));
                         @endphp
                         @if($canDeleteNotice)
+                            <a href="{{ route('leave-notices.edit', $notice) }}" class="inline-flex p-2 text-amber-500 hover:text-amber-700 transition-colors" title="{{ __('messages.edit') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-5 w-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l2.651 2.651a1.875 1.875 0 010 2.651L9.75 19.552 5 20l.448-4.75 9.763-9.763a1.875 1.875 0 012.651 0z" />
+                                </svg>
+                            </a>
                             <form method="POST" action="{{ route('leave-notices.destroy', $notice) }}" class="inline m-0">
                                 @csrf
                                 @method('DELETE')

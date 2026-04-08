@@ -1,28 +1,41 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-lg font-bold">{{ __('messages.new') }} {{ __('messages.leave_notice') }}</h2>
+        <h2 class="text-lg font-bold">
+            {{ ($leaveNotice?->exists ?? false) ? __('messages.edit') : __('messages.new') }} {{ __('messages.leave_notice') }}
+        </h2>
     </x-slot>
 
     <div class="card">
-        <form method="POST" action="{{ route('leave-notices.store') }}" class="space-y-4" enctype="multipart/form-data">
+        <form method="POST" action="{{ $formAction ?? route('leave-notices.store') }}" class="space-y-4" enctype="multipart/form-data">
             @csrf
+            @if(($formMethod ?? 'POST') !== 'POST')
+                @method($formMethod)
+            @endif
 
             <div class="grid gap-4 md:grid-cols-2">
                 <div>
                     <label class="label-base">{{ __('messages.leave_date') }}</label>
-                    <input id="leave_date" class="input-base" type="date" name="leave_date" value="{{ old('leave_date', now()->toDateString()) }}" required>
+                    <input id="leave_date" class="input-base" type="date" name="leave_date" value="{{ old('leave_date', optional($leaveNotice?->leave_date)->toDateString() ?? now()->toDateString()) }}" required>
                 </div>
                 <div>
                     <label class="label-base">{{ __('messages.leave_until') }}</label>
-                    <input id="leave_until" class="input-base" type="date" name="leave_until" value="{{ old('leave_until', old('leave_date', now()->toDateString())) }}" required>
+                    <input id="leave_until" class="input-base" type="date" name="leave_until" value="{{ old('leave_until', optional($leaveNotice?->leave_until)->toDateString() ?? old('leave_date', now()->toDateString())) }}" required>
                 </div>
                 <div>
                     <label class="label-base">{{ __('messages.mc_attachment') }} (optional)</label>
                     <input class="file-input w-full" type="file" name="mc_image" accept=".jpg,.jpeg,.png,.webp,image/*">
                 </div>
+                @if(($leaveNotice?->exists ?? false) && $leaveNotice?->mc_image_url)
+                    <div class="flex items-end">
+                        <label class="flex items-center gap-2 text-sm text-slate-600">
+                            <input type="checkbox" name="remove_mc_image" value="1" class="checkbox checkbox-sm" @checked(old('remove_mc_image'))>
+                            Buang lampiran MC semasa
+                        </label>
+                    </div>
+                @endif
                 <div class="md:col-span-2">
                     <label class="label-base">{{ __('messages.reason') }}</label>
-                    <textarea class="input-base" name="reason" rows="4" required>{{ old('reason') }}</textarea>
+                    <textarea class="input-base" name="reason" rows="4" required>{{ old('reason', $leaveNotice?->reason) }}</textarea>
                 </div>
             </div>
 

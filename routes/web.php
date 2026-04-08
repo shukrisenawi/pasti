@@ -67,6 +67,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/ajk-program/assignments', [AjkProgramController::class, 'updateAssignments'])->name('ajk-program.assignments.update');
         Route::get('/kewangan', [FinancialController::class, 'index'])->name('financial.index');
         Route::post('/kewangan', [FinancialController::class, 'store'])->name('financial.store');
+        Route::get('/leave-notices/{leaveNotice}/edit', [LeaveNoticeController::class, 'edit'])->name('leave-notices.edit');
+        Route::put('/leave-notices/{leaveNotice}', [LeaveNoticeController::class, 'update'])->name('leave-notices.update');
     });
 
     Route::middleware('role:guru')->group(function () {
