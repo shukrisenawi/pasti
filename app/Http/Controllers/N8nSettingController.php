@@ -34,6 +34,7 @@ class N8nSettingController extends Controller
 
         $validated = $request->validate([
             'webhook_mode' => ['required', 'in:test,production'],
+            'webhook_group' => ['required', 'in:test,real'],
             'webhook_url_test' => ['required', 'url', 'max:2000'],
             'webhook_url_production' => ['required', 'url', 'max:2000'],
             'webhook_url_group2_test' => ['required', 'url', 'max:2000'],
@@ -48,6 +49,7 @@ class N8nSettingController extends Controller
 
         $mapping = [
             'webhook_mode' => N8nWebhookService::KEY_WEBHOOK_MODE,
+            'webhook_group' => N8nWebhookService::KEY_WEBHOOK_GROUP,
             'webhook_url_test' => N8nWebhookService::KEY_WEBHOOK_URL_TEST,
             'webhook_url_production' => N8nWebhookService::KEY_WEBHOOK_URL_PRODUCTION,
             'webhook_url_group2_test' => N8nWebhookService::KEY_WEBHOOK_URL_GROUP2_TEST,

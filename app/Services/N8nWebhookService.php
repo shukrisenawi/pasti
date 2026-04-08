@@ -10,6 +10,7 @@ use Throwable;
 class N8nWebhookService
 {
     public const KEY_WEBHOOK_MODE = 'n8n_webhook_mode';
+    public const KEY_WEBHOOK_GROUP = 'n8n_webhook_group';
 
     public const KEY_WEBHOOK_URL_TEST = 'n8n_webhook_url_test';
     public const KEY_WEBHOOK_URL_PRODUCTION = 'n8n_webhook_url_production';
@@ -64,6 +65,7 @@ class N8nWebhookService
         $payload = [
             'text' => $text,
             'type' => $this->webhookMode(),
+            'group' => $this->webhookGroup(),
         ];
 
         if (filled($gambar)) {
@@ -122,6 +124,7 @@ class N8nWebhookService
     {
         return [
             'webhook_mode' => $this->webhookMode(),
+            'webhook_group' => $this->webhookGroup(),
             'webhook_url_test' => $this->setting(
                 self::KEY_WEBHOOK_URL_TEST,
                 (string) config('services.n8n.webhook_url_test', (string) config('services.n8n.webhook_url', ''))
@@ -179,6 +182,13 @@ class N8nWebhookService
         $mode = strtolower($this->setting(self::KEY_WEBHOOK_MODE, 'production'));
 
         return in_array($mode, ['test', 'production'], true) ? $mode : 'production';
+    }
+
+    private function webhookGroup(): string
+    {
+        $group = strtolower($this->setting(self::KEY_WEBHOOK_GROUP, 'real'));
+
+        return in_array($group, ['test', 'real'], true) ? $group : 'real';
     }
 
     private function template(string $key): string

@@ -12,6 +12,7 @@ class N8nSettingsSeeder extends Seeder
     {
         $settings = [
             N8nWebhookService::KEY_WEBHOOK_MODE => 'production',
+            N8nWebhookService::KEY_WEBHOOK_GROUP => 'real',
             N8nWebhookService::KEY_WEBHOOK_URL_TEST => 'https://n8n-mt8umikivytz.n8x.biz.id/webhook-test/3caf9b20-d664-491b-81db-57984d626341',
             N8nWebhookService::KEY_WEBHOOK_URL_PRODUCTION => 'https://n8n-mt8umikivytz.n8x.biz.id/webhook/3caf9b20-d664-491b-81db-57984d626341',
             N8nWebhookService::KEY_WEBHOOK_URL_GROUP2_TEST => 'https://n8n-mt8umikivytz.n8x.biz.id/webhook-test/3caf9b20-d664-491b-81db-57984d626341',
