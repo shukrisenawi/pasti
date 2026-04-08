@@ -88,7 +88,7 @@
             <div class="flex items-center gap-3">
                 <x-avatar :user="$authUser" size="h-11 w-11" rounded="rounded-xl" border="border border-white/20" />
                 <div class="min-w-0">
-                    <p class="truncate text-xs font-semibold text-white/80">{{ $authUser->display_name }}</p>
+                    <p class="truncate text-xs font-extrabold text-white">{{ $authUser->display_name }}</p>
                     <p class="truncate text-xs font-semibold text-white/80">KPI: {{ $sidebarKpi }}</p>
                     <p class="truncate text-xs font-semibold text-white/80">{{ $sidebarTeachingDuration }}</p>
                 </div>
@@ -306,7 +306,7 @@
                 <div class="flex items-center gap-4">
                     <x-avatar :user="$authUser" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/20" />
                     <div class="min-w-0">
-                        <p class="truncate text-sm font-semibold text-white/80">{{ $authUser->display_name }}</p>
+                        <p class="truncate text-sm font-extrabold text-white">{{ $authUser->display_name }}</p>
                         <p class="truncate text-sm font-semibold text-white/80">KPI: {{ $sidebarKpi }}</p>
                         <p class="truncate text-sm font-semibold text-white/80">{{ $sidebarTeachingDuration }}</p>
                     </div>
