@@ -16,6 +16,8 @@ use Illuminate\View\View;
 
 class GuruController extends Controller
 {
+    private const TEST_GURU_EMAIL = 'test@pasti';
+
     public function __construct(private readonly KpiCalculationService $kpiCalculationService)
     {
     }
@@ -44,6 +46,7 @@ class GuruController extends Controller
         $query = (clone $scopeQuery)
             ->with(['user', 'pasti', 'kpiSnapshot'])
             ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
+            ->leftJoin('users', 'users.id', '=', 'gurus.user_id')
             ->select('gurus.*');
         $query->where('gurus.is_assistant', $activeTab === 'assistant');
         $query->when($search !== '', function ($builder) use ($search): void {
@@ -58,6 +61,10 @@ class GuruController extends Controller
 
         return view('gurus.index', [
             'gurus' => $query
+                ->orderByRaw(
+                    "CASE WHEN COALESCE(users.email, gurus.email, '') = ? THEN 0 ELSE 1 END",
+                    [self::TEST_GURU_EMAIL]
+                )
                 ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
                 ->orderBy('pastis.name')
                 ->orderBy('gurus.name')
@@ -365,7 +372,14 @@ class GuruController extends Controller
             ->where('is_assistant', false)
             ->whereNotNull('pasti_id')
             ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
+            ->leftJoin('users', 'users.id', '=', 'gurus.user_id')
             ->select('gurus.*')
+            ->when($user->hasRole('guru'), function ($query): void {
+                $query->whereRaw(
+                    "COALESCE(users.email, gurus.email, '') <> ?",
+                    [self::TEST_GURU_EMAIL]
+                );
+            })
             ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
             ->orderBy('pastis.name')
             ->orderBy('gurus.name')
