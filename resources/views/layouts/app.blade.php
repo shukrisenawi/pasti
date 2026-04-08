@@ -21,6 +21,26 @@
         $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
         $pastiMenuRoute = $authUser->hasRole('guru') ? route('pasti.self.edit') : null;
         $isImpersonatingGuru = session()->has('impersonator_user_id') || request()->hasCookie('impersonator_user_id');
+        $sidebarKpi = number_format((float) ($authUser->guru?->kpiSnapshot?->score ?? 0), 1) . '%';
+        $sidebarTeachingDuration = '-';
+        if ($authUser->guru?->joined_at) {
+            $joinedAt = $authUser->guru->joined_at->startOfDay();
+            $today = now()->startOfDay();
+            $months = $joinedAt->diffInMonths($today);
+            $years = intdiv($months, 12);
+            $remainingMonths = $months % 12;
+
+            $durationParts = [];
+            if ($years > 0) {
+                $durationParts[] = $years.' tahun';
+            }
+
+            if ($remainingMonths > 0 || $durationParts === []) {
+                $durationParts[] = $remainingMonths.' bulan';
+            }
+
+            $sidebarTeachingDuration = implode(' ', $durationParts);
+        }
     @endphp
     <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent"></div>
 
@@ -68,9 +88,9 @@
             <div class="flex items-center gap-3">
                 <x-avatar :user="$authUser" size="h-11 w-11" rounded="rounded-xl" border="border border-white/20" />
                 <div class="min-w-0">
-                    <p class="text-[10px] font-bold uppercase tracking-widest text-white/70">User</p>
-                    <p class="truncate text-sm font-bold">{{ auth()->user()->display_name }}</p>
-                    <p class="truncate text-xs text-white/75">{{ auth()->user()->email }}</p>
+                    <p class="truncate text-xs font-semibold text-white/80">Nama: {{ $authUser->display_name }}</p>
+                    <p class="truncate text-xs font-semibold text-white/80">KPI: {{ $sidebarKpi }}</p>
+                    <p class="truncate text-xs font-semibold text-white/80">Tempoh Mengajar: {{ $sidebarTeachingDuration }}</p>
                 </div>
             </div>
         </div>
@@ -286,9 +306,9 @@
                 <div class="flex items-center gap-4">
                     <x-avatar :user="$authUser" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/20" />
                     <div class="min-w-0">
-                        <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">User</p>
-                        <p class="truncate text-base font-bold">{{ auth()->user()->display_name }}</p>
-                        <p class="truncate text-sm text-white/75">{{ auth()->user()->email }}</p>
+                        <p class="truncate text-sm font-semibold text-white/80">Nama: {{ $authUser->display_name }}</p>
+                        <p class="truncate text-sm font-semibold text-white/80">KPI: {{ $sidebarKpi }}</p>
+                        <p class="truncate text-sm font-semibold text-white/80">Tempoh Mengajar: {{ $sidebarTeachingDuration }}</p>
                     </div>
                 </div>
             </div>
