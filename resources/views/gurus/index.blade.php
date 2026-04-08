@@ -42,36 +42,10 @@
                 <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     @php($hasUploadedAvatar = filled($guru->avatar_path) || filled($guru->user?->avatar_path))
                     <div class="flex items-center gap-3">
-                        <div class="group relative" x-data="{ menuOpen: false }">
+                        <div class="group relative">
                             <a href="{{ route('users.gurus.edit', $guru) }}" class="block" aria-label="Lihat profil {{ $guru->display_name }}">
                                 <x-avatar :guru="$guru" size="h-12 w-12" rounded="rounded-xl" border="border border-slate-200" />
                             </a>
-                            @if(!$guru->is_assistant)
-                                <button
-                                    type="button"
-                                    class="absolute -right-2 -top-2 rounded-full border border-slate-200 bg-white p-1 text-slate-500 shadow-sm hover:text-primary"
-                                    @click.stop="menuOpen = !menuOpen"
-                                    aria-label="Menu avatar guru"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5h.01M12 12h.01M12 19h.01"/>
-                                    </svg>
-                                </button>
-                                <div
-                                    x-show="menuOpen"
-                                    x-transition
-                                    @click.outside="menuOpen = false"
-                                    class="absolute left-1/2 top-14 z-30 min-w-[180px] -translate-x-1/2 rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
-                                    style="display: none;"
-                                >
-                                    <a
-                                        href="{{ route('users.gurus.assistants', ['users_guru' => $guru, 'tab' => 'list']) }}"
-                                        class="block rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-primary/10 hover:text-primary"
-                                    >
-                                        Pembantu Guru
-                                    </a>
-                                </div>
-                            @endif
                             @if($hasUploadedAvatar)
                             <div class="pointer-events-none absolute left-full top-1/2 z-30 hidden ml-2 -translate-y-1/2 md:block md:invisible md:opacity-0 md:transition md:duration-150 md:group-hover:visible md:group-hover:opacity-100">
                                 <div class="h-[150px] w-[150px] overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl"><img src="{{ $guru->avatar_url }}" alt="{{ $guru->display_name }}" class="h-full w-full rounded-lg object-cover"></div>

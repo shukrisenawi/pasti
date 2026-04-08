@@ -79,6 +79,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/kpi/saya', fn () => redirect()->route('kpi.guru.show', auth()->user()->guru))->name('kpi.mine');
         Route::get('/pasti-saya', [PastiController::class, 'editOwn'])->name('pasti.self.edit');
         Route::put('/pasti-saya', [PastiController::class, 'updateOwn'])->name('pasti.self.update');
+        Route::get('/pembantu-guru', [GuruController::class, 'assistantsMine'])->name('guru-assistants.index');
+        Route::post('/pembantu-guru', [GuruController::class, 'storeAssistantMine'])->name('guru-assistants.store');
+        Route::get('/pembantu-guru/{assistant}/edit', [GuruController::class, 'editAssistantMine'])->name('guru-assistants.edit');
+        Route::put('/pembantu-guru/{assistant}', [GuruController::class, 'updateAssistantMine'])->name('guru-assistants.update');
+        Route::delete('/pembantu-guru/{assistant}', [GuruController::class, 'destroyAssistantMine'])->name('guru-assistants.destroy');
         Route::get('/leave-notices/create', [LeaveNoticeController::class, 'create'])->name('leave-notices.create');
         Route::post('/leave-notices', [LeaveNoticeController::class, 'store'])->name('leave-notices.store');
         Route::get('/maklumat-pasti/{pastiInformationRequest}/isi', [PastiInformationController::class, 'edit'])->name('pasti-information.edit');

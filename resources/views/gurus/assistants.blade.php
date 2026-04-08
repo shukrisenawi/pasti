@@ -1,11 +1,25 @@
 ﻿<x-app-layout>
+    @php
+        $isSelfMode = $isSelfMode ?? false;
+        $listRoute = $isSelfMode
+            ? route('guru-assistants.index', ['tab' => 'list'])
+            : route('users.gurus.assistants', ['users_guru' => $guru, 'tab' => 'list']);
+        $addRoute = $isSelfMode
+            ? route('guru-assistants.index', ['tab' => 'add'])
+            : route('users.gurus.assistants', ['users_guru' => $guru, 'tab' => 'add']);
+        $storeRoute = $isSelfMode
+            ? route('guru-assistants.store')
+            : route('users.gurus.assistants.store', $guru);
+        $backRoute = $isSelfMode ? route('dashboard') : route('users.gurus.index');
+    @endphp
+
     <x-slot name="header">
         <div class="flex items-center justify-between gap-3">
             <div>
                 <h2 class="text-lg font-bold">Pembantu Guru</h2>
                 <p class="text-sm text-slate-500">{{ $guru->display_name }} · {{ $guru->pasti?->name ?? '-' }}</p>
             </div>
-            <a href="{{ route('users.gurus.index') }}" class="btn btn-outline btn-sm">Kembali</a>
+            <a href="{{ $backRoute }}" class="btn btn-outline btn-sm">Kembali</a>
         </div>
     </x-slot>
 
@@ -14,12 +28,12 @@
     @endif
 
     <div class="mb-6 flex p-1 bg-slate-100 rounded-xl w-fit">
-        <a href="{{ route('users.gurus.assistants', ['users_guru' => $guru, 'tab' => 'list']) }}"
+        <a href="{{ $listRoute }}"
            class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $tab === 'list' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
             Senarai Pembantu
             <span class="ml-1 opacity-60">({{ $assistants->total() }})</span>
         </a>
-        <a href="{{ route('users.gurus.assistants', ['users_guru' => $guru, 'tab' => 'add']) }}"
+        <a href="{{ $addRoute }}"
            class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $tab === 'add' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
             Tambah Pembantu
         </a>
@@ -27,7 +41,7 @@
 
     @if($tab === 'add')
         <div class="card">
-            <form method="POST" action="{{ route('users.gurus.assistants.store', $guru) }}" enctype="multipart/form-data" class="space-y-4">
+            <form method="POST" action="{{ $storeRoute }}" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 <div class="grid gap-4 md:grid-cols-2">
                     <div>
@@ -59,7 +73,7 @@
                 </div>
                 <div class="flex gap-2">
                     <button class="btn btn-primary">Simpan Pembantu</button>
-                    <a href="{{ route('users.gurus.assistants', ['users_guru' => $guru, 'tab' => 'list']) }}" class="btn btn-outline">{{ __('messages.cancel') }}</a>
+                    <a href="{{ $listRoute }}" class="btn btn-outline">{{ __('messages.cancel') }}</a>
                 </div>
             </form>
         </div>
@@ -86,12 +100,12 @@
                         </div>
 
                         <div class="mt-4 flex items-center gap-2">
-                            <a href="{{ route('users.gurus.edit', $assistant) }}" class="btn btn-outline btn-sm h-8 w-8 p-0" title="{{ __('messages.edit') }}">
+                            <a href="{{ $isSelfMode ? route('guru-assistants.edit', $assistant) : route('users.gurus.edit', $assistant) }}" class="btn btn-outline btn-sm h-8 w-8 p-0" title="{{ __('messages.edit') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 3.487a2.1 2.1 0 0 1 2.971 2.971L8.36 17.93 4 19l1.07-4.36 11.792-11.153Z"/>
                                 </svg>
                             </a>
-                            <form method="POST" action="{{ route('users.gurus.destroy', $assistant) }}" class="inline m-0">
+                            <form method="POST" action="{{ $isSelfMode ? route('guru-assistants.destroy', $assistant) : route('users.gurus.destroy', $assistant) }}" class="inline m-0">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-ghost btn-sm h-8 w-8 p-0 text-rose-600" onclick="return confirm('Padam pembantu guru ini?')" title="{{ __('messages.delete') }}">

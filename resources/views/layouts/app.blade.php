@@ -21,6 +21,7 @@
         $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
         $isAdminCardUser = $authUser->hasAnyRole(['master_admin', 'admin']);
         $pastiMenuRoute = $authUser->hasRole('guru') ? route('pasti.self.edit') : null;
+        $assistantMenuRoute = $authUser->hasRole('guru') ? route('guru-assistants.index') : null;
         $isImpersonatingGuru = session()->has('impersonator_user_id') || request()->hasCookie('impersonator_user_id');
         $sidebarKpi = number_format((float) ($authUser->guru?->kpiSnapshot?->score ?? 0), 1) . '%';
         $sidebarLastLoginDate = $authUser->last_login_at
@@ -300,6 +301,11 @@
                                     {{ __('messages.pasti') }}
                                 </a>
                             @endif
+                            @if($assistantMenuRoute)
+                                <a href="{{ $assistantMenuRoute }}" wire:navigate class="mt-1 block rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                                    Pembantu Guru
+                                </a>
+                            @endif
                             <form method="POST" action="{{ route('logout') }}" class="mt-1">
                                 @csrf
                                 <button type="submit" class="block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-rose-600 transition hover:bg-rose-50">
@@ -572,8 +578,6 @@
 </script>
 </body>
 </html>
-
-
 
 
 

@@ -413,6 +413,7 @@ class GuruController extends Controller
             'guru' => $users_guru,
             'assistants' => $assistants,
             'tab' => $tab,
+            'isSelfMode' => false,
         ]);
     }
 
@@ -464,6 +465,149 @@ class GuruController extends Controller
         return redirect()
             ->route('users.gurus.assistants', ['users_guru' => $users_guru, 'tab' => 'list'])
             ->with('status', 'Pembantu guru berjaya ditambah.');
+    }
+
+    public function assistantsMine(Request $request): View
+    {
+        $user = $request->user();
+        abort_unless($user->hasRole('guru'), 403);
+
+        $guru = $user->guru;
+        abort_unless($guru, 403);
+
+        $tab = $request->query('tab', 'list');
+        if (! in_array($tab, ['list', 'add'], true)) {
+            $tab = 'list';
+        }
+
+        $assistants = Guru::query()
+            ->where('is_assistant', true)
+            ->where('pasti_id', $guru->pasti_id)
+            ->orderBy('name')
+            ->paginate(9)
+            ->withQueryString();
+
+        return view('gurus.assistants', [
+            'guru' => $guru,
+            'assistants' => $assistants,
+            'tab' => $tab,
+            'isSelfMode' => true,
+        ]);
+    }
+
+    public function storeAssistantMine(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasRole('guru'), 403);
+
+        $guru = $user->guru;
+        abort_unless($guru, 403);
+
+        if (! $guru->pasti_id) {
+            return redirect()
+                ->route('guru-assistants.index', ['tab' => 'add'])
+                ->withErrors(['assistant' => 'PASTI anda belum ditetapkan.']);
+        }
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'joined_at' => ['nullable', 'date'],
+            'active' => ['nullable', 'boolean'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
+        ]);
+
+        $assistant = Guru::query()->create([
+            'user_id' => null,
+            'pasti_id' => $guru->pasti_id,
+            'name' => $data['name'],
+            'email' => $data['email'] ?? null,
+            'is_assistant' => true,
+            'phone' => $data['phone'] ?? null,
+            'joined_at' => $data['joined_at'] ?? null,
+            'active' => (bool) ($data['active'] ?? true),
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            $assistant->update([
+                'avatar_path' => $request->file('avatar')->store('avatars', 'public'),
+            ]);
+        }
+
+        $this->kpiCalculationService->recalculateForGuru($assistant);
+
+        return redirect()->route('guru-assistants.index', ['tab' => 'list'])->with('status', 'Pembantu guru berjaya ditambah.');
+    }
+
+    public function editAssistantMine(Request $request, Guru $assistant): View
+    {
+        $user = $request->user();
+        abort_unless($user->hasRole('guru'), 403);
+        $this->ensureOwnedAssistant($user, $assistant);
+
+        return view('gurus.assistant-form', [
+            'assistant' => $assistant,
+        ]);
+    }
+
+    public function updateAssistantMine(Request $request, Guru $assistant): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasRole('guru'), 403);
+        $this->ensureOwnedAssistant($user, $assistant);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'joined_at' => ['nullable', 'date'],
+            'active' => ['nullable', 'boolean'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
+            'remove_avatar' => ['nullable', 'boolean'],
+        ]);
+
+        $assistant->update([
+            'name' => $data['name'],
+            'email' => $data['email'] ?? null,
+            'phone' => $data['phone'] ?? null,
+            'joined_at' => $data['joined_at'] ?? null,
+            'active' => (bool) ($data['active'] ?? false),
+        ]);
+
+        if ($request->boolean('remove_avatar') && $assistant->avatar_path) {
+            Storage::disk('public')->delete($assistant->avatar_path);
+            $assistant->update(['avatar_path' => null]);
+        }
+
+        if ($request->hasFile('avatar')) {
+            if ($assistant->avatar_path) {
+                Storage::disk('public')->delete($assistant->avatar_path);
+            }
+
+            $assistant->update([
+                'avatar_path' => $request->file('avatar')->store('avatars', 'public'),
+            ]);
+        }
+
+        $this->kpiCalculationService->recalculateForGuru($assistant);
+
+        return redirect()->route('guru-assistants.index', ['tab' => 'list'])->with('status', __('messages.saved'));
+    }
+
+    public function destroyAssistantMine(Request $request, Guru $assistant): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasRole('guru'), 403);
+        $this->ensureOwnedAssistant($user, $assistant);
+
+        if ($assistant->avatar_path) {
+            Storage::disk('public')->delete($assistant->avatar_path);
+        }
+
+        $assistant->delete();
+
+        return redirect()->route('guru-assistants.index', ['tab' => 'list'])->with('status', __('messages.deleted'));
     }
 
     public function directory(Request $request): View
@@ -519,6 +663,14 @@ class GuruController extends Controller
         }
 
         abort_unless(in_array((int) $guru->pasti_id, $this->assignedPastiIds($user), true), 403);
+    }
+
+    private function ensureOwnedAssistant(User $user, Guru $assistant): void
+    {
+        abort_unless($assistant->is_assistant, 404);
+
+        $userPastiId = (int) ($user->guru?->pasti_id ?? 0);
+        abort_unless($userPastiId > 0 && $userPastiId === (int) $assistant->pasti_id, 403);
     }
 }
 
