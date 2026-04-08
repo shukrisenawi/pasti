@@ -105,7 +105,7 @@
                     </div>
                 </div>
                 <div>
-                    <label class="label-base">{{ __('messages.joined_at') }}</label>
+                    <label class="label-base" x-text="isAssistant === 1 ? 'Tarikh menjadi Pembantu Guru' : '{{ __('messages.joined_at') }}'">{{ __('messages.joined_at') }}</label>
                     <input class="input-base" type="date" name="joined_at" value="{{ old('joined_at', optional($guru->joined_at)->format('Y-m-d')) }}">
                 </div>
                 <div class="flex items-center gap-2 pt-7">

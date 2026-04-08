@@ -105,14 +105,17 @@ class GuruController extends Controller
         $isAssistant = $request->boolean('is_assistant');
         $emailRules = ['email', 'max:255'];
         $passwordRules = ['nullable', 'string', 'min:8', 'confirmed'];
+        $avatarRules = ['image', 'mimes:jpg,jpeg,png,webp', 'max:7168'];
 
         if ($isAssistant) {
             $emailRules[] = 'nullable';
             $passwordRules[] = 'nullable';
+            array_unshift($avatarRules, 'required');
         } else {
             $emailRules[] = 'unique:users,email';
             $emailRules[] = 'required';
             $passwordRules[] = 'nullable';
+            array_unshift($avatarRules, 'nullable');
         }
 
         $data = $request->validate([
@@ -440,7 +443,7 @@ class GuruController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
+            'avatar' => $avatarRules,
         ]);
 
         $assistant = Guru::query()->create([
@@ -515,7 +518,7 @@ class GuruController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
+            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
         ]);
 
         $assistant = Guru::query()->create([
@@ -563,7 +566,7 @@ class GuruController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
+            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
             'remove_avatar' => ['nullable', 'boolean'],
         ]);
 

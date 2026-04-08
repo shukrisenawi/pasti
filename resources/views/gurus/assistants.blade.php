@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     @php
         $isSelfMode = $isSelfMode ?? false;
         $listRoute = $isSelfMode
@@ -58,12 +58,12 @@
                         <input class="input-base" name="phone" value="{{ old('phone') }}">
                     </div>
                     <div>
-                        <label class="label-base">{{ __('messages.joined_at') }}</label>
+                        <label class="label-base">Tarikh menjadi Pembantu Guru</label>
                         <input class="input-base" type="date" name="joined_at" value="{{ old('joined_at') }}">
                     </div>
                     <div class="md:col-span-2">
                         <label class="label-base">Avatar</label>
-                        <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp,image/*" class="file-input w-full">
+                        <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp,image/*" class="file-input w-full" required>
                         <p class="mt-1 text-xs text-slate-500">Format: JPG, PNG, WEBP (maks 7MB).</p>
                     </div>
                     <div class="flex items-center gap-2 pt-1">
