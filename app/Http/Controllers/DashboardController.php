@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    private const TEST_GURU_EMAIL = 'test@pasti';
+
     public function __invoke(Request $request)
     {
         $user = $request->user()->load('ajkPositions');
@@ -25,6 +27,9 @@ class DashboardController extends Controller
         $birthdayUsers = User::query()
             ->whereNotNull('tarikh_lahir')
             ->whereRaw("DATE_FORMAT(tarikh_lahir, '%m-%d') = ?", [now()->format('m-d')])
+            ->when($user->hasRole('guru'), function ($query): void {
+                $query->where('email', '<>', self::TEST_GURU_EMAIL);
+            })
             ->orderByRaw("CASE WHEN avatar_path IS NULL OR avatar_path = '' THEN 1 ELSE 0 END")
             ->orderBy('name')
             ->get()
