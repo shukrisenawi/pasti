@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\N8nWebhookService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class N8nUserController extends Controller
 {
-    public function birthdates(Request $request): JsonResponse
+    public function birthdates(Request $request, N8nWebhookService $n8nWebhookService): JsonResponse
     {
         $validated = $request->validate([
             'limit' => ['nullable', 'integer', 'min:1', 'max:1000'],
@@ -36,6 +37,7 @@ class N8nUserController extends Controller
             'meta' => [
                 'count' => $users->count(),
                 'limit' => $limit,
+                'group_active_whatsapp' => $n8nWebhookService->allSettings()['webhook_group'] ?? 'real',
             ],
         ]);
     }
