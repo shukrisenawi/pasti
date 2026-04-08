@@ -27,7 +27,7 @@
             </div>
 
             <div>
-                <p class="label-base">Group Variable (POST ke n8n) <span class="text-rose-600">*</span></p>
+                <p class="label-base">Group Active (whatsapp) <span class="text-rose-600">*</span></p>
                 <div class="mt-2 grid gap-2 sm:grid-cols-2">
                     <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
                         <input type="radio" name="webhook_group" value="test" class="h-4 w-4 text-primary focus:ring-primary" @checked(old('webhook_group', $settings['webhook_group'] ?? 'real') === 'test')>
