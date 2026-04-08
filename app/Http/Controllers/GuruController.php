@@ -385,6 +385,87 @@ class GuruController extends Controller
             ->with('status', 'Kata laluan guru berjaya direset kepada 123.');
     }
 
+    public function assistants(Request $request, Guru $users_guru): View
+    {
+        $user = $request->user();
+
+        if ($user->hasRole('guru')) {
+            abort(403);
+        }
+
+        $this->ensureGuruAllowed($user, $users_guru);
+        abort_if($users_guru->is_assistant, 404);
+
+        $tab = $request->query('tab', 'list');
+        if (! in_array($tab, ['list', 'add'], true)) {
+            $tab = 'list';
+        }
+
+        $assistants = Guru::query()
+            ->with(['pasti', 'user'])
+            ->where('is_assistant', true)
+            ->where('pasti_id', $users_guru->pasti_id)
+            ->orderBy('name')
+            ->paginate(9)
+            ->withQueryString();
+
+        return view('gurus.assistants', [
+            'guru' => $users_guru,
+            'assistants' => $assistants,
+            'tab' => $tab,
+        ]);
+    }
+
+    public function storeAssistant(Request $request, Guru $users_guru): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasRole('guru')) {
+            abort(403);
+        }
+
+        $this->ensureGuruAllowed($user, $users_guru);
+        abort_if($users_guru->is_assistant, 404);
+
+        if (! $users_guru->pasti_id) {
+            return redirect()
+                ->route('users.gurus.assistants', ['users_guru' => $users_guru, 'tab' => 'add'])
+                ->withErrors(['assistant' => 'Guru utama ini belum ada PASTI. Sila kemaskini PASTI dahulu.']);
+        }
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'joined_at' => ['nullable', 'date'],
+            'active' => ['nullable', 'boolean'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
+        ]);
+
+        $assistant = Guru::query()->create([
+            'user_id' => null,
+            'pasti_id' => $users_guru->pasti_id,
+            'name' => $data['name'],
+            'email' => $data['email'] ?? null,
+            'is_assistant' => true,
+            'phone' => $data['phone'] ?? null,
+            'joined_at' => $data['joined_at'] ?? null,
+            'active' => (bool) ($data['active'] ?? true),
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            $assistant->update([
+                'avatar_path' => $request->file('avatar')->store('avatars', 'public'),
+            ]);
+        }
+
+        $this->kpiCalculationService->recalculateForGuru($assistant);
+
+        return redirect()
+            ->route('users.gurus.assistants', ['users_guru' => $users_guru, 'tab' => 'list'])
+            ->with('status', 'Pembantu guru berjaya ditambah.');
+    }
+
     public function directory(Request $request): View
     {
         $user = $request->user();

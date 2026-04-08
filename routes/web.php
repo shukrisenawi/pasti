@@ -53,6 +53,8 @@ Route::middleware(['auth'])->group(function () {
             ->except(['show'])
             ->names('users.gurus')
             ->parameters(['gurus' => 'users_guru']);
+        Route::get('/users/gurus/{users_guru}/assistants', [GuruController::class, 'assistants'])->name('users.gurus.assistants');
+        Route::post('/users/gurus/{users_guru}/assistants', [GuruController::class, 'storeAssistant'])->name('users.gurus.assistants.store');
         Route::post('/users/gurus/{users_guru}/impersonate', [ImpersonationController::class, 'start'])->name('users.gurus.impersonate');
         Route::post('/users/gurus/{users_guru}/reset-password', [GuruController::class, 'resetPassword'])->name('users.gurus.reset-password');
         Route::resource('/pasti', PastiController::class)->except(['show', 'destroy']);
