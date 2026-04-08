@@ -84,7 +84,7 @@ class LeaveNoticeController extends Controller
             'leave_date' => ['required', 'date'],
             'leave_until' => ['required', 'date', 'after_or_equal:leave_date'],
             'reason' => ['required', 'string'],
-            'mc_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'mc_image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
         $leaveNotice = LeaveNotice::query()->create([

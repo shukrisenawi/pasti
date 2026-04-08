@@ -22,8 +22,19 @@
                     <input id="leave_until" class="input-base" type="date" name="leave_until" value="{{ old('leave_until', optional($leaveNotice?->leave_until)->toDateString() ?? old('leave_date', now()->toDateString())) }}" required>
                 </div>
                 <div>
-                    <label class="label-base">{{ __('messages.mc_attachment') }} (optional)</label>
-                    <input class="file-input w-full" type="file" name="mc_image" accept=".jpg,.jpeg,.png,.webp,image/*">
+                    <label class="label-base">
+                        {{ __('messages.mc_attachment') }}
+                        @if(!($leaveNotice?->exists ?? false))
+                            <span class="text-rose-600">*</span>
+                        @endif
+                    </label>
+                    <input
+                        class="file-input w-full"
+                        type="file"
+                        name="mc_image"
+                        accept=".jpg,.jpeg,.png,.webp,image/*"
+                        @required(!($leaveNotice?->exists ?? false))
+                    >
                 </div>
                 @if(($leaveNotice?->exists ?? false) && $leaveNotice?->mc_image_url)
                     <div class="flex items-end">
