@@ -34,6 +34,7 @@ class EnsureGuruWebOnboardingCompleted
             'pasti.self.update',
             'password.update',
             'logout',
+            'impersonation.stop',
             'locale.update',
             'verification.send',
         ];
