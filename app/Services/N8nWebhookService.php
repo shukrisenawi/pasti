@@ -23,6 +23,8 @@ class N8nWebhookService
     public const KEY_TEXT_GURU_COURSE_OFFER = 'n8n_text_guru_course_offer';
     public const KEY_TEXT_LEAVE_NOTICE_SUBMITTED = 'n8n_text_leave_notice_submitted';
     public const KEY_TEXT_CLAIM_SUBMITTED = 'n8n_text_claim_submitted';
+    public const KEY_TEXT_ALL_PASTI_INFO_COMPLETED = 'n8n_text_all_pasti_info_completed';
+    public const KEY_TEXT_ALL_GURU_SALARY_COMPLETED = 'n8n_text_all_guru_salary_completed';
 
     private const DEFAULT_TEXT_PROGRAM_CREATED = '{tajuk} akan diadakan pada {tarikh} ({hari}){masa}{lokasi}.';
     private const DEFAULT_TEXT_SALARY_REQUEST = 'Permintaan kemaskini gaji guru telah dihantar pada {tarikh}. Sila kemaskini gaji dan elaun semasa.';
@@ -30,6 +32,8 @@ class N8nWebhookService
     private const DEFAULT_TEXT_GURU_COURSE_OFFER = 'Permintaan sambung Kursus Guru ke Semester {semester} telah dihantar. Tarikh akhir pendaftaran: {tarikh_akhir}.{nota}';
     private const DEFAULT_TEXT_LEAVE_NOTICE_SUBMITTED = '{nama_guru} hantar notis cuti pada {tarikh_cuti} hingga {tarikh_hingga}. Sebab: {sebab}.';
     private const DEFAULT_TEXT_CLAIM_SUBMITTED = '{nama_guru} hantar claim sebanyak RM{jumlah} pada {tarikh_claim}. Catatan: {catatan}.';
+    private const DEFAULT_TEXT_ALL_PASTI_INFO_COMPLETED = 'Semua PASTI telah hantar maklumat PASTI. Dikemaskini pada {tarikh}.';
+    private const DEFAULT_TEXT_ALL_GURU_SALARY_COMPLETED = 'Semua guru telah hantar maklumat gaji semasa. Dikemaskini pada {tarikh}.';
 
     public function send(string $text, ?string $link = null, ?string $gambar = null): void
     {
@@ -147,6 +151,8 @@ class N8nWebhookService
             'text_guru_course_offer' => $this->template(self::KEY_TEXT_GURU_COURSE_OFFER),
             'text_leave_notice_submitted' => $this->template(self::KEY_TEXT_LEAVE_NOTICE_SUBMITTED),
             'text_claim_submitted' => $this->template(self::KEY_TEXT_CLAIM_SUBMITTED),
+            'text_all_pasti_info_completed' => $this->template(self::KEY_TEXT_ALL_PASTI_INFO_COMPLETED),
+            'text_all_guru_salary_completed' => $this->template(self::KEY_TEXT_ALL_GURU_SALARY_COMPLETED),
         ];
     }
 
@@ -200,6 +206,8 @@ class N8nWebhookService
             self::KEY_TEXT_GURU_COURSE_OFFER => $this->setting($key, self::DEFAULT_TEXT_GURU_COURSE_OFFER),
             self::KEY_TEXT_LEAVE_NOTICE_SUBMITTED => $this->setting($key, self::DEFAULT_TEXT_LEAVE_NOTICE_SUBMITTED),
             self::KEY_TEXT_CLAIM_SUBMITTED => $this->setting($key, self::DEFAULT_TEXT_CLAIM_SUBMITTED),
+            self::KEY_TEXT_ALL_PASTI_INFO_COMPLETED => $this->setting($key, self::DEFAULT_TEXT_ALL_PASTI_INFO_COMPLETED),
+            self::KEY_TEXT_ALL_GURU_SALARY_COMPLETED => $this->setting($key, self::DEFAULT_TEXT_ALL_GURU_SALARY_COMPLETED),
             default => '',
         };
     }

@@ -176,6 +176,18 @@ class GuruSalaryInformationController extends Controller
             Notification::send($adminRecipients, new GuruSalaryUpdatedNotification($guruSalaryRequest));
         }
 
+        $allGuruSalaryCompleted = ! GuruSalaryRequest::query()
+            ->whereNull('completed_at')
+            ->exists();
+
+        if ($allGuruSalaryCompleted) {
+            $this->n8nWebhookService->sendGroup2ByTemplate(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_SALARY_COMPLETED,
+                ['tarikh' => now()->format('d/m/Y H:i')],
+                $this->n8nWebhookService->toPublicUrl(route('guru-salary-information.index'))
+            );
+        }
+
         return redirect()->route('guru-salary-information.index')->with('status', __('messages.saved'));
     }
 

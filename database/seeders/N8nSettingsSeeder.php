@@ -24,6 +24,8 @@ class N8nSettingsSeeder extends Seeder
             N8nWebhookService::KEY_TEXT_GURU_COURSE_OFFER => 'Permintaan sambung Kursus Guru ke Semester {semester} telah dihantar. Tarikh akhir pendaftaran: {tarikh_akhir}.{nota}',
             N8nWebhookService::KEY_TEXT_LEAVE_NOTICE_SUBMITTED => '{nama_guru} hantar notis cuti pada {tarikh_cuti} hingga {tarikh_hingga}. Sebab: {sebab}.',
             N8nWebhookService::KEY_TEXT_CLAIM_SUBMITTED => '{nama_guru} hantar claim sebanyak RM{jumlah} pada {tarikh_claim}. Catatan: {catatan}.',
+            N8nWebhookService::KEY_TEXT_ALL_PASTI_INFO_COMPLETED => 'Semua PASTI telah hantar maklumat PASTI. Dikemaskini pada {tarikh}.',
+            N8nWebhookService::KEY_TEXT_ALL_GURU_SALARY_COMPLETED => 'Semua guru telah hantar maklumat gaji semasa. Dikemaskini pada {tarikh}.',
         ];
 
         foreach ($settings as $key => $value) {
@@ -34,4 +36,3 @@ class N8nSettingsSeeder extends Seeder
         }
     }
 }
-

@@ -45,6 +45,8 @@ class N8nSettingController extends Controller
             'text_guru_course_offer' => ['required', 'string', 'max:2000'],
             'text_leave_notice_submitted' => ['required', 'string', 'max:2000'],
             'text_claim_submitted' => ['required', 'string', 'max:2000'],
+            'text_all_pasti_info_completed' => ['required', 'string', 'max:2000'],
+            'text_all_guru_salary_completed' => ['required', 'string', 'max:2000'],
         ]);
 
         $mapping = [
@@ -60,6 +62,8 @@ class N8nSettingController extends Controller
             'text_guru_course_offer' => 'n8n_text_guru_course_offer',
             'text_leave_notice_submitted' => 'n8n_text_leave_notice_submitted',
             'text_claim_submitted' => 'n8n_text_claim_submitted',
+            'text_all_pasti_info_completed' => N8nWebhookService::KEY_TEXT_ALL_PASTI_INFO_COMPLETED,
+            'text_all_guru_salary_completed' => N8nWebhookService::KEY_TEXT_ALL_GURU_SALARY_COMPLETED,
         ];
 
         foreach ($mapping as $inputKey => $settingKey) {

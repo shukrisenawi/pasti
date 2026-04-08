@@ -98,6 +98,18 @@
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_guru}</code>, <code>{jumlah}</code>, <code>{tarikh_claim}</code>, <code>{catatan}</code></p>
             </div>
 
+            <div>
+                <label for="text_all_pasti_info_completed" class="label-base">Teks Group AJK - Semua PASTI Siap Hantar Maklumat <span class="text-rose-600">*</span></label>
+                <textarea id="text_all_pasti_info_completed" name="text_all_pasti_info_completed" rows="3" required class="input-base">{{ old('text_all_pasti_info_completed', $settings['text_all_pasti_info_completed'] ?? '') }}</textarea>
+                <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{tarikh}</code></p>
+            </div>
+
+            <div>
+                <label for="text_all_guru_salary_completed" class="label-base">Teks Group AJK - Semua Guru Siap Hantar Maklumat Gaji <span class="text-rose-600">*</span></label>
+                <textarea id="text_all_guru_salary_completed" name="text_all_guru_salary_completed" rows="3" required class="input-base">{{ old('text_all_guru_salary_completed', $settings['text_all_guru_salary_completed'] ?? '') }}</textarea>
+                <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{tarikh}</code></p>
+            </div>
+
             <div class="flex gap-2">
                 <button type="submit" class="btn btn-primary">Simpan</button>
             </div>

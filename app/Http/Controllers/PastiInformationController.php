@@ -135,6 +135,18 @@ class PastiInformationController extends Controller
             Notification::send($adminRecipients, new PastiInformationUpdatedNotification($pastiInformationRequest));
         }
 
+        $allPastiInfoCompleted = ! PastiInformationRequest::query()
+            ->whereNull('completed_at')
+            ->exists();
+
+        if ($allPastiInfoCompleted) {
+            $this->n8nWebhookService->sendGroup2ByTemplate(
+                N8nWebhookService::KEY_TEXT_ALL_PASTI_INFO_COMPLETED,
+                ['tarikh' => now()->format('d/m/Y H:i')],
+                $this->n8nWebhookService->toPublicUrl(route('pasti-information.index'))
+            );
+        }
+
         return redirect()->route('pasti-information.index')->with('status', __('messages.saved'));
     }
 
