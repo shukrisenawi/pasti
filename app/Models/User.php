@@ -35,6 +35,7 @@ class User extends Authenticatable
         'admin_assignment_scope',
         'avatar_path',
         'force_password_change',
+        'last_login_at',
         'password',
     ];
 
@@ -60,6 +61,7 @@ class User extends Authenticatable
             'tarikh_lahir' => 'date',
             'tarikh_exp_skim_pas' => 'date',
             'force_password_change' => 'boolean',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -135,3 +137,4 @@ class User extends Authenticatable
         return 0;
     }
 }
+

@@ -19,9 +19,13 @@
     @php
         $authUser = auth()->user();
         $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
+        $isAdminCardUser = $authUser->hasAnyRole(['master_admin', 'admin']);
         $pastiMenuRoute = $authUser->hasRole('guru') ? route('pasti.self.edit') : null;
         $isImpersonatingGuru = session()->has('impersonator_user_id') || request()->hasCookie('impersonator_user_id');
         $sidebarKpi = number_format((float) ($authUser->guru?->kpiSnapshot?->score ?? 0), 1) . '%';
+        $sidebarLastLoginValue = $authUser->last_login_at
+            ? $authUser->last_login_at->timezone(config('app.timezone'))->format('d/m/Y h:i A')
+            : '-';
         $sidebarTeachingDuration = '-';
         if ($authUser->guru?->joined_at) {
             $joinedAt = $authUser->guru->joined_at->startOfDay();
@@ -89,8 +93,13 @@
                 <x-avatar :user="$authUser" size="h-11 w-11" rounded="rounded-xl" border="border border-white/20" />
                 <div class="min-w-0">
                     <p class="truncate text-xs font-extrabold text-white">{{ $authUser->display_name }}</p>
-                    <p class="truncate text-xs font-semibold text-white/80">KPI: {{ $sidebarKpi }}</p>
-                    <p class="truncate text-xs font-semibold text-white/80">{{ $sidebarTeachingDuration }}</p>
+                    @if($isAdminCardUser)
+                        <p class="truncate text-xs font-semibold text-white/80">Akhir Login:</p>
+                        <p class="truncate text-xs font-semibold text-white/80">{{ $sidebarLastLoginValue }}</p>
+                    @else
+                        <p class="truncate text-xs font-semibold text-white/80">KPI: {{ $sidebarKpi }}</p>
+                        <p class="truncate text-xs font-semibold text-white/80">{{ $sidebarTeachingDuration }}</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -307,8 +316,13 @@
                     <x-avatar :user="$authUser" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/20" />
                     <div class="min-w-0">
                         <p class="truncate text-sm font-extrabold text-white">{{ $authUser->display_name }}</p>
-                        <p class="truncate text-sm font-semibold text-white/80">KPI: {{ $sidebarKpi }}</p>
-                        <p class="truncate text-sm font-semibold text-white/80">{{ $sidebarTeachingDuration }}</p>
+                        @if($isAdminCardUser)
+                            <p class="truncate text-sm font-semibold text-white/80">Akhir Login:</p>
+                            <p class="truncate text-sm font-semibold text-white/80">{{ $sidebarLastLoginValue }}</p>
+                        @else
+                            <p class="truncate text-sm font-semibold text-white/80">KPI: {{ $sidebarKpi }}</p>
+                            <p class="truncate text-sm font-semibold text-white/80">{{ $sidebarTeachingDuration }}</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -553,6 +567,7 @@
 </script>
 </body>
 </html>
+
 
 
 

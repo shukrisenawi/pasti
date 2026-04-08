@@ -56,6 +56,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        User::query()
+            ->whereKey(Auth::id())
+            ->update([
+                'last_login_at' => now(),
+            ]);
+
         Cookie::queue(
             self::LAST_LOGIN_USER_COOKIE,
             (string) Auth::id(),
