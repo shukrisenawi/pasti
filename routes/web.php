@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
             ->except(['show'])
             ->names('users.admins')
             ->parameters(['admins' => 'users_admin']);
+        Route::delete('/pasti/{pasti}', [PastiController::class, 'destroy'])->name('pasti.destroy');
         Route::post('/program-title-options', [ProgramTitleOptionController::class, 'store'])->name('program-title-options.store');
         Route::put('/program-title-options/{programTitleOption}', [ProgramTitleOptionController::class, 'update'])->name('program-title-options.update');
         Route::delete('/program-title-options/{programTitleOption}', [ProgramTitleOptionController::class, 'destroy'])->name('program-title-options.destroy');
@@ -54,7 +55,7 @@ Route::middleware(['auth'])->group(function () {
             ->parameters(['gurus' => 'users_guru']);
         Route::post('/users/gurus/{users_guru}/impersonate', [ImpersonationController::class, 'start'])->name('users.gurus.impersonate');
         Route::post('/users/gurus/{users_guru}/reset-password', [GuruController::class, 'resetPassword'])->name('users.gurus.reset-password');
-        Route::resource('/pasti', PastiController::class)->except(['show']);
+        Route::resource('/pasti', PastiController::class)->except(['show', 'destroy']);
         Route::resource('/kelas', KelasController::class)->except(['show']);
         Route::post('/kelas/{kela}/student-count', [KelasController::class, 'updateStudentCount'])->name('kelas.student-count.update');
         Route::post('/maklumat-pasti/request-all', [PastiInformationController::class, 'requestAllUpdates'])->name('pasti-information.request-all');
