@@ -31,7 +31,7 @@
                 <div class="mt-2 grid gap-2 sm:grid-cols-2">
                     <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
                         <input type="radio" name="webhook_group" value="test" class="h-4 w-4 text-primary focus:ring-primary" @checked(old('webhook_group', $settings['webhook_group'] ?? 'real') === 'test')>
-                        <span class="text-sm font-semibold text-slate-700">Test</span>
+                        <span class="text-sm font-semibold text-slate-700">Test (Group Test PASTI)</span>
                     </label>
                     <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
                         <input type="radio" name="webhook_group" value="real" class="h-4 w-4 text-primary focus:ring-primary" @checked(old('webhook_group', $settings['webhook_group'] ?? 'real') === 'real')>
