@@ -153,7 +153,7 @@ class PastiController extends Controller
         $pasti = $user->guru?->pasti;
         abort_unless($pasti, 403);
 
-        $validated = $request->validate($this->ownValidationRules($pasti->id));
+        $validated = $request->validate($this->ownValidationRules($pasti));
         $pasti->update($validated);
         $this->syncPastiImage($request, $pasti);
 
@@ -202,14 +202,17 @@ class PastiController extends Controller
         ];
     }
 
-    private function ownValidationRules(?int $pastiId = null): array
+    private function ownValidationRules(Pasti $pasti): array
     {
+        $imageRules = ['image', 'mimes:jpg,jpeg,png,webp', 'max:7168'];
+        array_unshift($imageRules, filled($pasti->image_path) ? 'nullable' : 'required');
+
         return [
             'address' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:30'],
             'manager_name' => ['required', 'string', 'max:255'],
             'manager_phone' => ['required', 'string', 'max:30'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
+            'image' => $imageRules,
         ];
     }
 

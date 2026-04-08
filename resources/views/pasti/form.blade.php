@@ -62,7 +62,7 @@
                     <img src="{{ $pasti->image_url }}" alt="Gambar {{ $pasti->name }}" class="mb-2 h-28 w-44 rounded-lg border border-slate-200 bg-slate-50 object-contain">
                     <a href="{{ $pasti->image_url }}" target="_blank" class="mb-2 inline-block text-xs font-semibold text-primary hover:underline">Lihat gambar asal</a>
                 @endif
-                <input class="input-base" type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/*">
+                <input class="input-base" type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/*" @required(($isOwnUpdate ?? false) && blank($pasti->image_path))>
                 <p class="mt-1 text-xs text-slate-500">Format: JPG, PNG, WEBP (maks 7MB, minimum 800x450).</p>
                 @error('image')
                     <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
