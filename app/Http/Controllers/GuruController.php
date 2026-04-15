@@ -31,24 +31,30 @@ class GuruController extends Controller
         }
 
         $activeTab = $request->query('tab', 'guru');
-        if (! in_array($activeTab, ['guru', 'assistant'], true)) {
+        if (! in_array($activeTab, ['guru', 'assistant', 'inactive'], true)) {
             $activeTab = 'guru';
         }
         $search = trim((string) $request->query('search', ''));
 
-        $scopeQuery = Guru::query()
-            ->whereNotNull('pasti_id');
+        $scopeQuery = Guru::query();
 
         if ($user->hasRole('admin')) {
             $scopeQuery->whereIn('pasti_id', $this->assignedPastiIds($user));
         }
 
-        $query = (clone $scopeQuery)
-            ->with(['user', 'pasti', 'kpiSnapshot'])
+        $activeScope = (clone $scopeQuery)->whereNotNull('pasti_id');
+
+        if ($activeTab === 'inactive') {
+            $query = Guru::query()->whereNull('pasti_id');
+        } else {
+            $query = (clone $activeScope)->where('is_assistant', $activeTab === 'assistant');
+        }
+
+        $query->with(['user', 'pasti', 'kpiSnapshot'])
             ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
             ->leftJoin('users', 'users.id', '=', 'gurus.user_id')
             ->select('gurus.*');
-        $query->where('gurus.is_assistant', $activeTab === 'assistant');
+
         $query->when($search !== '', function ($builder) use ($search): void {
             $keyword = '%' . $search . '%';
 
@@ -65,15 +71,23 @@ class GuruController extends Controller
                     "CASE WHEN COALESCE(users.email, gurus.email, '') = ? THEN 0 ELSE 1 END",
                     [self::TEST_GURU_EMAIL]
                 )
-                ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
-                ->orderBy('pastis.name')
-                ->orderBy('gurus.name')
+                ->when(
+                    $activeTab === 'inactive',
+                    fn ($builder) => $builder
+                        ->orderByDesc('gurus.created_at')
+                        ->orderByDesc('gurus.id'),
+                    fn ($builder) => $builder
+                        ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
+                        ->orderBy('pastis.name')
+                        ->orderBy('gurus.name')
+                )
                 ->paginate(9)
                 ->withQueryString(),
             'activeTab' => $activeTab,
             'search' => $search,
-            'guruCount' => (clone $scopeQuery)->where('is_assistant', false)->count(),
-            'assistantCount' => (clone $scopeQuery)->where('is_assistant', true)->count(),
+            'guruCount' => (clone $activeScope)->where('is_assistant', false)->count(),
+            'assistantCount' => (clone $activeScope)->where('is_assistant', true)->count(),
+            'inactiveCount' => Guru::query()->whereNull('pasti_id')->count(),
         ]);
     }
 
@@ -676,5 +690,4 @@ class GuruController extends Controller
         abort_unless($userPastiId > 0 && $userPastiId === (int) $assistant->pasti_id, 403);
     }
 }
-
 

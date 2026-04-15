@@ -18,6 +18,11 @@
                 {{ __('messages.assistant_teacher') }}
                 <span class="ml-1 opacity-60">({{ $assistantCount }})</span>
             </a>
+            <a href="{{ route('users.gurus.index', ['tab' => 'inactive']) }}"
+               class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'inactive' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
+                {{ __('messages.inactive_teacher') }}
+                <span class="ml-1 opacity-60">({{ $inactiveCount }})</span>
+            </a>
         </div>
 
         <form method="GET" action="{{ route('users.gurus.index') }}" class="flex w-full max-w-md items-center gap-2">

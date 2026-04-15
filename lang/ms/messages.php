@@ -181,6 +181,7 @@ return [
     'teacher_type' => 'Jenis Guru',
     'main_teacher' => 'Guru',
     'assistant_teacher' => 'Pembantu Guru',
+    'inactive_teacher' => 'Guru Belum Aktif',
     'assistant_no_access' => 'Pembantu guru hanya rekod data dan tiada akses log masuk.',
     'optional_for_assistant' => 'Pilihan untuk pembantu guru sahaja.',
     'leave_notice' => 'Notis Cuti',
