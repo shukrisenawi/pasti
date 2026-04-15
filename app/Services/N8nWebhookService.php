@@ -27,13 +27,13 @@ class N8nWebhookService
     public const KEY_TEXT_ALL_GURU_SALARY_COMPLETED = 'n8n_text_all_guru_salary_completed';
 
     private const DEFAULT_TEXT_PROGRAM_CREATED = '{tajuk} akan diadakan pada {tarikh} ({hari}){masa}{lokasi}.';
-    private const DEFAULT_TEXT_SALARY_REQUEST = 'Permintaan kemaskini gaji guru telah dihantar pada {tarikh}. Sila kemaskini gaji dan elaun semasa.';
+    private const DEFAULT_TEXT_SALARY_REQUEST = 'Permintaan kemaskini elaun guru telah dihantar pada {tarikh}. Sila kemaskini elaun dan elaun tambahan semasa.';
     private const DEFAULT_TEXT_PASTI_INFO_REQUEST = 'Permintaan kemaskini maklumat PASTI telah dihantar pada {tarikh}. Sila lengkapkan maklumat terkini PASTI.';
     private const DEFAULT_TEXT_GURU_COURSE_OFFER = 'Permintaan sambung Kursus Guru ke Semester {semester} telah dihantar. Tarikh akhir pendaftaran: {tarikh_akhir}.{nota}';
     private const DEFAULT_TEXT_LEAVE_NOTICE_SUBMITTED = '{nama_guru} hantar notis cuti pada {tarikh_cuti} hingga {tarikh_hingga}. Sebab: {sebab}.';
     private const DEFAULT_TEXT_CLAIM_SUBMITTED = '{nama_guru} hantar claim sebanyak RM{jumlah} pada {tarikh_claim}. Catatan: {catatan}.';
     private const DEFAULT_TEXT_ALL_PASTI_INFO_COMPLETED = 'Semua PASTI telah hantar maklumat PASTI. Dikemaskini pada {tarikh}.';
-    private const DEFAULT_TEXT_ALL_GURU_SALARY_COMPLETED = 'Semua guru telah hantar maklumat gaji semasa. Dikemaskini pada {tarikh}.';
+    private const DEFAULT_TEXT_ALL_GURU_SALARY_COMPLETED = 'Semua guru telah hantar maklumat elaun semasa. Dikemaskini pada {tarikh}.';
 
     public function send(string $text, ?string $link = null, ?string $gambar = null): void
     {

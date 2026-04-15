@@ -35,11 +35,10 @@ class GuruSalaryUpdatedNotification extends Notification
             'guru_name' => $guruName,
             'guru_avatar_url' => $this->salaryRequest->completedBy?->avatar_url ?? '/images/default-avatar.svg',
             'pasti_name' => $pastiName,
-            'notification_title' => 'Maklumat gaji guru dikemaskini',
+            'notification_title' => 'Maklumat elaun guru dikemaskini',
             'notification_meta' => $guruName . ' · ' . $pastiName,
-            'notification_message' => 'Maklumat gaji dan elaun semasa telah dihantar.',
+            'notification_message' => 'Maklumat elaun dan elaun tambahan semasa telah dihantar.',
             'url' => route('guru-salary-information.index'),
         ];
     }
 }
-

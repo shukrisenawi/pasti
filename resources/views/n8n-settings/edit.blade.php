@@ -69,7 +69,7 @@
             </div>
 
             <div>
-                <label for="text_salary_request" class="label-base">Teks Permintaan Gaji Guru <span class="text-rose-600">*</span></label>
+                <label for="text_salary_request" class="label-base">Teks Permintaan Elaun Guru <span class="text-rose-600">*</span></label>
                 <textarea id="text_salary_request" name="text_salary_request" rows="3" required class="input-base">{{ old('text_salary_request', $settings['text_salary_request'] ?? '') }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{tarikh}</code></p>
             </div>
@@ -105,7 +105,7 @@
             </div>
 
             <div>
-                <label for="text_all_guru_salary_completed" class="label-base">Teks Group AJK - Semua Guru Siap Hantar Maklumat Gaji <span class="text-rose-600">*</span></label>
+                <label for="text_all_guru_salary_completed" class="label-base">Teks Group AJK - Semua Guru Siap Hantar Maklumat Elaun <span class="text-rose-600">*</span></label>
                 <textarea id="text_all_guru_salary_completed" name="text_all_guru_salary_completed" rows="3" required class="input-base">{{ old('text_all_guru_salary_completed', $settings['text_all_guru_salary_completed'] ?? '') }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{tarikh}</code></p>
             </div>

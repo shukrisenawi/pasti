@@ -33,11 +33,10 @@ class GuruSalaryRequestedNotification extends Notification
             'guru_salary_request_id' => $this->salaryRequest->id,
             'guru_id' => $this->salaryRequest->guru_id,
             'pasti_name' => $pastiName,
-            'notification_title' => 'Permintaan maklumat gaji guru',
-            'notification_meta' => $pastiName . ' | Kemas kini gaji dan elaun semasa',
-            'notification_message' => 'Sila isi maklumat gaji dan elaun semasa anda.',
+            'notification_title' => 'Permintaan maklumat elaun guru',
+            'notification_meta' => $pastiName . ' | Kemas kini elaun dan elaun tambahan semasa',
+            'notification_message' => 'Sila isi maklumat elaun dan elaun tambahan semasa anda.',
             'url' => route('guru-salary-information.index'),
         ];
     }
 }
-
