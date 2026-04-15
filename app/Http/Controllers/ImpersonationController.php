@@ -29,25 +29,30 @@ class ImpersonationController extends Controller
             return redirect()->route('users.gurus.index');
         }
 
-        Auth::login($targetUser);
-        $request->session()->regenerate();
-        $returnUrl = (string) $request->input('return_to', route('users.gurus.index'));
-        $token = Str::uuid()->toString();
+        return $this->beginImpersonation(
+            $request,
+            $targetUser,
+            route('users.gurus.index'),
+            'Anda kini melihat sistem sebagai guru.'
+        );
+    }
 
-        $request->session()->put([
-            'impersonator_user_id' => $actor->id,
-            'impersonator_return_url' => $returnUrl,
-            'impersonation_token' => $token,
-        ]);
-        Cookie::queue(self::IMPERSONATOR_COOKIE, (string) $actor->id, 60);
-        Cookie::queue(self::RETURN_URL_COOKIE, $returnUrl, 60);
-        Cookie::queue(self::TOKEN_COOKIE, $token, 60);
-        Cache::put('impersonation:' . $token, [
-            'impersonator_user_id' => $actor->id,
-            'impersonator_return_url' => $returnUrl,
-        ], now()->addHours(2));
+    public function startAdmin(Request $request, User $users_admin): RedirectResponse
+    {
+        $actor = $request->user();
+        abort_unless($actor->hasRole('master_admin'), 403);
+        abort_unless($users_admin->hasRole('admin'), 404);
 
-        return redirect()->route('dashboard')->with('status', 'Anda kini melihat sistem sebagai guru.');
+        if ($users_admin->id === $actor->id) {
+            return redirect()->route('users.admins.index');
+        }
+
+        return $this->beginImpersonation(
+            $request,
+            $users_admin,
+            route('users.admins.index'),
+            'Anda kini melihat sistem sebagai admin.'
+        );
     }
 
     public function stop(Request $request): RedirectResponse
@@ -64,7 +69,7 @@ class ImpersonationController extends Controller
         }
 
         if ($impersonatorId <= 0) {
-            return redirect()->route('dashboard')->with('status', 'Sesi masuk sebagai guru telah tamat.');
+            return redirect()->route('dashboard')->with('status', 'Sesi masuk sebagai pengguna lain telah tamat.');
         }
 
         $impersonator = User::query()->find($impersonatorId);
@@ -79,5 +84,30 @@ class ImpersonationController extends Controller
         Cookie::queue(Cookie::forget(self::TOKEN_COOKIE));
 
         return redirect()->to($returnUrl)->with('status', 'Kembali semula ke akaun admin.');
+    }
+
+    private function beginImpersonation(Request $request, User $targetUser, string $defaultReturnUrl, string $statusMessage): RedirectResponse
+    {
+        $actor = $request->user();
+
+        Auth::login($targetUser);
+        $request->session()->regenerate();
+        $returnUrl = (string) $request->input('return_to', $defaultReturnUrl);
+        $token = Str::uuid()->toString();
+
+        $request->session()->put([
+            'impersonator_user_id' => $actor->id,
+            'impersonator_return_url' => $returnUrl,
+            'impersonation_token' => $token,
+        ]);
+        Cookie::queue(self::IMPERSONATOR_COOKIE, (string) $actor->id, 60);
+        Cookie::queue(self::RETURN_URL_COOKIE, $returnUrl, 60);
+        Cookie::queue(self::TOKEN_COOKIE, $token, 60);
+        Cache::put('impersonation:' . $token, [
+            'impersonator_user_id' => $actor->id,
+            'impersonator_return_url' => $returnUrl,
+        ], now()->addHours(2));
+
+        return redirect()->route('dashboard')->with('status', $statusMessage);
     }
 }

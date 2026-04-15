@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
             ->except(['show'])
             ->names('users.admins')
             ->parameters(['admins' => 'users_admin']);
+        Route::post('/users/admins/{users_admin}/impersonate', [ImpersonationController::class, 'startAdmin'])->name('users.admins.impersonate');
         Route::delete('/pasti/{pasti}', [PastiController::class, 'destroy'])->name('pasti.destroy');
         Route::post('/program-title-options', [ProgramTitleOptionController::class, 'store'])->name('program-title-options.store');
         Route::put('/program-title-options/{programTitleOption}', [ProgramTitleOptionController::class, 'update'])->name('program-title-options.update');
@@ -131,5 +132,4 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
-
 

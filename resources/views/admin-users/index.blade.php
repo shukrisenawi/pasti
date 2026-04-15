@@ -38,6 +38,16 @@
                         @endif
                     </td>
                     <td class="flex items-center gap-1">
+                        <form class="inline m-0" method="POST" action="{{ route('users.admins.impersonate', $admin) }}">
+                            @csrf
+                            <input type="hidden" name="return_to" value="{{ url()->full() }}">
+                            <button class="btn btn-ghost btn-xs btn-circle text-emerald-700" type="submit" title="Masuk sebagai admin" aria-label="Masuk sebagai admin">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 7V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1v-3"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H3m0 0 4-4m-4 4 4 4"/>
+                                </svg>
+                            </button>
+                        </form>
                         <a href="{{ route('users.admins.edit', $admin) }}" class="btn btn-ghost btn-xs btn-circle text-amber-600" title="{{ __('messages.edit') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
@@ -63,4 +73,3 @@
 
     <div class="mt-4">{{ $admins->links() }}</div>
 </x-app-layout>
-
