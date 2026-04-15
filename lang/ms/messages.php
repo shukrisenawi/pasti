@@ -150,8 +150,8 @@ return [
     'fill_pasti_info' => 'Isi Maklumat PASTI',
     'fill_guru_salary_info' => 'Isi Maklumat Gaji Guru',
     'update_pasti_info' => 'Kemaskini Maklumat PASTI',
-    'gaji' => 'Gaji',
-    'elaun' => 'Elaun',
+    'gaji' => 'Elaun',
+    'elaun' => 'Elaun tambahan',
     'requested_at_label' => 'Diminta pada',
     'completed_at_label' => 'Diisi pada',
     'updated_at_label' => 'Kemaskini pada',
@@ -240,4 +240,3 @@ return [
     'no_programs_found' => 'Tiada program dijumpai.',
     'profile_updated' => 'Profil berjaya dikemaskini.',
 ];
-
