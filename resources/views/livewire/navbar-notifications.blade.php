@@ -10,8 +10,8 @@
 
     <div
         x-show="open"
-        x-transition.origin.top.right
-        class="absolute left-1/2 z-[1000] mt-3 max-h-96 w-[calc(100vw-1rem)] -translate-x-1/2 overflow-y-auto rounded-3xl border border-slate-200 bg-white p-2 shadow-2xl sm:left-auto sm:right-0 sm:w-[22rem] sm:translate-x-0"
+        x-transition.origin.top
+        class="fixed left-1/2 top-[4.75rem] z-[1000] max-h-96 w-[min(calc(100vw-1rem),22rem)] -translate-x-1/2 overflow-y-auto rounded-3xl border border-slate-200 bg-white p-2 shadow-2xl sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-3 sm:w-[22rem] sm:translate-x-0"
         style="display: none;"
     >
         <div class="flex items-center justify-between px-2 py-1.5">
