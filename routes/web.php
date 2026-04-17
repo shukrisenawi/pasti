@@ -26,6 +26,7 @@ use App\Http\Controllers\ProgramTitleOptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
+Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
@@ -132,4 +133,3 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
-
