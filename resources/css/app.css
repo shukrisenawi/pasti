@@ -284,6 +284,10 @@
   .guru-bottom-nav {
     display: block;
   }
+
+  .guru-main-with-bottom-nav {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 
