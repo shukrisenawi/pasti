@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
     @if(auth()->user()->hasRole('guru') && ! auth()->user()->hasAnyRole(['master_admin', 'admin']))
-        <div class="flex items-center justify-between gap-3">
+        <div class="hidden items-center justify-between gap-3 min-[360px]:flex">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.24em] text-primary">Dashboard Guru</p>
                 <h2 class="mt-1 text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">{{ auth()->user()->display_name }}</h2>
