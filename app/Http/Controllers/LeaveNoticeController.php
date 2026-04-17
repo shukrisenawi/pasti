@@ -124,7 +124,7 @@ class LeaveNoticeController extends Controller
                 'tarikh_hingga' => optional($leaveNotice->leave_until)->format('d/m/Y') ?? (string) $data['leave_until'],
                 'sebab' => trim((string) $leaveNotice->reason),
             ],
-            $this->n8nWebhookService->toPublicUrl(route('leave-notices.index')),
+            $this->n8nWebhookService->toActionUrl(route('leave-notices.index')),
             $this->n8nWebhookService->toPublicUrl($leaveNotice->mc_image_url)
         );
 
@@ -210,4 +210,3 @@ class LeaveNoticeController extends Controller
         abort(403);
     }
 }
-

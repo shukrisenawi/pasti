@@ -129,7 +129,7 @@ class ClaimController extends Controller
                 'tarikh_claim' => optional($claim->claim_date)->format('d/m/Y') ?? (string) $data['claim_date'],
                 'catatan' => trim((string) $claim->notes),
             ],
-            $this->n8nWebhookService->toPublicUrl(route('claims.index')),
+            $this->n8nWebhookService->toActionUrl(route('claims.index')),
             $this->n8nWebhookService->toPublicUrl(
                 $claim->image_path ? '/uploads/' . ltrim((string) $claim->image_path, '/') : null
             )

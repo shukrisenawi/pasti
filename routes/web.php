@@ -23,10 +23,14 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ProgramParticipationController;
 use App\Http\Controllers\ProgramTitleOptionController;
+use App\Services\N8nWebhookService;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
+Route::get('/.well-known/assetlinks.json', function (N8nWebhookService $n8nWebhookService) {
+    return response()->json($n8nWebhookService->androidAssetLinks());
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');

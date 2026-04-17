@@ -115,7 +115,7 @@ class GuruSalaryInformationController extends Controller
         $this->n8nWebhookService->sendByTemplate(
             N8nWebhookService::KEY_TEXT_SALARY_REQUEST,
             ['tarikh' => now()->format('d/m/Y')],
-            $this->n8nWebhookService->toPublicUrl(route('guru-salary-information.index'))
+            $this->n8nWebhookService->toActionUrl(route('guru-salary-information.index'))
         );
 
         return back()->with('status', __('messages.guru_salary_info_request_sent'));
@@ -184,7 +184,7 @@ class GuruSalaryInformationController extends Controller
             $this->n8nWebhookService->sendGroup2ByTemplate(
                 N8nWebhookService::KEY_TEXT_ALL_GURU_SALARY_COMPLETED,
                 ['tarikh' => now()->format('d/m/Y H:i')],
-                $this->n8nWebhookService->toPublicUrl(route('guru-salary-information.index'))
+                $this->n8nWebhookService->toActionUrl(route('guru-salary-information.index'))
             );
         }
 

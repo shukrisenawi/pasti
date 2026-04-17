@@ -124,6 +124,49 @@ class N8nWebhookService
         return $publicDomain . '/' . ltrim($url, '/');
     }
 
+    public function toActionUrl(?string $url): ?string
+    {
+        if (! filled($url)) {
+            return null;
+        }
+
+        $publicUrl = $this->toPublicUrl($url);
+
+        if (! filled($publicUrl)) {
+            return null;
+        }
+
+        $linkTarget = strtolower((string) config('services.n8n.link_target', 'web'));
+
+        if ($linkTarget !== 'app') {
+            return $publicUrl;
+        }
+
+        return $this->renderActionLinkTemplate($publicUrl);
+    }
+
+    public function androidAssetLinks(): array
+    {
+        $packageName = trim((string) config('services.n8n.android_app_package', ''));
+        $fingerprints = array_values(array_filter(
+            (array) config('services.n8n.android_sha256_cert_fingerprints', []),
+            static fn ($value) => is_string($value) && trim($value) !== ''
+        ));
+
+        if ($packageName === '' || $fingerprints === []) {
+            return [];
+        }
+
+        return [[
+            'relation' => ['delegate_permission/common.handle_all_urls'],
+            'target' => [
+                'namespace' => 'android_app',
+                'package_name' => $packageName,
+                'sha256_cert_fingerprints' => $fingerprints,
+            ],
+        ]];
+    }
+
     public function allSettings(): array
     {
         return [
@@ -232,5 +275,30 @@ class N8nWebhookService
         }
 
         return trim((string) strtr($template, $replacements));
+    }
+
+    private function renderActionLinkTemplate(string $publicUrl): string
+    {
+        $template = trim((string) config('services.n8n.action_link_template', '{public_url}'));
+
+        if ($template === '') {
+            return $publicUrl;
+        }
+
+        $parts = parse_url($publicUrl);
+        $path = (string) ($parts['path'] ?? '/');
+        $query = isset($parts['query']) ? ('?' . $parts['query']) : '';
+        $fragment = isset($parts['fragment']) ? ('#' . $parts['fragment']) : '';
+
+        return $this->renderTemplate($template, [
+            'public_url' => $publicUrl,
+            'encoded_public_url' => rawurlencode($publicUrl),
+            'path' => $path,
+            'encoded_path' => rawurlencode($path),
+            'query' => $query,
+            'encoded_query' => rawurlencode($query),
+            'fragment' => $fragment,
+            'encoded_fragment' => rawurlencode($fragment),
+        ]);
     }
 }

@@ -69,7 +69,7 @@ class PastiInformationController extends Controller
         $this->n8nWebhookService->sendByTemplate(
             N8nWebhookService::KEY_TEXT_PASTI_INFO_REQUEST,
             ['tarikh' => now()->format('d/m/Y')],
-            $this->n8nWebhookService->toPublicUrl(route('pasti-information.index'))
+            $this->n8nWebhookService->toActionUrl(route('pasti-information.index'))
         );
 
         return back()->with('status', __('messages.pasti_info_request_sent'));
@@ -143,7 +143,7 @@ class PastiInformationController extends Controller
             $this->n8nWebhookService->sendGroup2ByTemplate(
                 N8nWebhookService::KEY_TEXT_ALL_PASTI_INFO_COMPLETED,
                 ['tarikh' => now()->format('d/m/Y H:i')],
-                $this->n8nWebhookService->toPublicUrl(route('pasti-information.index'))
+                $this->n8nWebhookService->toActionUrl(route('pasti-information.index'))
             );
         }
 

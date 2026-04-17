@@ -148,7 +148,7 @@ class GuruCourseController extends Controller
                         'tarikh_akhir' => $createdOffer->registration_deadline?->format('d/m/Y') ?? '-',
                         'nota' => filled($createdOffer->note) ? (' Nota: ' . trim((string) $createdOffer->note)) : '',
                     ],
-                    $this->n8nWebhookService->toPublicUrl(route('kursus-guru.index'))
+                    $this->n8nWebhookService->toActionUrl(route('kursus-guru.index'))
                 );
             }
 

@@ -44,6 +44,13 @@ return [
         'webhook_url_group2_test' => env('N8N_WEBHOOK_URL_GROUP2_TEST', env('N8N_WEBHOOK_URL_GROUP2', 'https://n8n-mt8umikivytz.n8x.biz.id/webhook-test/3caf9b20-d664-491b-81db-57984d626341')),
         'webhook_url_group2_production' => env('N8N_WEBHOOK_URL_GROUP2_PRODUCTION', env('N8N_WEBHOOK_URL_GROUP2', 'https://n8n-mt8umikivytz.n8x.biz.id/webhook-test/3caf9b20-d664-491b-81db-57984d626341')),
         'public_domain' => env('N8N_PUBLIC_DOMAIN', 'https://pastikawasansik.my.id'),
+        'link_target' => env('N8N_LINK_TARGET', 'web'),
+        'action_link_template' => env('N8N_ACTION_LINK_TEMPLATE', '{public_url}'),
+        'android_app_package' => env('ANDROID_APP_PACKAGE', 'com.pastikawasansik.app'),
+        'android_sha256_cert_fingerprints' => array_values(array_filter(array_map(
+            static fn ($value) => trim((string) $value),
+            explode(',', (string) env('ANDROID_SHA256_CERT_FINGERPRINTS', ''))
+        ))),
     ],
 
 ];

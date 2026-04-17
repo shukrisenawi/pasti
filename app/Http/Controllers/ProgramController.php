@@ -313,7 +313,7 @@ class ProgramController extends Controller
         $timeText = $this->programTimeText($program);
         $locationText = filled($program->location) ? ' di ' . trim((string) $program->location) : '';
         $gambar = $this->n8nWebhookService->toPublicUrl($program->banner_url);
-        $link = $this->n8nWebhookService->toPublicUrl(route('programs.show', $program));
+        $link = $this->n8nWebhookService->toActionUrl(route('programs.show', $program));
 
         $this->n8nWebhookService->sendByTemplate(
             N8nWebhookService::KEY_TEXT_PROGRAM_CREATED,
@@ -355,4 +355,3 @@ class ProgramController extends Controller
         return '';
     }
 }
-
