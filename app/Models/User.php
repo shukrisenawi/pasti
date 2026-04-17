@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use App\Models\AdminMessage;
 use App\Models\AdminMessageReply;
+use App\Support\NameFormatter;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -112,6 +113,16 @@ class User extends Authenticatable
         return $this->nama_samaran ?: $this->name;
     }
 
+    public function setNameAttribute(?string $value): void
+    {
+        $this->attributes['name'] = NameFormatter::standardize($value);
+    }
+
+    public function setNamaSamaranAttribute(?string $value): void
+    {
+        $this->attributes['nama_samaran'] = NameFormatter::standardize($value);
+    }
+
     public function claims(): HasMany
     {
         return $this->hasMany(Claim::class);
@@ -137,4 +148,3 @@ class User extends Authenticatable
         return 0;
     }
 }
-

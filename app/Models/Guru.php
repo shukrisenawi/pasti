@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\NameFormatter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -116,5 +117,10 @@ class Guru extends Model
     {
         return $this->user?->avatar_url
             ?? ($this->avatar_path ? '/uploads/'.ltrim($this->avatar_path, '/') : '/images/default-avatar.svg');
+    }
+
+    public function setNameAttribute(?string $value): void
+    {
+        $this->attributes['name'] = NameFormatter::standardize($value);
     }
 }

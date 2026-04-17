@@ -115,6 +115,7 @@ class ProfileController extends Controller
 
         if ($user->hasRole('guru') && $user->guru) {
             $user->guru->update([
+                'name' => $user->name,
                 'phone' => $request->input('phone') ?: null,
                 'marital_status' => $request->input('marital_status') ?: null,
                 'joined_at' => $request->input('joined_at') ?: null,
