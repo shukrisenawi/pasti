@@ -113,6 +113,16 @@ class User extends Authenticatable
         return $this->nama_samaran ?: $this->name;
     }
 
+    public function getNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::standardize($value);
+    }
+
+    public function getNamaSamaranAttribute(?string $value): ?string
+    {
+        return NameFormatter::standardize($value);
+    }
+
     public function setNameAttribute(?string $value): void
     {
         $this->attributes['name'] = NameFormatter::standardize($value);

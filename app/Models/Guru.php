@@ -108,6 +108,11 @@ class Guru extends Model
         return $this->user?->display_name ?? $this->name ?? '-';
     }
 
+    public function getNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::standardize($value);
+    }
+
     public function getDisplayEmailAttribute(): string
     {
         return $this->user?->email ?? $this->email ?? '-';
