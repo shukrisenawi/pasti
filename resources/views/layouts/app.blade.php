@@ -277,12 +277,12 @@
                     </svg>
                 </button>
 
-                <div class="min-w-0 flex flex-1 items-center gap-3">
-                    <a href="{{ route('dashboard') }}" wire:navigate class="shrink-0">
+                <div class="min-w-0 flex flex-1 items-center gap-2 sm:gap-3">
+                    <a href="{{ route('dashboard') }}" wire:navigate class="hidden shrink-0 min-[360px]:block">
                         <x-application-logo class="h-12 w-12 rounded-full border border-primary/20 bg-white object-contain p-1 shadow-sm" />
                     </a>
                     <div class="min-w-0">
-                        <a href="{{ route('dashboard') }}" wire:navigate class="text-xl font-extrabold tracking-tight text-primary">PASTI SIK</a>
+                        <a href="{{ route('dashboard') }}" wire:navigate class="whitespace-nowrap text-lg font-extrabold tracking-tight text-primary sm:text-xl">PASTI SIK</a>
                         <p class="text-xs text-slate-500 {{ $isGuruOnly ? 'hidden sm:block' : '' }}">{{ __('messages.portal_subtitle') }}</p>
                     </div>
                 </div>
@@ -605,7 +605,6 @@
 </script>
 </body>
 </html>
-
 
 
 
