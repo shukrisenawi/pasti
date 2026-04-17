@@ -43,7 +43,7 @@
             <div class="mx-auto w-full max-w-md">
                 <div class="flex items-center gap-3">
                     <x-application-logo class="h-12 w-12 rounded-full border border-primary/20 bg-white object-contain p-1" />
-                    <p class="text-xs font-bold uppercase tracking-[0.28em] text-primary">PASTI Portal</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.28em] text-primary">PASTI SIK</p>
                 </div>
                 <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">{{ __('messages.login_subtitle') }}</h2>
                 <p class="mt-2 text-sm leading-6 text-slate-500">Sila teruskan untuk akses papan pemuka, pengurusan data dan rekod semasa.</p>
@@ -54,4 +54,3 @@
 </div>
 </body>
 </html>
-

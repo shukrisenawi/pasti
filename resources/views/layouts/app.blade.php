@@ -82,7 +82,7 @@
         <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <div class="flex items-center gap-3">
                 <x-application-logo class="h-10 w-10 rounded-full border border-primary/20 bg-white object-contain p-1 shadow-sm" />
-                <span class="text-base font-extrabold tracking-tight text-primary">PASTI Portal</span>
+                <span class="text-base font-extrabold tracking-tight text-primary">PASTI SIK</span>
             </div>
             <button @click="mobileMenuOpen = false" class="btn btn-ghost btn-sm h-8 w-8 rounded-xl p-0" aria-label="Tutup menu">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -282,7 +282,7 @@
                         <x-application-logo class="h-12 w-12 rounded-full border border-primary/20 bg-white object-contain p-1 shadow-sm" />
                     </a>
                     <div class="min-w-0">
-                        <a href="{{ route('dashboard') }}" wire:navigate class="text-xl font-extrabold tracking-tight text-primary">PASTI Portal</a>
+                        <a href="{{ route('dashboard') }}" wire:navigate class="text-xl font-extrabold tracking-tight text-primary">PASTI SIK</a>
                         <p class="text-xs text-slate-500 {{ $isGuruOnly ? 'hidden sm:block' : '' }}">{{ __('messages.portal_subtitle') }}</p>
                     </div>
                 </div>
@@ -605,7 +605,6 @@
 </script>
 </body>
 </html>
-
 
 
 
