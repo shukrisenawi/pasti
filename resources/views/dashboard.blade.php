@@ -86,16 +86,16 @@
                             <p class="text-xs text-white/80">{{ $user->email }}</p>
                         </div>
                     </div>
-                    <div class="flex w-full flex-nowrap gap-2 sm:w-auto">
-                        <div class="min-w-0 flex-1 rounded-2xl border border-white/20 bg-white/10 px-3 py-2">
+                    <div class="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-3">
+                        <div class="min-w-0 rounded-2xl border border-white/20 bg-white/10 px-3 py-2">
                             <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/70">KPI</p>
                             <p class="mt-1 truncate text-xl font-extrabold">{{ number_format($user->guru?->kpiSnapshot?->score ?? 0, 1) }}%</p>
                         </div>
-                        <div class="min-w-0 flex-1 rounded-2xl border border-white/20 bg-white/10 px-3 py-2">
+                        <div class="min-w-0 rounded-2xl border border-white/20 bg-white/10 px-3 py-2">
                             <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/70">Cuti</p>
                             <p class="mt-1 truncate text-xl font-extrabold">{{ $guruLeaveDays }} Hari</p>
                         </div>
-                        <div class="min-w-0 flex-1 rounded-2xl border border-white/20 bg-white/10 px-3 py-2">
+                        <div class="col-span-2 min-w-0 rounded-2xl border border-white/20 bg-white/10 px-3 py-2 sm:col-span-1">
                             <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/70">Tempoh Mengajar</p>
                             <p class="mt-1 truncate text-xl font-extrabold">{{ $guruTeachingDuration }}</p>
                         </div>
@@ -368,4 +368,3 @@
         </section>
     @endrole
 </x-app-layout>
-
