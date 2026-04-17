@@ -4,7 +4,7 @@
         <div class="flex items-center justify-between gap-3">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.24em] text-primary">Dashboard Guru</p>
-                <h2 class="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">{{ auth()->user()->display_name }}</h2>
+                <h2 class="mt-1 text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">{{ auth()->user()->display_name }}</h2>
             </div>
             <div class="text-right">
                 <p class="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">Tahun Semasa</p>
@@ -368,5 +368,4 @@
         </section>
     @endrole
 </x-app-layout>
-
 
