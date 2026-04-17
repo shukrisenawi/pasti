@@ -263,7 +263,7 @@
         </div>
     </div>
 
-    <header class="sticky top-0 z-30 border-b border-white/70 bg-white/80 backdrop-blur-xl {{ $isGuruOnly ? 'guru-mobile-fixed-header' : '' }}">
+    <header class="sticky top-0 z-30 border-b border-white/70 bg-white/80 backdrop-blur-xl guru-mobile-fixed-header">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="navbar">
                 {{-- Hamburger Button (Mobile only, left side) --}}
@@ -329,7 +329,7 @@
         </div>
     </header>
 
-    <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8 {{ $isGuruOnly ? 'guru-mobile-fixed-header-layout' : '' }}">
+    <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8 guru-mobile-fixed-header-layout">
         <aside class="card desktop-sidebar h-fit overflow-hidden border-primary/10 bg-white/90">
             <div class="rounded-[1.6rem] bg-gradient-to-br from-primary via-primary-dark to-emerald-700 p-5 text-primary-content shadow-lg">
                 <div class="flex items-center gap-4">
@@ -605,7 +605,6 @@
 </script>
 </body>
 </html>
-
 
 
 
