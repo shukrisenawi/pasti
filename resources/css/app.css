@@ -272,6 +272,15 @@
 }
 
 @media (max-width: 1023px) {
+  .guru-mobile-fixed-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+  }
+
+  .guru-mobile-fixed-header-layout {
+    padding-top: 5.5rem;
+  }
+
   .guru-bottom-nav {
     display: block;
   }
@@ -291,4 +300,3 @@
     display: block;
   }
 }
-
