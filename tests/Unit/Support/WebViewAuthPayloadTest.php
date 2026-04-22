@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class WebViewAuthPayloadTest extends TestCase
 {
-    public function test_it_builds_a_webview_payload_with_the_logged_in_username(): void
+    public function test_it_builds_a_webview_payload_with_the_logged_in_username_and_user_id(): void
     {
         $user = new User([
             'id' => 42,
@@ -22,6 +22,7 @@ class WebViewAuthPayloadTest extends TestCase
 
         $this->assertSame([
             'id' => 42,
+            'user_id' => 42,
             'username' => 'guru@app.test',
             'display_name' => 'Cikgu Webview',
             'email' => 'guru@app.test',
