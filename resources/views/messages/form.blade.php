@@ -69,10 +69,14 @@
                 </div>
             @endif
 
-            <div>
+            <div x-data="messageTokenPreview(@js(old('body', '')))">
                 <label class="label-base">{{ __('messages.message') }}</label>
-                <textarea name="body" rows="6" class="input-base" placeholder="{{ __('messages.write_message_hint') }}">{{ old('body') }}</textarea>
+                <textarea name="body" rows="6" class="input-base" placeholder="{{ __('messages.write_message_hint') }}" x-model="body">{{ old('body') }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">{{ __('messages.message_token_hint') }}</p>
+                <div x-show="hasVariableToken()" x-cloak class="mt-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-2">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Preview pemboleh ubah</p>
+                    <div class="mt-2 text-sm leading-7 text-slate-700" x-html="previewHtml()"></div>
+                </div>
             </div>
 
             <div>
@@ -87,4 +91,32 @@
             </div>
         </form>
     </div>
+
+    <script>
+        window.messageTokenPreview = window.messageTokenPreview || function (initialBody = '') {
+            return {
+                body: initialBody,
+                hasVariableToken() {
+                    return this.body.includes('@nama') || this.body.includes('@pasti');
+                },
+                previewHtml() {
+                    return this.escapeHtml(this.body)
+                        .replace(/@nama/g, this.badgeHtml('@nama'))
+                        .replace(/@pasti/g, this.badgeHtml('@pasti'))
+                        .replace(/\n/g, '<br>');
+                },
+                badgeHtml(label) {
+                    return `<span class="mx-0.5 inline-flex items-center rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">${label}</span>`;
+                },
+                escapeHtml(value) {
+                    return value
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
+                },
+            };
+        };
+    </script>
 </x-app-layout>
