@@ -29,7 +29,15 @@ class SendDatabaseNotificationToFcm
             return;
         }
 
-        $message = FcmMessage::fromDatabaseNotificationData($payload, $event->notification::class);
+        $notificationId = is_object($event->response) && isset($event->response->id)
+            ? (string) $event->response->id
+            : null;
+
+        $message = FcmMessage::fromDatabaseNotificationData(
+            $payload,
+            $event->notification::class,
+            $notificationId,
+        );
 
         $this->fcmNotificationService->sendToNotifiable(
             $event->notifiable,

@@ -4,12 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\FcmNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 
 class N8nNotificationController extends Controller
 {
+    public function __construct(
+        private readonly FcmNotificationService $fcmNotificationService,
+    ) {
+    }
+
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -77,14 +83,23 @@ class N8nNotificationController extends Controller
             ], 422);
         }
 
+        $notifiable = $notification->notifiable;
+        $notificationId = (string) $notification->id;
+
         if (is_null($notification->read_at)) {
             $notification->markAsRead();
         }
 
+        if ($notifiable instanceof User) {
+            $this->fcmNotificationService->sendSyncActionToNotifiable($notifiable, 'read', $notificationId);
+        }
+
+        $notification->delete();
+
         return response()->json([
-            'message' => 'Notification marked as read.',
-            'id' => $notification->id,
-            'read_at' => optional($notification->fresh()->read_at)?->toIso8601String(),
+            'message' => 'Notification marked as read and removed.',
+            'id' => $notificationId,
+            'read_at' => now()->toIso8601String(),
         ]);
     }
 }

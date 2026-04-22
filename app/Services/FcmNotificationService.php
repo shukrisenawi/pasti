@@ -40,42 +40,75 @@ class FcmNotificationService
         }
     }
 
+    public function sendSyncActionToNotifiable(object $notifiable, string $action, string $notificationId): void
+    {
+        if (! method_exists($notifiable, 'routeNotificationForFcm')) {
+            return;
+        }
+
+        $tokens = array_values(array_unique(array_filter(
+            (array) $notifiable->routeNotificationForFcm(),
+            static fn ($token) => is_string($token) && $token !== ''
+        )));
+
+        if ($tokens === [] || ! $this->accessTokenService->isConfigured()) {
+            return;
+        }
+
+        $accessToken = $this->accessTokenService->getAccessToken();
+        if (! is_string($accessToken) || $accessToken === '') {
+            return;
+        }
+
+        $message = FcmMessage::forNotificationSync($action, $notificationId);
+
+        foreach ($tokens as $token) {
+            $this->sendToToken($token, $message, $accessToken);
+        }
+    }
+
     private function sendToToken(string $token, FcmMessage $message, string $accessToken): void
     {
         try {
+            $messagePayload = [
+                'token' => $token,
+                'data' => $message->data,
+                'android' => [
+                    'priority' => 'high',
+                ],
+                'apns' => [
+                    'payload' => [
+                        'aps' => [
+                            'content-available' => 1,
+                        ],
+                    ],
+                ],
+            ];
+
+            if (! $message->dataOnly) {
+                $messagePayload['notification'] = [
+                    'title' => $message->title,
+                    'body' => $message->body,
+                ];
+                $messagePayload['android']['notification'] = [
+                    'sound' => 'default',
+                ];
+                $messagePayload['apns']['payload']['aps']['sound'] = 'default';
+                $messagePayload['webpush'] = [
+                    'notification' => [
+                        'title' => $message->title,
+                        'body' => $message->body,
+                    ],
+                    'fcm_options' => [
+                        'link' => $message->data['url'] ?? config('app.url'),
+                    ],
+                ];
+            }
+
             $response = Http::withToken($accessToken)
                 ->timeout(15)
                 ->post($this->endpoint(), [
-                    'message' => [
-                        'token' => $token,
-                        'notification' => [
-                            'title' => $message->title,
-                            'body' => $message->body,
-                        ],
-                        'data' => $message->data,
-                        'android' => [
-                            'priority' => 'high',
-                            'notification' => [
-                                'sound' => 'default',
-                            ],
-                        ],
-                        'apns' => [
-                            'payload' => [
-                                'aps' => [
-                                    'sound' => 'default',
-                                ],
-                            ],
-                        ],
-                        'webpush' => [
-                            'notification' => [
-                                'title' => $message->title,
-                                'body' => $message->body,
-                            ],
-                            'fcm_options' => [
-                                'link' => $message->data['url'] ?? config('app.url'),
-                            ],
-                        ],
-                    ],
+                    'message' => $messagePayload,
                 ]);
 
             if ($response->successful()) {

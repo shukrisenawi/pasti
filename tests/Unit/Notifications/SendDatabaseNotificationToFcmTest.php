@@ -4,6 +4,7 @@ namespace Tests\Unit\Notifications;
 
 use App\Listeners\SendDatabaseNotificationToFcm;
 use App\Models\User;
+use Illuminate\Notifications\DatabaseNotification;
 use App\Notifications\FcmMessage;
 use App\Services\FcmNotificationService;
 use Illuminate\Notifications\Events\NotificationSent;
@@ -49,11 +50,18 @@ class SendDatabaseNotificationToFcmTest extends TestCase
                     && $message->body === 'Mesej ujian terus ke FCM.'
                     && $message->data['url'] === '/claims'
                     && $message->data['claim_id'] === '99'
+                    && $message->data['notification_id'] === 'notif-123'
+                    && $message->data['sync_action'] === 'create'
                     && $sentNotification instanceof Notification;
             });
 
         $listener = new SendDatabaseNotificationToFcm($service);
-        $listener->handle(new NotificationSent($user, $notification, 'database'));
+        $listener->handle(new NotificationSent(
+            $user,
+            $notification,
+            'database',
+            new DatabaseNotification(['id' => 'notif-123'])
+        ));
 
         $this->addToAssertionCount(1);
     }
