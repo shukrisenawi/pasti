@@ -98,6 +98,23 @@ class AdminMessage extends Model
         return $this->title ?: ($this->sender?->display_name ?? 'Perbualan');
     }
 
+    public function canBeDeletedBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        if ((int) $this->sender_id !== (int) $user->id) {
+            return false;
+        }
+
+        $replyCount = $this->relationLoaded('replies')
+            ? $this->replies->count()
+            : $this->replies()->count();
+
+        return $replyCount === 0;
+    }
+
     public function latestPreview(): string
     {
         $lastReply = $this->relationLoaded('replies')

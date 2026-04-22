@@ -121,6 +121,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/messages', [AdminMessageController::class, 'store'])->name('messages.store');
         Route::get('/messages/{message}', [AdminMessageController::class, 'show'])->name('messages.show');
         Route::post('/messages/{message}/reply', [AdminMessageController::class, 'reply'])->name('messages.reply');
+        Route::delete('/messages/{message}', [AdminMessageController::class, 'destroy'])->name('messages.destroy');
         Route::get('/senarai-guru', [GuruController::class, 'directory'])->name('guru-directory.index');
     });
 

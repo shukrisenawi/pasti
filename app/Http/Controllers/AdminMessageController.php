@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -110,6 +111,7 @@ class AdminMessageController extends Controller
         return view('messages.show', [
             'message' => $message,
             'canReply' => true,
+            'canDeleteMessage' => $message->canBeDeletedBy($user),
             'canViewRecipients' => $user->hasAnyRole(['master_admin', 'admin']),
             'conversationEntries' => $this->conversationEntries($message),
         ]);
@@ -146,6 +148,29 @@ class AdminMessageController extends Controller
         }
 
         return redirect()->route('messages.show', $message)->with('status', __('messages.saved'));
+    }
+
+    public function destroy(Request $request, AdminMessage $message): RedirectResponse
+    {
+        $user = $request->user();
+
+        $this->ensureMessageAccessible($user, $message);
+        abort_unless($message->canBeDeletedBy($user), 403);
+
+        if ($message->image_path) {
+            Storage::disk('public')->delete($message->image_path);
+        }
+
+        $message->recipientLinks()->delete();
+        DatabaseNotification::query()
+            ->whereIn('type', [AdminMessageReceivedNotification::class, AdminMessageReplyNotification::class])
+            ->where('data->admin_message_id', $message->id)
+            ->delete();
+        $message->delete();
+
+        return redirect()
+            ->route('messages.index')
+            ->with('status', 'Mesej berjaya dipadam.');
     }
 
     private function ensureMessageAccessible(User $user, AdminMessage $message): void

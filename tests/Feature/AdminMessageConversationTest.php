@@ -409,6 +409,65 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('Balasan terkini');
     }
 
+    public function test_sender_can_delete_message_that_has_not_been_replied_to(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-delete@example.test', 'Cikgu Padam');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Padam',
+            'body' => 'Mesej belum berbalas',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        $response = $this->actingAs($admin)->delete(route('messages.destroy', $message));
+
+        $response->assertRedirect(route('messages.index'));
+        $this->assertDatabaseMissing('admin_messages', [
+            'id' => $message->id,
+        ]);
+        $this->assertDatabaseMissing('admin_message_recipients', [
+            'admin_message_id' => $message->id,
+        ]);
+    }
+
+    public function test_sender_cannot_delete_message_after_it_has_received_a_reply(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-delete-lock@example.test', 'Cikgu Kunci');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Kunci',
+            'body' => 'Mesej sudah dibalas',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        AdminMessageReply::query()->create([
+            'admin_message_id' => $message->id,
+            'sender_id' => $guru->id,
+            'body' => 'Saya sudah balas.',
+        ]);
+
+        $response = $this->actingAs($admin)->delete(route('messages.destroy', $message));
+
+        $response->assertForbidden();
+        $this->assertDatabaseHas('admin_messages', [
+            'id' => $message->id,
+        ]);
+    }
+
     /**
      * @return array{0: Pasti}
      */

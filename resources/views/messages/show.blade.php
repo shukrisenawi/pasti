@@ -31,7 +31,16 @@
                     {{ $participantsSummary }}
                 </p>
             </div>
-            <a href="{{ route('messages.index') }}" class="btn btn-outline">{{ __('messages.inbox') }}</a>
+            <div class="flex items-center gap-2">
+                @if($canDeleteMessage)
+                    <form method="POST" action="{{ route('messages.destroy', $message) }}" onsubmit="return confirm('Padam mesej ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline text-rose-600 hover:border-rose-300 hover:text-rose-700">Padam mesej</button>
+                    </form>
+                @endif
+                <a href="{{ route('messages.index') }}" class="btn btn-outline">{{ __('messages.inbox') }}</a>
+            </div>
         </div>
     </x-slot>
 
