@@ -1,7 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
         @php
-            $participants = $message->participants();
+            $participants = $message->participants()
+                ->sortByDesc(function ($participant) {
+                    $lastLoginAt = $participant?->last_login_at;
+
+                    return $lastLoginAt && $lastLoginAt->gte(now()->subMinutes(5));
+                })
+                ->values();
             $isBroadcastToAll = $message->sent_to_all;
             $participantsSummary = $isBroadcastToAll
                 ? 'Hebahan kepada semua guru'
@@ -85,11 +91,23 @@
                     </div>
                 @else
                     @foreach($participants as $participant)
+                        @php($isOnline = $participant->last_login_at && $participant->last_login_at->gte(now()->subMinutes(5)))
                         <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2">
-                            <x-avatar :user="$participant" size="h-10 w-10" rounded="rounded-xl" />
-                            <div class="min-w-0">
+                            <div class="relative shrink-0">
+                                <x-avatar :user="$participant" size="h-10 w-10" rounded="rounded-full" />
+                                @if($isOnline)
+                                    <span class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500"></span>
+                                @endif
+                            </div>
+                            <div class="min-w-0 flex-1">
                                 <p class="truncate text-sm font-semibold text-slate-900">{{ $participant->display_name }}</p>
-                                <p class="truncate text-xs text-slate-500">{{ $participant->guru?->pasti?->name ?? $participant->email ?? '-' }}</p>
+                                <div class="flex items-center gap-2 text-xs text-slate-500">
+                                    <span class="truncate">{{ $participant->guru?->pasti?->name ?? $participant->email ?? '-' }}</span>
+                                    <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                                    <span class="{{ $isOnline ? 'font-semibold text-emerald-600' : '' }}">
+                                        {{ $isOnline ? 'Online' : 'Offline' }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     @endforeach
