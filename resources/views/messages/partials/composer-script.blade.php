@@ -58,6 +58,13 @@
                     this.attachmentPreviewUrl = URL.createObjectURL(file);
                 }
             },
+            clearAttachment() {
+                if (this.$refs.attachmentInput) {
+                    this.$refs.attachmentInput.value = '';
+                }
+
+                this.resetAttachmentPreview();
+            },
             resetAttachmentPreview() {
                 if (this.attachmentPreviewUrl) {
                     URL.revokeObjectURL(this.attachmentPreviewUrl);

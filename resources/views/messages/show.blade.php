@@ -121,6 +121,17 @@
                             </template>
                             <div class="mt-2 flex items-center gap-2" :class="{ 'mt-0': !attachmentIsImage }">
                                 <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600" x-text="attachmentName"></span>
+                                <button
+                                    type="button"
+                                    class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-200 bg-white text-rose-500 transition hover:bg-rose-50 hover:text-rose-600"
+                                    @click="clearAttachment()"
+                                    title="Padam lampiran"
+                                    aria-label="Padam lampiran"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 6L6 18M6 6l12 12" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                         <div class="flex gap-2">
