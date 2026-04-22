@@ -112,6 +112,23 @@
                         </div>
                     </div>
                 </div>
+                <input
+                    id="message-attachment-input"
+                    x-ref="attachmentInput"
+                    type="file"
+                    name="attachment"
+                    accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip"
+                    class="hidden"
+                    @change="previewAttachment($event)"
+                >
+                <div x-show="attachmentName" x-cloak class="mt-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+                    <template x-if="attachmentIsImage && attachmentPreviewUrl">
+                        <img :src="attachmentPreviewUrl" alt="Preview lampiran" class="max-h-48 rounded-2xl border border-slate-200 object-cover">
+                    </template>
+                    <div class="mt-2 flex items-center gap-2" :class="{ 'mt-0': !attachmentIsImage }">
+                        <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600" x-text="attachmentName"></span>
+                    </div>
+                </div>
                 <p x-show="tokenFeatureEnabled()" x-cloak class="mt-1 text-xs text-slate-500">{{ __('messages.message_token_hint') }}</p>
                 <div x-show="tokenFeatureEnabled() && hasVariableToken()" x-cloak class="mt-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-2">
                     <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Preview pemboleh ubah</p>
@@ -121,7 +138,11 @@
 
             <div>
                 <label class="label-base">{{ __('messages.attachment') }}</label>
-                <input type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip" class="file-input w-full">
+                <button
+                    type="button"
+                    class="btn btn-outline"
+                    @click="document.getElementById('message-attachment-input').click()"
+                >{{ __('messages.attachment') }}</button>
                 <p class="mt-1 text-xs text-slate-500">Format: gambar, PDF, Word, Excel, PowerPoint, TXT, CSV, ZIP (maks 10MB).</p>
             </div>
 

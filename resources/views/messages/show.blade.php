@@ -79,11 +79,11 @@
                         @csrf
                         <div class="relative">
                             <textarea x-ref="textarea" name="body" rows="4" class="input-base pr-24 pb-12" placeholder="{{ __('messages.write_reply') }}" x-model="body">{{ old('body') }}</textarea>
-                            <input x-ref="attachmentInput" type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip" class="hidden">
+                            <input id="reply-attachment-input" x-ref="attachmentInput" type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip" class="hidden" @change="previewAttachment($event)">
                             <button
                                 type="button"
                                 class="absolute bottom-3 right-14 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-primary/30 hover:text-primary"
-                                @click="$refs.attachmentInput.click()"
+                                @click="document.getElementById('reply-attachment-input').click()"
                                 title="{{ __('messages.attachment') }}"
                                 aria-label="{{ __('messages.attachment') }}"
                             >
@@ -113,6 +113,14 @@
                                         ></button>
                                     </template>
                                 </div>
+                            </div>
+                        </div>
+                        <div x-show="attachmentName" x-cloak class="rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+                            <template x-if="attachmentIsImage && attachmentPreviewUrl">
+                                <img :src="attachmentPreviewUrl" alt="Preview lampiran" class="max-h-48 rounded-2xl border border-slate-200 object-cover">
+                            </template>
+                            <div class="mt-2 flex items-center gap-2" :class="{ 'mt-0': !attachmentIsImage }">
+                                <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600" x-text="attachmentName"></span>
                             </div>
                         </div>
                         <div class="flex gap-2">

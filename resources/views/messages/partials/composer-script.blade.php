@@ -3,6 +3,9 @@
         return {
             body: initialBody,
             emojiOpen: false,
+            attachmentName: '',
+            attachmentPreviewUrl: null,
+            attachmentIsImage: false,
             emojis: ['😀', '😁', '😂', '😊', '😍', '🥰', '😘', '🤗', '🤔', '😎', '🥳', '🙏', '👍', '👏', '💪', '🔥', '🌟', '❤️', '💚', '💙', '🎉', '📌', '📣', '✅'],
             hasVariableToken() {
                 return this.body.includes('@nama') || this.body.includes('@pasti');
@@ -37,6 +40,32 @@
                 });
 
                 this.emojiOpen = false;
+            },
+            previewAttachment(event) {
+                const input = event?.target;
+                const file = input?.files?.[0];
+
+                this.resetAttachmentPreview();
+
+                if (! file) {
+                    return;
+                }
+
+                this.attachmentName = file.name;
+                this.attachmentIsImage = typeof file.type === 'string' && file.type.startsWith('image/');
+
+                if (this.attachmentIsImage) {
+                    this.attachmentPreviewUrl = URL.createObjectURL(file);
+                }
+            },
+            resetAttachmentPreview() {
+                if (this.attachmentPreviewUrl) {
+                    URL.revokeObjectURL(this.attachmentPreviewUrl);
+                }
+
+                this.attachmentName = '';
+                this.attachmentPreviewUrl = null;
+                this.attachmentIsImage = false;
             },
             escapeHtml(value) {
                 return value
