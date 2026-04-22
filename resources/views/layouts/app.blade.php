@@ -18,6 +18,7 @@
 <div class="panel-shell relative overflow-x-hidden" x-data="{ mobileMenuOpen: false }">
     @php
         $authUser = auth()->user();
+        $webViewAuthPayload = \App\Support\WebViewAuthPayload::fromUser($authUser);
         $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
         $isAdminCardUser = $authUser->hasAnyRole(['master_admin', 'admin']);
         $pastiMenuRoute = $authUser->hasRole('guru') ? route('pasti.self.edit') : null;
@@ -603,8 +604,60 @@
         });
     });
 </script>
+<script>
+    (function () {
+        const authPayload = @json($webViewAuthPayload);
+        let lastSentSignature = null;
+
+        function notifyNativeApp(payload) {
+            const message = {
+                type: 'lr-pasti-auth-user',
+                user: payload,
+            };
+
+            const signature = JSON.stringify(message);
+            if (signature === lastSentSignature) {
+                return;
+            }
+
+            lastSentSignature = signature;
+
+            window.dispatchEvent(new CustomEvent('lr-pasti:user-identified', {
+                detail: message,
+            }));
+
+            if (window.ReactNativeWebView?.postMessage) {
+                window.ReactNativeWebView.postMessage(signature);
+            }
+
+            if (window.webkit?.messageHandlers?.lrPastiAuth?.postMessage) {
+                window.webkit.messageHandlers.lrPastiAuth.postMessage(message);
+            }
+
+            if (window.LRPastiAppBridge?.onAuthenticatedUser) {
+                window.LRPastiAppBridge.onAuthenticatedUser(signature);
+            }
+
+            if (window.Android?.onAuthenticatedUser) {
+                window.Android.onAuthenticatedUser(signature);
+            }
+        }
+
+        function syncAuthenticatedUserToApp() {
+            notifyNativeApp(authPayload);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', syncAuthenticatedUserToApp, { once: true });
+        } else {
+            syncAuthenticatedUserToApp();
+        }
+
+        document.addEventListener('livewire:navigated', syncAuthenticatedUserToApp);
+        window.addEventListener('pageshow', syncAuthenticatedUserToApp);
+    })();
+</script>
 </body>
 </html>
-
 
 
