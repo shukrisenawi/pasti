@@ -17,6 +17,9 @@
                 $currentRecipient = $message->recipientLinks->firstWhere('user_id', auth()->id());
                 $isUnread = $currentRecipient && ! $currentRecipient->read_at;
                 $lastActivityAt = $message->replies_max_created_at ?? $message->created_at;
+                if (is_string($lastActivityAt) && $lastActivityAt !== '') {
+                    $lastActivityAt = \Illuminate\Support\Carbon::parse($lastActivityAt);
+                }
             @endphp
             <article class="card border-primary/10 bg-white/95">
                 <a href="{{ route('messages.show', $message) }}" class="block">

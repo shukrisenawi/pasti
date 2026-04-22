@@ -28,6 +28,8 @@ class AdminMessageConversationTest extends TestCase
             $table->string('name')->nullable();
             $table->string('nama_samaran')->nullable();
             $table->string('email')->unique();
+            $table->date('tarikh_exp_skim_pas')->nullable();
+            $table->timestamp('last_login_at')->nullable();
             $table->string('password')->nullable();
             $table->rememberToken();
             $table->timestamps();
@@ -123,6 +125,49 @@ class AdminMessageConversationTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('programs', function (Blueprint $table): void {
+            $table->id();
+            $table->date('program_date')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('guru_program', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id');
+            $table->unsignedBigInteger('program_id');
+            $table->timestamps();
+        });
+
+        Schema::create('pasti_information_requests', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('pasti_id')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('guru_salary_requests', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('leave_notices', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id')->nullable();
+            $table->date('leave_date')->nullable();
+            $table->date('leave_until')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('claims', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('pasti_id')->nullable();
+            $table->string('status')->default('pending');
+            $table->timestamps();
+        });
+
         \DB::table('roles')->insert([
             ['name' => 'master_admin', 'guard_name' => 'web'],
             ['name' => 'admin', 'guard_name' => 'web'],
@@ -135,6 +180,12 @@ class AdminMessageConversationTest extends TestCase
     protected function tearDown(): void
     {
         Schema::dropIfExists('notifications');
+        Schema::dropIfExists('claims');
+        Schema::dropIfExists('leave_notices');
+        Schema::dropIfExists('guru_salary_requests');
+        Schema::dropIfExists('pasti_information_requests');
+        Schema::dropIfExists('guru_program');
+        Schema::dropIfExists('programs');
         Schema::dropIfExists('admin_message_replies');
         Schema::dropIfExists('admin_message_recipients');
         Schema::dropIfExists('admin_messages');
@@ -326,6 +377,36 @@ class AdminMessageConversationTest extends TestCase
 
         $response->assertRedirect(route('messages.show', $message));
         $this->assertSame('Makluman dari @nama untuk @pasti.', $message->body);
+    }
+
+    public function test_messages_index_renders_when_latest_reply_timestamp_comes_from_with_max(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-index@example.test', 'Cikgu Index');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Hebahan kepada 1 guru',
+            'body' => 'Mesej awal',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        AdminMessageReply::query()->create([
+            'admin_message_id' => $message->id,
+            'sender_id' => $guru->id,
+            'body' => 'Balasan terkini',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('messages.index'));
+
+        $response->assertOk();
+        $response->assertSee('Cikgu Index');
+        $response->assertSee('Balasan terkini');
     }
 
     /**
