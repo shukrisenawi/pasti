@@ -39,38 +39,67 @@
 
     <section class="grid gap-4 {{ $message->isBulkConversation() ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : '' }}">
         <div class="space-y-4">
-            <article class="card border-primary/10 bg-slate-50/80">
-                <div class="space-y-4">
-                    @foreach($conversationEntries as $entry)
-                        @php($isMine = (int) ($entry['sender']?->id ?? 0) === (int) auth()->id())
-                        <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
-                            <div class="max-w-2xl rounded-3xl px-4 py-3 shadow-sm {{ $isMine ? 'bg-primary text-white' : 'border border-slate-200 bg-white text-slate-800' }}">
-                                <div class="flex items-center gap-2 text-xs {{ $isMine ? 'text-white/80' : 'text-slate-500' }}">
-                                    <span class="font-semibold">{{ $entry['sender']?->display_name ?? '-' }}</span>
-                                    <span>•</span>
-                                    <span>{{ optional($entry['created_at'])->format('d/m/Y H:i') }}</span>
-                                </div>
+            <article
+                class="card border-primary/10 bg-slate-50/80"
+                x-data="{
+                    init() {
+                        this.$nextTick(() => {
+                            this.scrollToLatest();
 
-                                @if($entry['body'] !== '')
-                                    <p class="mt-2 whitespace-pre-line text-sm leading-7">{{ $entry['body'] }}</p>
-                                @endif
+                            this.$refs.chatScroller.querySelectorAll('img').forEach((image) => {
+                                if (image.complete) {
+                                    return;
+                                }
 
-                                @if($entry['attachment_url'])
-                                    @if($entry['is_image_attachment'])
-                                        <a href="{{ $entry['attachment_url'] }}" target="_blank" rel="noopener" class="mt-3 inline-block">
-                                            <img src="{{ $entry['attachment_url'] }}" alt="Lampiran perbualan" class="max-h-72 rounded-2xl border border-slate-200 object-cover">
-                                        </a>
-                                    @else
-                                        <div class="mt-3">
-                                            <a href="{{ $entry['attachment_url'] }}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
-                                                {{ __('messages.attachment') }}: {{ $entry['attachment_name'] ?? 'download' }}
-                                            </a>
-                                        </div>
+                                image.addEventListener('load', () => this.scrollToLatest(), { once: true });
+                            });
+                        });
+                    },
+                    scrollToLatest() {
+                        const scroller = this.$refs.chatScroller;
+
+                        if (! scroller) {
+                            return;
+                        }
+
+                        scroller.scrollTop = scroller.scrollHeight;
+                    },
+                }"
+                x-init="init()"
+            >
+                <div x-ref="chatScroller" class="min-h-[400px] max-h-[400px] overflow-y-auto pr-2">
+                    <div class="flex min-h-[400px] flex-col justify-end space-y-4">
+                        @foreach($conversationEntries as $entry)
+                            @php($isMine = (int) ($entry['sender']?->id ?? 0) === (int) auth()->id())
+                            <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
+                                <div class="max-w-2xl rounded-3xl px-4 py-3 shadow-sm {{ $isMine ? 'bg-primary text-white' : 'border border-slate-200 bg-white text-slate-800' }}">
+                                    <div class="flex items-center gap-2 text-xs {{ $isMine ? 'text-white/80' : 'text-slate-500' }}">
+                                        <span class="font-semibold">{{ $entry['sender']?->display_name ?? '-' }}</span>
+                                        <span>•</span>
+                                        <span>{{ optional($entry['created_at'])->format('d/m/Y H:i') }}</span>
+                                    </div>
+
+                                    @if($entry['body'] !== '')
+                                        <p class="mt-2 whitespace-pre-line text-sm leading-7">{{ $entry['body'] }}</p>
                                     @endif
-                                @endif
+
+                                    @if($entry['attachment_url'])
+                                        @if($entry['is_image_attachment'])
+                                            <a href="{{ $entry['attachment_url'] }}" target="_blank" rel="noopener" class="mt-3 inline-block">
+                                                <img src="{{ $entry['attachment_url'] }}" alt="Lampiran perbualan" class="max-h-72 rounded-2xl border border-slate-200 object-cover">
+                                            </a>
+                                        @else
+                                            <div class="mt-3">
+                                                <a href="{{ $entry['attachment_url'] }}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
+                                                    {{ __('messages.attachment') }}: {{ $entry['attachment_name'] ?? 'download' }}
+                                                </a>
+                                            </div>
+                                        @endif
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
             </article>
 

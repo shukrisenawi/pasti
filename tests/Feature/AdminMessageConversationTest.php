@@ -409,6 +409,37 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('Balasan terkini');
     }
 
+    public function test_message_show_uses_scrollable_chat_window_that_sticks_to_latest_message(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-scroll@example.test', 'Cikgu Scroll');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Scroll',
+            'body' => str_repeat('Mesej panjang ', 40),
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        AdminMessageReply::query()->create([
+            'admin_message_id' => $message->id,
+            'sender_id' => $guru->id,
+            'body' => 'Balasan terbaru',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertSee('x-ref="chatScroller"', false);
+        $response->assertSee('min-h-[400px] max-h-[400px] overflow-y-auto', false);
+        $response->assertSee('x-init="init()"', false);
+    }
+
     public function test_sender_can_delete_message_that_has_not_been_replied_to(): void
     {
         [$pasti] = $this->createPastiFixtures();
