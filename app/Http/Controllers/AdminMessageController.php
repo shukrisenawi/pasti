@@ -162,19 +162,13 @@ class AdminMessageController extends Controller
             Storage::disk('public')->delete($message->image_path);
         }
 
-        $message->replies
-            ->filter(fn ($reply) => filled($reply->image_path))
-            ->each(fn ($reply) => Storage::disk('public')->delete($reply->image_path));
-        $message->replies()->delete();
-        $message->recipientLinks()->delete();
-        DatabaseNotification::query()
-            ->whereIn('type', [AdminMessageReceivedNotification::class, AdminMessageReplyNotification::class])
-            ->where('data->admin_message_id', $message->id)
-            ->delete();
-        $message->delete();
-
         return redirect()
-            ->route('messages.index')
+            ->route('messages.show', tap($message)->update([
+                'body' => '',
+                'image_path' => null,
+                'deleted_by_id' => $user->id,
+                'deleted_at' => now(),
+            ]))
             ->with('status', 'Mesej berjaya dipadam.');
     }
 
@@ -190,7 +184,12 @@ class AdminMessageController extends Controller
             Storage::disk('public')->delete($reply->image_path);
         }
 
-        $reply->delete();
+        $reply->update([
+            'body' => '',
+            'image_path' => null,
+            'deleted_by_id' => $user->id,
+            'deleted_at' => now(),
+        ]);
 
         return redirect()
             ->route('messages.show', $message)
@@ -381,13 +380,14 @@ class AdminMessageController extends Controller
             'entry_type' => 'message',
             'entry_key' => $message->id,
             'sender' => $message->sender,
-            'body' => $message->body,
+            'body' => $message->displayBody(),
             'attachment_url' => $message->attachment_url,
             'attachment_name' => $message->attachment_name,
             'is_image_attachment' => $message->is_image_attachment,
             'created_at' => $message->created_at,
             'can_delete' => $message->canBeDeletedBy($user),
             'delete_route' => route('messages.destroy', $message),
+            'is_deleted' => $message->isDeleted(),
         ]])->merge(
             $message->replies->map(function ($reply) use ($message, $user): array {
                 return [
@@ -395,13 +395,14 @@ class AdminMessageController extends Controller
                     'entry_type' => 'reply',
                     'entry_key' => $reply->id,
                     'sender' => $reply->sender,
-                    'body' => $reply->body,
+                    'body' => $reply->displayBody(),
                     'attachment_url' => $reply->attachment_url,
                     'attachment_name' => $reply->attachment_name,
                     'is_image_attachment' => $reply->is_image_attachment,
                     'created_at' => $reply->created_at,
                     'can_delete' => $reply->canBeDeletedBy($user),
                     'delete_route' => route('messages.replies.destroy', [$message, $reply]),
+                    'is_deleted' => $reply->isDeleted(),
                 ];
             })
         )->sortBy('created_at')->values();

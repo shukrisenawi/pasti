@@ -72,9 +72,9 @@
                         @foreach($conversationEntries as $entry)
                             @php($isMine = (int) ($entry['sender']?->id ?? 0) === (int) auth()->id())
                             <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
-                                <div class="max-w-2xl rounded-3xl px-4 py-3 shadow-sm {{ $isMine ? 'bg-primary text-white' : 'border border-slate-200 bg-white text-slate-800' }}">
+                                <div class="max-w-2xl rounded-3xl px-4 py-3 shadow-sm {{ $entry['is_deleted'] ? 'border border-slate-200 bg-slate-100 text-slate-500' : ($isMine ? 'bg-primary text-white' : 'border border-slate-200 bg-white text-slate-800') }}">
                                     <div class="flex items-start justify-between gap-3">
-                                        <div class="flex items-center gap-2 text-xs {{ $isMine ? 'text-white/80' : 'text-slate-500' }}">
+                                        <div class="flex items-center gap-2 text-xs {{ $entry['is_deleted'] ? 'text-slate-400' : ($isMine ? 'text-white/80' : 'text-slate-500') }}">
                                             <span class="font-semibold">{{ $entry['sender']?->display_name ?? '-' }}</span>
                                             <span>•</span>
                                             <span>{{ optional($entry['created_at'])->format('d/m/Y H:i') }}</span>
@@ -85,7 +85,7 @@
                                                 @method('DELETE')
                                                 <button
                                                     type="submit"
-                                                    class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border {{ $isMine ? 'border-white/20 bg-white/10 text-white hover:bg-white/20' : 'border-rose-200 bg-white text-rose-500 hover:bg-rose-50 hover:text-rose-600' }} transition"
+                                                    class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border {{ $entry['is_deleted'] ? 'border-slate-300 bg-white text-slate-400' : ($isMine ? 'border-white/20 bg-white/10 text-white hover:bg-white/20' : 'border-rose-200 bg-white text-rose-500 hover:bg-rose-50 hover:text-rose-600') }} transition"
                                                     title="{{ $entry['entry_type'] === 'reply' ? 'Padam balasan' : 'Padam mesej' }}"
                                                     aria-label="{{ $entry['entry_type'] === 'reply' ? 'Padam balasan ' . $entry['entry_key'] : 'Padam mesej ' . $entry['entry_key'] }}"
                                                 >
@@ -101,7 +101,7 @@
                                     </div>
 
                                     @if($entry['body'] !== '')
-                                        <p class="mt-2 whitespace-pre-line text-sm leading-7">{{ $entry['body'] }}</p>
+                                        <p class="mt-2 whitespace-pre-line text-sm leading-7 {{ $entry['is_deleted'] ? 'italic text-slate-500' : '' }}">{{ $entry['body'] }}</p>
                                     @endif
 
                                     @if($entry['attachment_url'])

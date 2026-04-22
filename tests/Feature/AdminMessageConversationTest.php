@@ -96,6 +96,8 @@ class AdminMessageConversationTest extends TestCase
             $table->text('body');
             $table->string('image_path')->nullable();
             $table->boolean('sent_to_all')->default(false);
+            $table->unsignedBigInteger('deleted_by_id')->nullable();
+            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
         });
 
@@ -113,6 +115,8 @@ class AdminMessageConversationTest extends TestCase
             $table->unsignedBigInteger('sender_id');
             $table->text('body');
             $table->string('image_path')->nullable();
+            $table->unsignedBigInteger('deleted_by_id')->nullable();
+            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
         });
 
@@ -545,8 +549,9 @@ class AdminMessageConversationTest extends TestCase
         $response = $this->actingAs($admin)->delete(route('messages.replies.destroy', [$message, $reply]));
 
         $response->assertRedirect(route('messages.show', $message));
-        $this->assertDatabaseMissing('admin_message_replies', [
+        $this->assertDatabaseHas('admin_message_replies', [
             'id' => $reply->id,
+            'deleted_by_id' => $admin->id,
         ]);
         $this->assertDatabaseHas('admin_messages', [
             'id' => $message->id,
@@ -572,12 +577,10 @@ class AdminMessageConversationTest extends TestCase
 
         $response = $this->actingAs($admin)->delete(route('messages.destroy', $message));
 
-        $response->assertRedirect(route('messages.index'));
-        $this->assertDatabaseMissing('admin_messages', [
+        $response->assertRedirect(route('messages.show', $message));
+        $this->assertDatabaseHas('admin_messages', [
             'id' => $message->id,
-        ]);
-        $this->assertDatabaseMissing('admin_message_recipients', [
-            'admin_message_id' => $message->id,
+            'deleted_by_id' => $admin->id,
         ]);
     }
 
@@ -621,7 +624,7 @@ class AdminMessageConversationTest extends TestCase
             'user_id' => $guru->id,
         ]);
 
-        AdminMessageReply::query()->create([
+        $reply = AdminMessageReply::query()->create([
             'admin_message_id' => $message->id,
             'sender_id' => $guru->id,
             'body' => 'Saya sudah balas.',
@@ -629,13 +632,72 @@ class AdminMessageConversationTest extends TestCase
 
         $response = $this->actingAs($admin)->delete(route('messages.destroy', $message));
 
-        $response->assertRedirect(route('messages.index'));
-        $this->assertDatabaseMissing('admin_messages', [
+        $response->assertRedirect(route('messages.show', $message));
+        $this->assertDatabaseHas('admin_messages', [
             'id' => $message->id,
+            'deleted_by_id' => $admin->id,
         ]);
-        $this->assertDatabaseMissing('admin_message_replies', [
+        $this->assertDatabaseHas('admin_message_replies', [
             'admin_message_id' => $message->id,
+            'id' => $reply->id,
         ]);
+    }
+
+    public function test_deleted_chat_entry_shows_owner_notice_when_owner_deletes_it(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-notice-owner@example.test', 'Cikgu Owner');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $guru->id,
+            'title' => 'Perbualan dengan admin',
+            'body' => 'Mesej owner',
+            'sent_to_all' => false,
+            'deleted_by_id' => $guru->id,
+            'deleted_at' => now(),
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $admin->id,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertSee('Chat ini telah dipadam oleh owner');
+    }
+
+    public function test_deleted_chat_entry_shows_admin_notice_when_admin_deletes_it(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-notice-admin@example.test', 'Cikgu Admin');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $guru->id,
+            'title' => 'Perbualan dengan admin',
+            'body' => 'Mesej owner',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $admin->id,
+        ]);
+
+        $reply = AdminMessageReply::query()->create([
+            'admin_message_id' => $message->id,
+            'sender_id' => $guru->id,
+            'body' => 'Balasan owner',
+            'deleted_by_id' => $admin->id,
+            'deleted_at' => now(),
+        ]);
+
+        $response = $this->actingAs($guru)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertSee('Chat ini telah dipadam oleh admin');
+        $response->assertDontSee('Padam balasan '.$reply->id);
     }
 
     public function test_sender_does_not_see_delete_icon_after_message_has_reply(): void

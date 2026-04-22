@@ -15,7 +15,16 @@ class AdminMessageReply extends Model
         'sender_id',
         'body',
         'image_path',
+        'deleted_by_id',
+        'deleted_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'deleted_at' => 'datetime',
+        ];
+    }
 
     public function message(): BelongsTo
     {
@@ -33,13 +42,36 @@ class AdminMessageReply extends Model
             return false;
         }
 
+        if ($this->isDeleted()) {
+            return false;
+        }
+
         return (int) $this->sender_id === (int) $user->id
             || $user->hasAnyRole(['master_admin', 'admin']);
     }
 
+    public function isDeleted(): bool
+    {
+        return $this->deleted_at !== null;
+    }
+
+    public function deletedNotice(): string
+    {
+        return (int) $this->deleted_by_id === (int) $this->sender_id
+            ? 'Chat ini telah dipadam oleh owner'
+            : 'Chat ini telah dipadam oleh admin';
+    }
+
+    public function displayBody(): string
+    {
+        return $this->isDeleted()
+            ? $this->deletedNotice()
+            : trim((string) $this->body);
+    }
+
     public function getImageUrlAttribute(): ?string
     {
-        if (! $this->is_image_attachment) {
+        if ($this->isDeleted() || ! $this->is_image_attachment) {
             return null;
         }
 
@@ -50,6 +82,10 @@ class AdminMessageReply extends Model
 
     public function getAttachmentUrlAttribute(): ?string
     {
+        if ($this->isDeleted()) {
+            return null;
+        }
+
         return $this->image_path
             ? '/uploads/'.ltrim($this->image_path, '/')
             : null;

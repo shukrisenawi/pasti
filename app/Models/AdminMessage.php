@@ -19,12 +19,15 @@ class AdminMessage extends Model
         'body',
         'image_path',
         'sent_to_all',
+        'deleted_by_id',
+        'deleted_at',
     ];
 
     protected function casts(): array
     {
         return [
             'sent_to_all' => 'boolean',
+            'deleted_at' => 'datetime',
         ];
     }
 
@@ -104,8 +107,31 @@ class AdminMessage extends Model
             return false;
         }
 
+        if ($this->isDeleted()) {
+            return false;
+        }
+
         return (int) $this->sender_id === (int) $user->id
             || $user->hasAnyRole(['master_admin', 'admin']);
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->deleted_at !== null;
+    }
+
+    public function deletedNotice(): string
+    {
+        return (int) $this->deleted_by_id === (int) $this->sender_id
+            ? 'Chat ini telah dipadam oleh owner'
+            : 'Chat ini telah dipadam oleh admin';
+    }
+
+    public function displayBody(): string
+    {
+        return $this->isDeleted()
+            ? $this->deletedNotice()
+            : trim((string) $this->body);
     }
 
     public function latestPreview(): string
@@ -114,12 +140,16 @@ class AdminMessage extends Model
             ? $this->replies->sortByDesc('created_at')->first()
             : $this->replies()->latest('created_at')->first();
 
-        return trim((string) ($lastReply?->body ?: $this->body));
+        if ($lastReply) {
+            return $lastReply->displayBody();
+        }
+
+        return $this->displayBody();
     }
 
     public function getImageUrlAttribute(): ?string
     {
-        if (! $this->is_image_attachment) {
+        if ($this->isDeleted() || ! $this->is_image_attachment) {
             return null;
         }
 
@@ -130,6 +160,10 @@ class AdminMessage extends Model
 
     public function getAttachmentUrlAttribute(): ?string
     {
+        if ($this->isDeleted()) {
+            return null;
+        }
+
         return $this->image_path
             ? '/uploads/'.ltrim($this->image_path, '/')
             : null;
