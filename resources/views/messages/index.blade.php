@@ -29,7 +29,6 @@
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex min-w-0 flex-1 items-start gap-3">
                             <x-avatar :user="$avatarUser" size="h-12 w-12" rounded="rounded-2xl" border="border border-slate-200/80" />
-                            <div class="flex flex-wrap items-center gap-2">
                             <div class="min-w-0 flex-1">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <h3 class="truncate text-base font-bold text-slate-900">{{ $message->conversationTitleFor(auth()->user()) }}</h3>
