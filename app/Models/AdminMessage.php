@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class AdminMessage extends Model
 {
@@ -47,6 +48,63 @@ class AdminMessage extends Model
     public function replies(): HasMany
     {
         return $this->hasMany(AdminMessageReply::class);
+    }
+
+    public function participants(): Collection
+    {
+        $sender = $this->relationLoaded('sender')
+            ? $this->getRelation('sender')
+            : $this->sender()->first();
+
+        $recipients = $this->relationLoaded('recipients')
+            ? $this->getRelation('recipients')
+            : $this->recipients()->get();
+
+        return collect([$sender])
+            ->filter()
+            ->merge($recipients)
+            ->unique('id')
+            ->values();
+    }
+
+    public function isBulkConversation(): bool
+    {
+        if ($this->sent_to_all) {
+            return true;
+        }
+
+        $recipientCount = $this->relationLoaded('recipients')
+            ? $this->recipients->count()
+            : $this->recipients()->count();
+
+        return $recipientCount > 1;
+    }
+
+    public function conversationTitleFor(?User $viewer = null): string
+    {
+        if ($this->isBulkConversation()) {
+            return $this->title ?: 'Hebahan';
+        }
+
+        if ($viewer) {
+            $otherParticipant = $this->participants()
+                ->first(fn (User $user) => (int) $user->id !== (int) $viewer->id);
+
+            if ($otherParticipant) {
+                return $otherParticipant->display_name;
+            }
+        }
+
+        return $this->title ?: ($this->sender?->display_name ?? 'Perbualan');
+    }
+
+    public function latestPreview(): string
+    {
+        $lastReply = $this->relationLoaded('replies')
+            ? $this->replies->sortByDesc('created_at')->first()
+            : $this->replies()->latest('created_at')->first();
+
+        return trim((string) ($lastReply?->body ?: $this->body));
     }
 
     public function getImageUrlAttribute(): ?string

@@ -8,6 +8,9 @@ use App\Models\Guru;
 use App\Models\User;
 use App\Notifications\AdminMessageReceivedNotification;
 use App\Notifications\AdminMessageReplyNotification;
+use App\Support\ConversationMessageFormatter;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -16,19 +19,25 @@ use Illuminate\View\View;
 
 class AdminMessageController extends Controller
 {
+    public function __construct(
+        private readonly ConversationMessageFormatter $conversationMessageFormatter,
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $user = $request->user();
 
         $query = AdminMessage::query()
-            ->with(['sender', 'recipientLinks', 'replies'])
+            ->with(['sender', 'recipientLinks', 'recipients', 'replies'])
             ->withCount(['recipients', 'replies'])
             ->withMax('replies', 'created_at');
 
-        if ($user->hasRole('guru')) {
-            $query->whereHas('recipientLinks', fn ($q) => $q->where('user_id', $user->id));
-        } elseif (! $user->hasRole('master_admin')) {
-            $query->where('sender_id', $user->id);
+        if (! $user->hasRole('master_admin')) {
+            $query->where(function (Builder $builder) use ($user): void {
+                $builder->where('sender_id', $user->id)
+                    ->orWhereHas('recipientLinks', fn (Builder $q) => $q->where('user_id', $user->id));
+            });
         }
 
         $messages = $query
@@ -38,7 +47,7 @@ class AdminMessageController extends Controller
 
         return view('messages.index', [
             'messages' => $messages,
-            'canCompose' => $user->hasAnyRole(['master_admin', 'admin']),
+            'canCompose' => $user->hasAnyRole(['master_admin', 'admin', 'guru']),
             'isGuru' => $user->hasRole('guru'),
         ]);
     }
@@ -46,57 +55,25 @@ class AdminMessageController extends Controller
     public function create(Request $request): View
     {
         $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+        abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
         return view('messages.form', [
             'gurus' => $this->availableGuruRecipients($user),
+            'isGuru' => $user->hasRole('guru'),
+            'isAdminComposer' => $user->hasAnyRole(['master_admin', 'admin']),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+        abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'body' => ['required', 'string'],
-            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv,zip', 'max:10240'],
-            'recipient_scope' => ['required', Rule::in(['all', 'selected'])],
-            'recipient_user_ids' => ['array'],
-            'recipient_user_ids.*' => ['integer', 'exists:users,id'],
-        ]);
-
-        $recipientUsers = $this->availableRecipientUsersQuery($user)
-            ->when(
-                $data['recipient_scope'] === 'selected',
-                fn ($q) => $q->whereIn('users.id', $data['recipient_user_ids'] ?? [])
-            )
-            ->get();
-
-        if ($recipientUsers->isEmpty()) {
-            return back()->withErrors([
-                'recipient_user_ids' => 'Tiada guru penerima yang sah dipilih.',
-            ])->withInput();
+        if ($user->hasAnyRole(['master_admin', 'admin'])) {
+            return $this->storeFromAdmin($request, $user);
         }
 
-        $message = AdminMessage::query()->create([
-            'sender_id' => $user->id,
-            'title' => $data['title'],
-            'body' => $data['body'],
-            'image_path' => $request->hasFile('attachment')
-                ? $request->file('attachment')->store('admin-messages', 'public')
-                : null,
-            'sent_to_all' => $data['recipient_scope'] === 'all',
-        ]);
-
-        $message->recipientLinks()->createMany(
-            $recipientUsers->map(fn (User $recipient) => ['user_id' => $recipient->id])->all()
-        );
-
-        Notification::send($recipientUsers, new AdminMessageReceivedNotification($message->load('sender')));
-
-        return redirect()->route('messages.show', $message)->with('status', __('messages.saved'));
+        return $this->storeFromGuru($request, $user);
     }
 
     public function show(Request $request, AdminMessage $message): View
@@ -124,6 +101,7 @@ class AdminMessageController extends Controller
             'message' => $message,
             'canReply' => true,
             'canViewRecipients' => $user->hasAnyRole(['master_admin', 'admin']),
+            'conversationEntries' => $this->conversationEntries($message),
         ]);
     }
 
@@ -140,7 +118,7 @@ class AdminMessageController extends Controller
 
         $reply = $message->replies()->create([
             'sender_id' => $user->id,
-            'body' => (string) ($data['body'] ?? ''),
+            'body' => $this->conversationMessageFormatter->format($data['body'] ?? '', $user->fresh('guru.pasti')),
             'image_path' => $request->hasFile('attachment')
                 ? $request->file('attachment')->store('admin-message-replies', 'public')
                 : null,
@@ -149,15 +127,12 @@ class AdminMessageController extends Controller
         $message->loadMissing(['sender', 'recipients']);
         $reply->loadMissing('sender');
 
-        if ($user->hasRole('guru')) {
-            if ($message->sender && $message->sender->id !== $user->id) {
-                $message->sender->notify(new AdminMessageReplyNotification($message, $reply));
-            }
-        } else {
-            $targets = $message->recipients->where('id', '!=', $user->id)->values();
-            if ($targets->isNotEmpty()) {
-                Notification::send($targets, new AdminMessageReplyNotification($message, $reply));
-            }
+        $targets = $message->participants()
+            ->where('id', '!=', $user->id)
+            ->values();
+
+        if ($targets->isNotEmpty()) {
+            Notification::send($targets, new AdminMessageReplyNotification($message, $reply));
         }
 
         return redirect()->route('messages.show', $message)->with('status', __('messages.saved'));
@@ -169,18 +144,16 @@ class AdminMessageController extends Controller
             return;
         }
 
-        if ($user->hasRole('guru')) {
-            $isRecipient = AdminMessageRecipient::query()
-                ->where('admin_message_id', $message->id)
-                ->where('user_id', $user->id)
-                ->exists();
-
-            abort_unless($isRecipient, 403);
-
+        if ((int) $message->sender_id === (int) $user->id) {
             return;
         }
 
-        abort_unless((int) $message->sender_id === (int) $user->id, 403);
+        $isRecipient = AdminMessageRecipient::query()
+            ->where('admin_message_id', $message->id)
+            ->where('user_id', $user->id)
+            ->exists();
+
+        abort_unless($isRecipient, 403);
     }
 
     private function availableRecipientUsersQuery(User $user)
@@ -215,5 +188,130 @@ class AdminMessageController extends Controller
             ->filter(fn (Guru $guru) => (bool) $guru->user)
             ->sortBy(fn (Guru $guru) => $guru->display_name)
             ->values();
+    }
+
+    private function storeFromAdmin(Request $request, User $user): RedirectResponse
+    {
+        $data = $request->validate([
+            'conversation_type' => ['required', Rule::in(['direct', 'bulk'])],
+            'body' => ['nullable', 'string', 'required_without:attachment'],
+            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv,zip', 'max:10240', 'required_without:body'],
+            'recipient_scope' => ['nullable', Rule::in(['all', 'selected'])],
+            'recipient_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'recipient_user_ids' => ['array'],
+            'recipient_user_ids.*' => ['integer', 'exists:users,id'],
+        ]);
+
+        $recipientUsers = $data['conversation_type'] === 'direct'
+            ? $this->availableRecipientUsersQuery($user)
+                ->where('users.id', (int) ($data['recipient_user_id'] ?? 0))
+                ->get()
+            : $this->availableRecipientUsersQuery($user)
+                ->when(
+                    ($data['recipient_scope'] ?? 'all') === 'selected',
+                    fn (Builder $query) => $query->whereIn('users.id', $data['recipient_user_ids'] ?? [])
+                )
+                ->get();
+
+        if ($recipientUsers->isEmpty()) {
+            return back()->withErrors([
+                'recipient_user_ids' => 'Tiada guru penerima yang sah dipilih.',
+            ])->withInput();
+        }
+
+        $sentToAll = $data['conversation_type'] === 'bulk' && ($data['recipient_scope'] ?? 'all') === 'all';
+        $message = AdminMessage::query()->create([
+            'sender_id' => $user->id,
+            'title' => $data['conversation_type'] === 'direct'
+                ? 'Perbualan dengan ' . ($recipientUsers->first()?->display_name ?? 'guru')
+                : ($sentToAll
+                    ? 'Hebahan kepada semua guru'
+                    : 'Hebahan kepada ' . $recipientUsers->count() . ' guru'),
+            'body' => $this->conversationMessageFormatter->format($data['body'] ?? '', $user->fresh('guru.pasti')),
+            'image_path' => $request->hasFile('attachment')
+                ? $request->file('attachment')->store('admin-messages', 'public')
+                : null,
+            'sent_to_all' => $sentToAll,
+        ]);
+
+        $message->recipientLinks()->createMany(
+            $recipientUsers->map(fn (User $recipient) => ['user_id' => $recipient->id])->all()
+        );
+
+        Notification::send($recipientUsers, new AdminMessageReceivedNotification($message->load('sender', 'recipients')));
+
+        return redirect()->route('messages.show', $message)->with('status', __('messages.saved'));
+    }
+
+    private function storeFromGuru(Request $request, User $user): RedirectResponse
+    {
+        $data = $request->validate([
+            'body' => ['nullable', 'string', 'required_without:attachment'],
+            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv,zip', 'max:10240', 'required_without:body'],
+        ]);
+
+        $user->loadMissing('guru.pasti');
+        $pastiId = (int) ($user->guru?->pasti_id ?? 0);
+        abort_unless($pastiId > 0, 403);
+
+        $masterAdmins = User::query()->role('master_admin')->get();
+        $assignedAdmins = User::query()
+            ->role('admin')
+            ->whereHas('assignedPastis', fn (Builder $query) => $query->whereKey($pastiId))
+            ->get();
+
+        $recipientUsers = $masterAdmins->merge($assignedAdmins)
+            ->unique('id')
+            ->where('id', '!=', $user->id)
+            ->values();
+
+        if ($recipientUsers->isEmpty()) {
+            return back()->withErrors([
+                'body' => 'Tiada pentadbir yang boleh menerima perbualan ini.',
+            ])->withInput();
+        }
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $user->id,
+            'title' => 'Perbualan ' . ($user->guru?->pasti?->name ?? 'PASTI'),
+            'body' => $this->conversationMessageFormatter->format($data['body'] ?? '', $user),
+            'image_path' => $request->hasFile('attachment')
+                ? $request->file('attachment')->store('admin-messages', 'public')
+                : null,
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->createMany(
+            $recipientUsers->map(fn (User $recipient) => ['user_id' => $recipient->id])->all()
+        );
+
+        Notification::send($recipientUsers, new AdminMessageReceivedNotification($message->load('sender', 'recipients')));
+
+        return redirect()->route('messages.show', $message)->with('status', __('messages.saved'));
+    }
+
+    private function conversationEntries(AdminMessage $message): Collection
+    {
+        return collect([[
+            'id' => 'message-' . $message->id,
+            'sender' => $message->sender,
+            'body' => $message->body,
+            'attachment_url' => $message->attachment_url,
+            'attachment_name' => $message->attachment_name,
+            'is_image_attachment' => $message->is_image_attachment,
+            'created_at' => $message->created_at,
+        ]])->merge(
+            $message->replies->map(function ($reply): array {
+                return [
+                    'id' => 'reply-' . $reply->id,
+                    'sender' => $reply->sender,
+                    'body' => $reply->body,
+                    'attachment_url' => $reply->attachment_url,
+                    'attachment_name' => $reply->attachment_name,
+                    'is_image_attachment' => $reply->is_image_attachment,
+                    'created_at' => $reply->created_at,
+                ];
+            })
+        )->sortBy('created_at')->values();
     }
 }

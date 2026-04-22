@@ -72,8 +72,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/maklumat-gaji-guru/request-all', [GuruSalaryInformationController::class, 'requestAllUpdates'])->name('guru-salary-information.request-all');
         Route::resource('/programs', ProgramController::class)->except(['index', 'show']);
         Route::get('/kpi/gurus', [KpiController::class, 'index'])->name('kpi.gurus.index');
-        Route::get('/messages/create', [AdminMessageController::class, 'create'])->name('messages.create');
-        Route::post('/messages', [AdminMessageController::class, 'store'])->name('messages.store');
         Route::get('/users/expired-skim-pas', [AdminUserController::class, 'expiredSkimPas'])->name('users.expired-skim-pas');
         Route::get('/ajk-program', [AjkProgramController::class, 'index'])->name('ajk-program.index');
         Route::post('/ajk-program/assignments', [AjkProgramController::class, 'updateAssignments'])->name('ajk-program.assignments.update');
@@ -119,6 +117,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/leave-notices', [LeaveNoticeController::class, 'index'])->name('leave-notices.index');
         Route::delete('/leave-notices/{leaveNotice}', [LeaveNoticeController::class, 'destroy'])->name('leave-notices.destroy');
         Route::get('/messages', [AdminMessageController::class, 'index'])->name('messages.index');
+        Route::get('/messages/create', [AdminMessageController::class, 'create'])->name('messages.create');
+        Route::post('/messages', [AdminMessageController::class, 'store'])->name('messages.store');
         Route::get('/messages/{message}', [AdminMessageController::class, 'show'])->name('messages.show');
         Route::post('/messages/{message}/reply', [AdminMessageController::class, 'reply'])->name('messages.reply');
         Route::get('/senarai-guru', [GuruController::class, 'directory'])->name('guru-directory.index');
