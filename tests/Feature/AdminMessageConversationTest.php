@@ -171,7 +171,7 @@ class AdminMessageConversationTest extends TestCase
         $this->assertDatabaseHas('admin_messages', [
             'sender_id' => $admin->id,
             'title' => 'Perbualan dengan Cikgu Zara',
-            'body' => 'Salam Admin Utama dari admin.',
+            'body' => 'Salam @nama dari admin.',
             'sent_to_all' => false,
         ]);
 
@@ -259,7 +259,7 @@ class AdminMessageConversationTest extends TestCase
         $this->assertDatabaseHas('admin_messages', [
             'sender_id' => $guruUser->id,
             'title' => 'Perbualan PASTI Al Hikmah',
-            'body' => 'Saya Cikgu Murni dari PASTI Al Hikmah nak bertanya.',
+            'body' => 'Saya @nama dari @pasti nak bertanya.',
         ]);
 
         $this->assertEqualsCanonicalizing(
@@ -299,10 +299,33 @@ class AdminMessageConversationTest extends TestCase
         $response->assertRedirect(route('messages.show', $message));
 
         $reply = AdminMessageReply::query()->first();
-        $this->assertSame('Saya dah baca PASTI Al Hikmah.', $reply->body);
+        $this->assertSame('Saya dah baca @pasti.', $reply->body);
 
         Notification::assertSentTo([$admin, $guruB], AdminMessageReplyNotification::class);
         Notification::assertNotSentTo($guruA, AdminMessageReplyNotification::class);
+    }
+
+    public function test_admin_bulk_tokens_are_not_applied_when_only_one_guru_is_selected(): void
+    {
+        Notification::fake();
+        $n8n = $this->mockN8nService();
+        $n8n->shouldReceive('send')->once();
+
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-seorang@example.test', 'Cikgu Solo');
+
+        $response = $this->actingAs($admin)->post(route('messages.store'), [
+            'conversation_type' => 'bulk',
+            'recipient_scope' => 'selected',
+            'body' => 'Makluman dari @nama untuk @pasti.',
+            'recipient_user_ids' => [$guru->id],
+        ]);
+
+        $message = AdminMessage::query()->latest('id')->first();
+
+        $response->assertRedirect(route('messages.show', $message));
+        $this->assertSame('Makluman dari @nama untuk @pasti.', $message->body);
     }
 
     /**

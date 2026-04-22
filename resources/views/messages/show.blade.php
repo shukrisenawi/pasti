@@ -73,16 +73,11 @@
             </article>
 
             @if($canReply)
-                <article class="card border-primary/10 bg-white/95" x-data="messageTokenPreview(@js(old('body', '')))">
+                <article class="card border-primary/10 bg-white/95">
                     <h3 class="text-base font-bold text-slate-900">{{ __('messages.reply') }}</h3>
                     <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="mt-4 space-y-3">
                         @csrf
-                        <textarea name="body" rows="4" class="input-base" placeholder="{{ __('messages.write_reply') }}" x-model="body">{{ old('body') }}</textarea>
-                        <p class="text-xs text-slate-500">{{ __('messages.message_token_hint') }}</p>
-                        <div x-show="hasVariableToken()" x-cloak class="rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-2">
-                            <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Preview pemboleh ubah</p>
-                            <div class="mt-2 text-sm leading-7 text-slate-700" x-html="previewHtml()"></div>
-                        </div>
+                        <textarea name="body" rows="4" class="input-base" placeholder="{{ __('messages.write_reply') }}">{{ old('body') }}</textarea>
                         <input type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip" class="file-input w-full">
                         <div class="flex gap-2">
                             <button class="btn btn-primary">{{ __('messages.send_reply') }}</button>
@@ -157,31 +152,4 @@
         </aside>
     </section>
 
-    <script>
-        window.messageTokenPreview = window.messageTokenPreview || function (initialBody = '') {
-            return {
-                body: initialBody,
-                hasVariableToken() {
-                    return this.body.includes('@nama') || this.body.includes('@pasti');
-                },
-                previewHtml() {
-                    return this.escapeHtml(this.body)
-                        .replace(/@nama/g, this.badgeHtml('@nama'))
-                        .replace(/@pasti/g, this.badgeHtml('@pasti'))
-                        .replace(/\n/g, '<br>');
-                },
-                badgeHtml(label) {
-                    return `<span class="mx-0.5 inline-flex items-center rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">${label}</span>`;
-                },
-                escapeHtml(value) {
-                    return value
-                        .replace(/&/g, '&amp;')
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;')
-                        .replace(/"/g, '&quot;')
-                        .replace(/'/g, '&#039;');
-                },
-            };
-        };
-    </script>
 </x-app-layout>

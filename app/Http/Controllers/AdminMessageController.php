@@ -128,7 +128,7 @@ class AdminMessageController extends Controller
 
         $reply = $message->replies()->create([
             'sender_id' => $user->id,
-            'body' => $this->conversationMessageFormatter->format($data['body'] ?? '', $user->fresh('guru.pasti')),
+            'body' => trim((string) ($data['body'] ?? '')),
             'image_path' => $request->hasFile('attachment')
                 ? $request->file('attachment')->store('admin-message-replies', 'public')
                 : null,
@@ -230,6 +230,7 @@ class AdminMessageController extends Controller
         }
 
         $sentToAll = $data['conversation_type'] === 'bulk' && ($data['recipient_scope'] ?? 'all') === 'all';
+        $shouldApplyVariables = $data['conversation_type'] === 'bulk' && $recipientUsers->count() > 1;
         $message = AdminMessage::query()->create([
             'sender_id' => $user->id,
             'title' => $data['conversation_type'] === 'direct'
@@ -237,7 +238,9 @@ class AdminMessageController extends Controller
                 : ($sentToAll
                     ? 'Hebahan kepada semua guru'
                     : 'Hebahan kepada ' . $recipientUsers->count() . ' guru'),
-            'body' => $this->conversationMessageFormatter->format($data['body'] ?? '', $user->fresh('guru.pasti')),
+            'body' => $shouldApplyVariables
+                ? $this->conversationMessageFormatter->format($data['body'] ?? '', $user->fresh('guru.pasti'))
+                : trim((string) ($data['body'] ?? '')),
             'image_path' => $request->hasFile('attachment')
                 ? $request->file('attachment')->store('admin-messages', 'public')
                 : null,
@@ -296,7 +299,7 @@ class AdminMessageController extends Controller
         $message = AdminMessage::query()->create([
             'sender_id' => $user->id,
             'title' => 'Perbualan ' . ($user->guru?->pasti?->name ?? 'PASTI'),
-            'body' => $this->conversationMessageFormatter->format($data['body'] ?? '', $user),
+            'body' => trim((string) ($data['body'] ?? '')),
             'image_path' => $request->hasFile('attachment')
                 ? $request->file('attachment')->store('admin-messages', 'public')
                 : null,

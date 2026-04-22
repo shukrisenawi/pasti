@@ -13,7 +13,22 @@
 
     <div class="card border-primary/10 bg-white/95">
         <form method="POST" action="{{ route('messages.store') }}" enctype="multipart/form-data" class="space-y-5"
-            x-data="{ type: '{{ old('conversation_type', 'direct') }}', scope: '{{ old('recipient_scope', 'all') }}' }">
+            x-data="{
+                type: '{{ old('conversation_type', 'direct') }}',
+                scope: '{{ old('recipient_scope', 'all') }}',
+                selectedRecipients: @js(array_map('strval', old('recipient_user_ids', []))),
+                tokenFeatureEnabled() {
+                    if (! {{ $isAdminComposer ? 'true' : 'false' }}) {
+                        return false;
+                    }
+
+                    if (this.type !== 'bulk') {
+                        return false;
+                    }
+
+                    return this.scope === 'all' || this.selectedRecipients.length > 1;
+                }
+            }">
             @csrf
 
             @if($isAdminComposer)
@@ -56,7 +71,7 @@
                         </div>
 
                         <div class="mt-3" x-show="scope === 'selected'" x-cloak>
-                            <select name="recipient_user_ids[]" multiple size="8" class="input-base">
+                            <select name="recipient_user_ids[]" multiple size="8" class="input-base" x-model="selectedRecipients">
                                 @foreach($gurus as $guru)
                                     <option value="{{ $guru->user_id }}" @selected(in_array($guru->user_id, old('recipient_user_ids', [])))>
                                         {{ $guru->display_name }} ({{ $guru->pasti?->name ?? '-' }})
@@ -72,8 +87,8 @@
             <div x-data="messageTokenPreview(@js(old('body', '')))">
                 <label class="label-base">{{ __('messages.message') }}</label>
                 <textarea name="body" rows="6" class="input-base" placeholder="{{ __('messages.write_message_hint') }}" x-model="body">{{ old('body') }}</textarea>
-                <p class="mt-1 text-xs text-slate-500">{{ __('messages.message_token_hint') }}</p>
-                <div x-show="hasVariableToken()" x-cloak class="mt-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-2">
+                <p x-show="tokenFeatureEnabled()" x-cloak class="mt-1 text-xs text-slate-500">{{ __('messages.message_token_hint') }}</p>
+                <div x-show="tokenFeatureEnabled() && hasVariableToken()" x-cloak class="mt-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-2">
                     <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Preview pemboleh ubah</p>
                     <div class="mt-2 text-sm leading-7 text-slate-700" x-html="previewHtml()"></div>
                 </div>
