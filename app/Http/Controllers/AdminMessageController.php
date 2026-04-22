@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminMessage;
 use App\Models\AdminMessageRecipient;
+use App\Models\AdminMessageReply;
 use App\Models\Guru;
 use App\Models\User;
 use App\Notifications\AdminMessageReceivedNotification;
@@ -113,7 +114,7 @@ class AdminMessageController extends Controller
             'canReply' => true,
             'canDeleteMessage' => $message->canBeDeletedBy($user),
             'canViewRecipients' => $user->hasAnyRole(['master_admin', 'admin']),
-            'conversationEntries' => $this->conversationEntries($message),
+            'conversationEntries' => $this->conversationEntries($message, $user),
         ]);
     }
 
@@ -175,6 +176,25 @@ class AdminMessageController extends Controller
         return redirect()
             ->route('messages.index')
             ->with('status', 'Mesej berjaya dipadam.');
+    }
+
+    public function destroyReply(Request $request, AdminMessage $message, AdminMessageReply $reply): RedirectResponse
+    {
+        $user = $request->user();
+
+        $this->ensureMessageAccessible($user, $message);
+        abort_unless((int) $reply->admin_message_id === (int) $message->id, 404);
+        abort_unless($reply->canBeDeletedBy($user), 403);
+
+        if ($reply->image_path) {
+            Storage::disk('public')->delete($reply->image_path);
+        }
+
+        $reply->delete();
+
+        return redirect()
+            ->route('messages.show', $message)
+            ->with('status', 'Balasan berjaya dipadam.');
     }
 
     private function ensureMessageAccessible(User $user, AdminMessage $message): void
@@ -354,26 +374,34 @@ class AdminMessageController extends Controller
         return redirect()->route('messages.show', $message)->with('status', __('messages.saved'));
     }
 
-    private function conversationEntries(AdminMessage $message): Collection
+    private function conversationEntries(AdminMessage $message, User $user): Collection
     {
         return collect([[
             'id' => 'message-' . $message->id,
+            'entry_type' => 'message',
+            'entry_key' => $message->id,
             'sender' => $message->sender,
             'body' => $message->body,
             'attachment_url' => $message->attachment_url,
             'attachment_name' => $message->attachment_name,
             'is_image_attachment' => $message->is_image_attachment,
             'created_at' => $message->created_at,
+            'can_delete' => $message->canBeDeletedBy($user),
+            'delete_route' => route('messages.destroy', $message),
         ]])->merge(
-            $message->replies->map(function ($reply): array {
+            $message->replies->map(function ($reply) use ($message, $user): array {
                 return [
                     'id' => 'reply-' . $reply->id,
+                    'entry_type' => 'reply',
+                    'entry_key' => $reply->id,
                     'sender' => $reply->sender,
                     'body' => $reply->body,
                     'attachment_url' => $reply->attachment_url,
                     'attachment_name' => $reply->attachment_name,
                     'is_image_attachment' => $reply->is_image_attachment,
                     'created_at' => $reply->created_at,
+                    'can_delete' => $reply->canBeDeletedBy($user),
+                    'delete_route' => route('messages.replies.destroy', [$message, $reply]),
                 ];
             })
         )->sortBy('created_at')->values();

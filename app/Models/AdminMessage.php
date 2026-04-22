@@ -104,7 +104,8 @@ class AdminMessage extends Model
             return false;
         }
 
-        return (int) $this->sender_id === (int) $user->id;
+        return (int) $this->sender_id === (int) $user->id
+            || $user->hasAnyRole(['master_admin', 'admin']);
     }
 
     public function latestPreview(): string

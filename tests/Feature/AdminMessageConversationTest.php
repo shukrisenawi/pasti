@@ -131,6 +131,15 @@ class AdminMessageConversationTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('program_teacher', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id');
+            $table->unsignedBigInteger('program_id');
+            $table->unsignedBigInteger('program_status_id')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('guru_program', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('guru_id');
@@ -149,6 +158,12 @@ class AdminMessageConversationTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('guru_id')->nullable();
             $table->timestamp('completed_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('kpi_snapshots', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id')->nullable();
             $table->timestamps();
         });
 
@@ -183,8 +198,10 @@ class AdminMessageConversationTest extends TestCase
         Schema::dropIfExists('claims');
         Schema::dropIfExists('leave_notices');
         Schema::dropIfExists('guru_salary_requests');
+        Schema::dropIfExists('kpi_snapshots');
         Schema::dropIfExists('pasti_information_requests');
         Schema::dropIfExists('guru_program');
+        Schema::dropIfExists('program_teacher');
         Schema::dropIfExists('programs');
         Schema::dropIfExists('admin_message_replies');
         Schema::dropIfExists('admin_message_recipients');
@@ -438,6 +455,102 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('x-ref="chatScroller"', false);
         $response->assertSee('min-h-[400px] max-h-[400px] overflow-y-auto', false);
         $response->assertSee('x-init="init()"', false);
+    }
+
+    public function test_message_show_displays_delete_icon_for_entry_owner_and_admin(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-bubble-owner@example.test', 'Cikgu Bubble');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $guru->id,
+            'title' => 'Perbualan dengan admin',
+            'body' => 'Mesej guru',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $admin->id,
+        ]);
+
+        $reply = AdminMessageReply::query()->create([
+            'admin_message_id' => $message->id,
+            'sender_id' => $guru->id,
+            'body' => 'Balasan guru',
+        ]);
+
+        $response = $this->actingAs($guru)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertSee('aria-label="Padam mesej '.$message->id.'"', false);
+        $response->assertSee('aria-label="Padam balasan '.$reply->id.'"', false);
+    }
+
+    public function test_message_show_does_not_display_delete_icon_for_non_owner_guru(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guruOwner = $this->createGuruUser($pasti, 'guru-bubble-owner2@example.test', 'Cikgu Owner');
+        $guruOther = $this->createGuruUser($pasti, 'guru-bubble-other@example.test', 'Cikgu Lain');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Hebahan kepada 2 guru',
+            'body' => 'Mesej admin',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->createMany([
+            ['user_id' => $guruOwner->id],
+            ['user_id' => $guruOther->id],
+        ]);
+
+        $reply = AdminMessageReply::query()->create([
+            'admin_message_id' => $message->id,
+            'sender_id' => $guruOwner->id,
+            'body' => 'Balasan owner',
+        ]);
+
+        $response = $this->actingAs($guruOther)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertDontSee('aria-label="Padam mesej '.$message->id.'"', false);
+        $response->assertDontSee('aria-label="Padam balasan '.$reply->id.'"', false);
+    }
+
+    public function test_admin_can_delete_reply_entry_from_chat(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-reply-delete@example.test', 'Cikgu Reply');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $guru->id,
+            'title' => 'Perbualan dengan admin',
+            'body' => 'Mesej awal',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $admin->id,
+        ]);
+
+        $reply = AdminMessageReply::query()->create([
+            'admin_message_id' => $message->id,
+            'sender_id' => $guru->id,
+            'body' => 'Balasan untuk dipadam',
+        ]);
+
+        $response = $this->actingAs($admin)->delete(route('messages.replies.destroy', [$message, $reply]));
+
+        $response->assertRedirect(route('messages.show', $message));
+        $this->assertDatabaseMissing('admin_message_replies', [
+            'id' => $reply->id,
+        ]);
+        $this->assertDatabaseHas('admin_messages', [
+            'id' => $message->id,
+        ]);
     }
 
     public function test_sender_can_delete_message_that_has_not_been_replied_to(): void

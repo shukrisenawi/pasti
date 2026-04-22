@@ -27,6 +27,16 @@ class AdminMessageReply extends Model
         return $this->belongsTo(User::class, 'sender_id');
     }
 
+    public function canBeDeletedBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        return (int) $this->sender_id === (int) $user->id
+            || $user->hasAnyRole(['master_admin', 'admin']);
+    }
+
     public function getImageUrlAttribute(): ?string
     {
         if (! $this->is_image_attachment) {
