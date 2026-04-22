@@ -32,25 +32,6 @@
                 </p>
             </div>
             <div class="flex items-center gap-2">
-                @if($canDeleteMessage)
-                    <form method="POST" action="{{ route('messages.destroy', $message) }}" onsubmit="return confirm('Padam mesej ini?')">
-                        @csrf
-                        @method('DELETE')
-                        <button
-                            type="submit"
-                            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-rose-200 bg-white text-rose-600 shadow-sm transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
-                            title="Padam mesej"
-                            aria-label="Padam mesej"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 6l-1 14a1 1 0 01-1 1H7a1 1 0 01-1-1L5 6" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 11v6M14 11v6" />
-                            </svg>
-                        </button>
-                    </form>
-                @endif
                 <a href="{{ route('messages.index') }}" class="btn btn-outline">{{ __('messages.inbox') }}</a>
             </div>
         </div>
