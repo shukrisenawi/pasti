@@ -84,9 +84,34 @@
                 </div>
             @endif
 
-            <div x-data="messageTokenPreview(@js(old('body', '')))">
+            <div x-data="messageComposer(@js(old('body', '')))" class="relative">
                 <label class="label-base">{{ __('messages.message') }}</label>
-                <textarea name="body" rows="6" class="input-base" placeholder="{{ __('messages.write_message_hint') }}" x-model="body">{{ old('body') }}</textarea>
+                <div class="relative">
+                    <textarea x-ref="textarea" name="body" rows="6" class="input-base pr-14 pb-12" placeholder="{{ __('messages.write_message_hint') }}" x-model="body">{{ old('body') }}</textarea>
+                    <button
+                        type="button"
+                        class="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-lg shadow-sm transition hover:border-primary/30 hover:text-primary"
+                        @click="emojiOpen = !emojiOpen"
+                    >😊</button>
+                    <div
+                        x-show="emojiOpen"
+                        x-cloak
+                        @click.outside="emojiOpen = false"
+                        class="absolute bottom-14 right-0 z-20 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl"
+                    >
+                        <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Pilih emoji</p>
+                        <div class="grid grid-cols-6 gap-2">
+                            <template x-for="emoji in emojis" :key="emoji">
+                                <button
+                                    type="button"
+                                    class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-lg transition hover:border-primary/30 hover:bg-primary/5"
+                                    @click="insertEmoji(emoji)"
+                                    x-text="emoji"
+                                ></button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
                 <p x-show="tokenFeatureEnabled()" x-cloak class="mt-1 text-xs text-slate-500">{{ __('messages.message_token_hint') }}</p>
                 <div x-show="tokenFeatureEnabled() && hasVariableToken()" x-cloak class="mt-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-2">
                     <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Preview pemboleh ubah</p>
@@ -106,32 +131,5 @@
             </div>
         </form>
     </div>
-
-    <script>
-        window.messageTokenPreview = window.messageTokenPreview || function (initialBody = '') {
-            return {
-                body: initialBody,
-                hasVariableToken() {
-                    return this.body.includes('@nama') || this.body.includes('@pasti');
-                },
-                previewHtml() {
-                    return this.escapeHtml(this.body)
-                        .replace(/@nama/g, this.badgeHtml('@nama'))
-                        .replace(/@pasti/g, this.badgeHtml('@pasti'))
-                        .replace(/\n/g, '<br>');
-                },
-                badgeHtml(label) {
-                    return `<span class="mx-0.5 inline-flex items-center rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">${label}</span>`;
-                },
-                escapeHtml(value) {
-                    return value
-                        .replace(/&/g, '&amp;')
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;')
-                        .replace(/"/g, '&quot;')
-                        .replace(/'/g, '&#039;');
-                },
-            };
-        };
-    </script>
+    @include('messages.partials.composer-script')
 </x-app-layout>

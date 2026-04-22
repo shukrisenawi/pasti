@@ -73,11 +73,36 @@
             </article>
 
             @if($canReply)
-                <article class="card border-primary/10 bg-white/95">
+                <article class="card border-primary/10 bg-white/95" x-data="messageComposer(@js(old('body', '')))">
                     <h3 class="text-base font-bold text-slate-900">{{ __('messages.reply') }}</h3>
                     <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="mt-4 space-y-3">
                         @csrf
-                        <textarea name="body" rows="4" class="input-base" placeholder="{{ __('messages.write_reply') }}">{{ old('body') }}</textarea>
+                        <div class="relative">
+                            <textarea x-ref="textarea" name="body" rows="4" class="input-base pr-14 pb-12" placeholder="{{ __('messages.write_reply') }}" x-model="body">{{ old('body') }}</textarea>
+                            <button
+                                type="button"
+                                class="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-lg shadow-sm transition hover:border-primary/30 hover:text-primary"
+                                @click="emojiOpen = !emojiOpen"
+                            >😊</button>
+                            <div
+                                x-show="emojiOpen"
+                                x-cloak
+                                @click.outside="emojiOpen = false"
+                                class="absolute bottom-14 right-0 z-20 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl"
+                            >
+                                <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Pilih emoji</p>
+                                <div class="grid grid-cols-6 gap-2">
+                                    <template x-for="emoji in emojis" :key="emoji">
+                                        <button
+                                            type="button"
+                                            class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-lg transition hover:border-primary/30 hover:bg-primary/5"
+                                            @click="insertEmoji(emoji)"
+                                            x-text="emoji"
+                                        ></button>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                         <input type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip" class="file-input w-full">
                         <div class="flex gap-2">
                             <button class="btn btn-primary">{{ __('messages.send_reply') }}</button>
@@ -154,4 +179,5 @@
         @endif
     </section>
 
+    @include('messages.partials.composer-script')
 </x-app-layout>
