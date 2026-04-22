@@ -78,7 +78,19 @@
                     <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="mt-4 space-y-3">
                         @csrf
                         <div class="relative">
-                            <textarea x-ref="textarea" name="body" rows="4" class="input-base pr-14 pb-12" placeholder="{{ __('messages.write_reply') }}" x-model="body">{{ old('body') }}</textarea>
+                            <textarea x-ref="textarea" name="body" rows="4" class="input-base pr-24 pb-12" placeholder="{{ __('messages.write_reply') }}" x-model="body">{{ old('body') }}</textarea>
+                            <input x-ref="attachmentInput" type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip" class="hidden">
+                            <button
+                                type="button"
+                                class="absolute bottom-3 right-14 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-primary/30 hover:text-primary"
+                                @click="$refs.attachmentInput.click()"
+                                title="{{ __('messages.attachment') }}"
+                                aria-label="{{ __('messages.attachment') }}"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-8.49 8.49a6 6 0 11-8.49-8.49l9.19-9.19a4 4 0 115.66 5.66l-9.2 9.19a2 2 0 11-2.82-2.83l8.49-8.48" />
+                                </svg>
+                            </button>
                             <button
                                 type="button"
                                 class="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-lg shadow-sm transition hover:border-primary/30 hover:text-primary"
@@ -103,7 +115,6 @@
                                 </div>
                             </div>
                         </div>
-                        <input type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip" class="file-input w-full">
                         <div class="flex gap-2">
                             <button class="btn btn-primary">{{ __('messages.send_reply') }}</button>
                         </div>
