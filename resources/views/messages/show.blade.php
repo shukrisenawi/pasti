@@ -4,6 +4,13 @@
             $onlineThreshold = now()->subMinutes(5);
             $broadcastPreviewCount = 24;
             $participants = $message->participants()
+                ->filter(function ($participant) {
+                    if (! $participant || ! $participant->hasRole('guru')) {
+                        return true;
+                    }
+
+                    return filled($participant->guru?->pasti_id);
+                })
                 ->sortByDesc(function ($participant) {
                     $lastLoginAt = $participant?->last_login_at;
 
