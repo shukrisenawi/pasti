@@ -78,4 +78,34 @@ class SendDatabaseNotificationToFcmTest extends TestCase
 
         $this->addToAssertionCount(1);
     }
+
+    public function test_it_skips_fcm_when_notification_requests_suppression(): void
+    {
+        $service = Mockery::mock(FcmNotificationService::class);
+        $service->shouldNotReceive('sendToNotifiable');
+
+        $listener = new SendDatabaseNotificationToFcm($service);
+        $listener->handle(new NotificationSent(
+            new User(['email' => 'guru@ujian.test']),
+            new class extends Notification
+            {
+                public function toArray(object $notifiable): array
+                {
+                    return [
+                        'notification_title' => 'Mesej baru',
+                        'notification_message' => 'Perlu senyap.',
+                    ];
+                }
+
+                public function shouldSendFcmForDatabase(object $notifiable, ?string $notificationId): bool
+                {
+                    return false;
+                }
+            },
+            'database',
+            new DatabaseNotification(['id' => 'notif-999'])
+        ));
+
+        $this->addToAssertionCount(1);
+    }
 }

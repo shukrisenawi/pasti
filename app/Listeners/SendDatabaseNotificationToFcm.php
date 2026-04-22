@@ -33,6 +33,13 @@ class SendDatabaseNotificationToFcm
             ? (string) $event->response->id
             : null;
 
+        if (
+            method_exists($event->notification, 'shouldSendFcmForDatabase')
+            && ! $event->notification->shouldSendFcmForDatabase($event->notifiable, $notificationId)
+        ) {
+            return;
+        }
+
         $message = FcmMessage::fromDatabaseNotificationData(
             $payload,
             $event->notification::class,

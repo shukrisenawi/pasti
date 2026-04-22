@@ -11,6 +11,7 @@ use App\Models\Pasti;
 use App\Models\User;
 use App\Notifications\AdminMessageReceivedNotification;
 use App\Notifications\AdminMessageReplyNotification;
+use App\Services\N8nWebhookService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
@@ -151,6 +152,7 @@ class AdminMessageConversationTest extends TestCase
     public function test_admin_can_start_a_direct_conversation_with_one_guru(): void
     {
         Notification::fake();
+        $this->mockN8nService();
 
         [$pasti] = $this->createPastiFixtures();
         $admin = $this->createAdminWithAssignment($pasti);
@@ -184,6 +186,15 @@ class AdminMessageConversationTest extends TestCase
     public function test_admin_can_send_bulk_conversation_to_selected_gurus(): void
     {
         Notification::fake();
+        $n8n = $this->mockN8nService();
+        $n8n->shouldReceive('send')
+            ->once()
+            ->withArgs(function (string $text, ?string $link, ?string $gambar = null): bool {
+                return str_contains($text, 'Admin Utama')
+                    && str_contains(strtolower($text), 'hebahan')
+                    && $link !== null
+                    && $gambar === null;
+            });
 
         [$pasti] = $this->createPastiFixtures();
         $admin = $this->createAdminWithAssignment($pasti);
@@ -215,6 +226,16 @@ class AdminMessageConversationTest extends TestCase
     public function test_guru_can_start_a_conversation_to_assigned_admins_and_master_admins(): void
     {
         Notification::fake();
+        $n8n = $this->mockN8nService();
+        $n8n->shouldReceive('sendGroup2')
+            ->once()
+            ->withArgs(function (string $text, ?string $link, ?string $gambar = null): bool {
+                return str_contains($text, 'Cikgu Murni')
+                    && str_contains($text, 'PASTI Al Hikmah')
+                    && str_contains(strtolower($text), 'mesej kepada admin')
+                    && $link !== null
+                    && $gambar === null;
+            });
 
         [$pasti] = $this->createPastiFixtures();
         $masterAdmin = User::query()->create([
@@ -252,6 +273,7 @@ class AdminMessageConversationTest extends TestCase
     public function test_bulk_reply_notifies_other_participants_except_sender(): void
     {
         Notification::fake();
+        $this->mockN8nService();
 
         [$pasti] = $this->createPastiFixtures();
         $admin = $this->createAdminWithAssignment($pasti);
@@ -340,5 +362,16 @@ class AdminMessageConversationTest extends TestCase
             'model_type' => User::class,
             'model_id' => $user->id,
         ]);
+    }
+
+    private function mockN8nService(): \Mockery\MockInterface
+    {
+        $mock = \Mockery::mock(N8nWebhookService::class)->shouldIgnoreMissing();
+        $mock->shouldReceive('toActionUrl')
+            ->zeroOrMoreTimes()
+            ->andReturnUsing(fn (?string $url) => $url);
+        app()->instance(N8nWebhookService::class, $mock);
+
+        return $mock;
     }
 }

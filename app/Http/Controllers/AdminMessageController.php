@@ -8,9 +8,12 @@ use App\Models\Guru;
 use App\Models\User;
 use App\Notifications\AdminMessageReceivedNotification;
 use App\Notifications\AdminMessageReplyNotification;
+use App\Services\N8nWebhookService;
 use App\Support\ConversationMessageFormatter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -21,6 +24,7 @@ class AdminMessageController extends Controller
 {
     public function __construct(
         private readonly ConversationMessageFormatter $conversationMessageFormatter,
+        private readonly N8nWebhookService $n8nWebhookService,
     ) {
     }
 
@@ -89,13 +93,19 @@ class AdminMessageController extends Controller
             'replies.sender.guru.pasti',
         ]);
 
-        if ($user->hasRole('guru')) {
-            AdminMessageRecipient::query()
-                ->where('admin_message_id', $message->id)
-                ->where('user_id', $user->id)
-                ->whereNull('read_at')
-                ->update(['read_at' => now()]);
-        }
+        AdminMessageRecipient::query()
+            ->where('admin_message_id', $message->id)
+            ->where('user_id', $user->id)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
+        DatabaseNotification::query()
+            ->where('notifiable_type', User::class)
+            ->where('notifiable_id', $user->id)
+            ->whereIn('type', [AdminMessageReceivedNotification::class, AdminMessageReplyNotification::class])
+            ->where('data->admin_message_id', $message->id)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
 
         return view('messages.show', [
             'message' => $message,
@@ -240,6 +250,18 @@ class AdminMessageController extends Controller
 
         Notification::send($recipientUsers, new AdminMessageReceivedNotification($message->load('sender', 'recipients')));
 
+        if ($data['conversation_type'] === 'bulk') {
+            $this->n8nWebhookService->send(
+                sprintf(
+                    '%s hantar hebahan kepada %d guru. Mesej: %s',
+                    $user->display_name,
+                    $recipientUsers->count(),
+                    Str::limit($message->body, 120)
+                ),
+                $this->n8nWebhookService->toActionUrl(route('messages.show', $message))
+            );
+        }
+
         return redirect()->route('messages.show', $message)->with('status', __('messages.saved'));
     }
 
@@ -286,6 +308,16 @@ class AdminMessageController extends Controller
         );
 
         Notification::send($recipientUsers, new AdminMessageReceivedNotification($message->load('sender', 'recipients')));
+
+        $this->n8nWebhookService->sendGroup2(
+            sprintf(
+                '%s dari %s hantar mesej kepada admin. Mesej: %s',
+                $user->display_name,
+                $user->guru?->pasti?->name ?? 'PASTI',
+                Str::limit($message->body, 120)
+            ),
+            $this->n8nWebhookService->toActionUrl(route('messages.show', $message))
+        );
 
         return redirect()->route('messages.show', $message)->with('status', __('messages.saved'));
     }
