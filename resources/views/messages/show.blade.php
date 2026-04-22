@@ -10,11 +10,6 @@
                     return $lastLoginAt && $lastLoginAt->gte(now()->subMinutes(5));
                 })
                 ->values();
-            $recipientParticipants = $message->recipients()
-                ->with('guru.pasti')
-                ->get()
-                ->sortByDesc(fn ($participant) => $participant->last_login_at && $participant->last_login_at->gte($onlineThreshold))
-                ->values();
             $isBroadcastToAll = $message->sent_to_all;
             $participantsSummary = $isBroadcastToAll
                 ? 'Hebahan kepada semua guru'
@@ -93,10 +88,10 @@
                     <div x-data="{ expanded: false }" class="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
                         <p class="text-sm font-semibold text-slate-900">Hebahan kepada semua guru</p>
                         <p class="mt-1 text-xs text-slate-500">
-                            {{ $message->recipients()->count() }} penerima
+                            {{ $participants->count() }} peserta
                         </p>
                         <div class="mt-4 grid grid-cols-4 gap-3">
-                            @foreach($recipientParticipants as $participant)
+                            @foreach($participants as $participant)
                                 @php($isOnline = $participant->last_login_at && $participant->last_login_at->gte($onlineThreshold))
                                 <div
                                     class="group relative"
@@ -115,7 +110,7 @@
                                 </div>
                             @endforeach
                         </div>
-                        @if($recipientParticipants->count() > $broadcastPreviewCount)
+                        @if($participants->count() > $broadcastPreviewCount)
                             <button
                                 type="button"
                                 class="mt-4 inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-primary/30 hover:text-primary"
