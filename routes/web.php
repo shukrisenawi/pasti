@@ -1,33 +1,35 @@
 <?php
 
-use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminMessageController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AjkProgramController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClaimController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\GuruCourseController;
 use App\Http\Controllers\GuruSalaryInformationController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\KpiController;
 use App\Http\Controllers\LeaveNoticeController;
 use App\Http\Controllers\LocaleController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\N8nSettingController;
-use App\Http\Controllers\ImpersonationController;
-use App\Http\Controllers\PemarkahanController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PastiController;
 use App\Http\Controllers\PastiInformationController;
+use App\Http\Controllers\PemarkahanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ProgramParticipationController;
 use App\Http\Controllers\ProgramTitleOptionController;
+use App\Http\Controllers\WebViewFcmTokenController;
 use App\Services\N8nWebhookService;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
+Route::delete('/mobile/fcm-token', [WebViewFcmTokenController::class, 'destroy'])->name('mobile.fcm-token.destroy');
 Route::get('/.well-known/assetlinks.json', function (N8nWebhookService $n8nWebhookService) {
     return response()->json($n8nWebhookService->androidAssetLinks());
 });
@@ -133,6 +135,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::delete('/notifications', [NotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
+    Route::post('/mobile/fcm-token', [WebViewFcmTokenController::class, 'store'])->name('mobile.fcm-token.store');
     Route::match(['get', 'post'], '/impersonation/leave', [ImpersonationController::class, 'stop'])->name('impersonation.stop');
 });
 

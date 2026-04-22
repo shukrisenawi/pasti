@@ -12,8 +12,7 @@ class FcmNotificationService
 {
     public function __construct(
         private readonly FirebaseAccessTokenService $accessTokenService,
-    ) {
-    }
+    ) {}
 
     public function sendToNotifiable(object $notifiable, FcmMessage $message, Notification $notification): void
     {
@@ -35,8 +34,17 @@ class FcmNotificationService
             return;
         }
 
+        $platforms = FcmToken::query()
+            ->whereIn('token', $tokens)
+            ->pluck('platform', 'token');
+
         foreach ($tokens as $token) {
-            $this->sendToToken($token, $message, $accessToken);
+            $this->sendToToken(
+                $token,
+                $message,
+                $accessToken,
+                $platforms[$token] ?? null,
+            );
         }
     }
 
@@ -67,8 +75,12 @@ class FcmNotificationService
         }
     }
 
-    private function sendToToken(string $token, FcmMessage $message, string $accessToken): void
-    {
+    private function sendToToken(
+        string $token,
+        FcmMessage $message,
+        string $accessToken,
+        ?string $platform = null,
+    ): void {
         try {
             $messagePayload = [
                 'token' => $token,
@@ -85,7 +97,7 @@ class FcmNotificationService
                 ],
             ];
 
-            if (! $message->dataOnly) {
+            if (! $message->dataOnly && ! $this->shouldUseLocalNotifications($platform)) {
                 $messagePayload['notification'] = [
                     'title' => $message->title,
                     'body' => $message->body,
@@ -123,6 +135,15 @@ class FcmNotificationService
         } catch (Throwable $exception) {
             report($exception);
         }
+    }
+
+    private function shouldUseLocalNotifications(?string $platform): bool
+    {
+        if (! is_string($platform) || $platform === '') {
+            return false;
+        }
+
+        return in_array($platform, ['android-webview', 'flutter-android-webview'], true);
     }
 
     private function endpoint(): string

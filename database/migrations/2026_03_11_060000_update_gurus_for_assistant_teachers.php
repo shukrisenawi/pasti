@@ -18,11 +18,32 @@ return new class extends Migration
             $table->boolean('is_assistant')->default(false)->after('email');
         });
 
-        DB::statement('
-            UPDATE gurus
-            INNER JOIN users ON users.id = gurus.user_id
-            SET gurus.name = users.name, gurus.email = users.email
-        ');
+        if (DB::getDriverName() === 'sqlite') {
+            DB::table('gurus')
+                ->select(['id', 'user_id'])
+                ->orderBy('id')
+                ->get()
+                ->each(function (object $guru): void {
+                    $user = DB::table('users')->where('id', $guru->user_id)->first(['name', 'email']);
+
+                    if (! $user) {
+                        return;
+                    }
+
+                    DB::table('gurus')
+                        ->where('id', $guru->id)
+                        ->update([
+                            'name' => $user->name,
+                            'email' => $user->email,
+                        ]);
+                });
+        } else {
+            DB::statement('
+                UPDATE gurus
+                INNER JOIN users ON users.id = gurus.user_id
+                SET gurus.name = users.name, gurus.email = users.email
+            ');
+        }
 
         Schema::table('gurus', function (Blueprint $table) {
             $table->dropForeign(['user_id']);

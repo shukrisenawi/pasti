@@ -52,5 +52,25 @@
         </div>
     </div>
 </div>
+<script>
+    (function () {
+        const message = JSON.stringify({
+            type: 'lr-pasti-auth-user',
+            user: null,
+        });
+
+        if (window.ReactNativeWebView?.postMessage) {
+            window.ReactNativeWebView.postMessage(message);
+        }
+
+        if (window.LRPastiAppBridge?.onAuthenticatedUser) {
+            window.LRPastiAppBridge.onAuthenticatedUser(message);
+        }
+
+        if (window.Android?.onAuthenticatedUser) {
+            window.Android.onAuthenticatedUser(message);
+        }
+    }());
+</script>
 </body>
 </html>
