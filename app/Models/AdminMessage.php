@@ -104,15 +104,7 @@ class AdminMessage extends Model
             return false;
         }
 
-        if ((int) $this->sender_id !== (int) $user->id) {
-            return false;
-        }
-
-        $replyCount = $this->relationLoaded('replies')
-            ? $this->replies->count()
-            : $this->replies()->count();
-
-        return $replyCount === 0;
+        return (int) $this->sender_id === (int) $user->id;
     }
 
     public function latestPreview(): string

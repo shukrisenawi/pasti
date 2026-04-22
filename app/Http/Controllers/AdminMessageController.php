@@ -161,6 +161,10 @@ class AdminMessageController extends Controller
             Storage::disk('public')->delete($message->image_path);
         }
 
+        $message->replies
+            ->filter(fn ($reply) => filled($reply->image_path))
+            ->each(fn ($reply) => Storage::disk('public')->delete($reply->image_path));
+        $message->replies()->delete();
         $message->recipientLinks()->delete();
         DatabaseNotification::query()
             ->whereIn('type', [AdminMessageReceivedNotification::class, AdminMessageReplyNotification::class])

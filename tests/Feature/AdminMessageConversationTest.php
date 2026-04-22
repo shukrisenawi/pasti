@@ -460,7 +460,7 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('aria-label="Padam mesej"', false);
     }
 
-    public function test_sender_cannot_delete_message_after_it_has_received_a_reply(): void
+    public function test_sender_can_delete_message_even_after_it_has_received_a_reply(): void
     {
         [$pasti] = $this->createPastiFixtures();
         $admin = $this->createAdminWithAssignment($pasti);
@@ -485,13 +485,16 @@ class AdminMessageConversationTest extends TestCase
 
         $response = $this->actingAs($admin)->delete(route('messages.destroy', $message));
 
-        $response->assertForbidden();
-        $this->assertDatabaseHas('admin_messages', [
+        $response->assertRedirect(route('messages.index'));
+        $this->assertDatabaseMissing('admin_messages', [
             'id' => $message->id,
+        ]);
+        $this->assertDatabaseMissing('admin_message_replies', [
+            'admin_message_id' => $message->id,
         ]);
     }
 
-    public function test_sender_does_not_see_delete_icon_after_message_has_reply(): void
+    public function test_sender_still_sees_delete_icon_after_message_has_reply(): void
     {
         [$pasti] = $this->createPastiFixtures();
         $admin = $this->createAdminWithAssignment($pasti);
@@ -517,7 +520,7 @@ class AdminMessageConversationTest extends TestCase
         $response = $this->actingAs($admin)->get(route('messages.show', $message));
 
         $response->assertOk();
-        $response->assertDontSee('aria-label="Padam mesej"', false);
+        $response->assertSee('aria-label="Padam mesej"', false);
     }
 
     /**
