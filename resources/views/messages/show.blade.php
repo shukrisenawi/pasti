@@ -1,12 +1,19 @@
 <x-app-layout>
     <x-slot name="header">
+        @php
+            $participants = $message->participants();
+            $isBroadcastToAll = $message->sent_to_all;
+            $participantsSummary = $isBroadcastToAll
+                ? 'Hebahan kepada semua guru'
+                : $participants->pluck('display_name')->implode(', ');
+        @endphp
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 class="text-lg font-bold">{{ $message->conversationTitleFor(auth()->user()) }}</h2>
                 <p class="text-sm text-slate-500">
                     {{ $message->isBulkConversation() ? __('messages.bulk_conversation') : __('messages.direct_conversation') }}
                     <span class="mx-2 text-slate-300">|</span>
-                    {{ $message->participants()->pluck('display_name')->implode(', ') }}
+                    {{ $participantsSummary }}
                 </p>
             </div>
             <a href="{{ route('messages.index') }}" class="btn btn-outline">{{ __('messages.inbox') }}</a>
@@ -69,15 +76,24 @@
         <aside class="card border-primary/10 bg-white/95">
             <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.participants') }}</p>
             <div class="mt-3 space-y-3">
-                @foreach($message->participants() as $participant)
-                    <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2">
-                        <x-avatar :user="$participant" size="h-10 w-10" rounded="rounded-xl" />
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-semibold text-slate-900">{{ $participant->display_name }}</p>
-                            <p class="truncate text-xs text-slate-500">{{ $participant->guru?->pasti?->name ?? $participant->email ?? '-' }}</p>
-                        </div>
+                @if($isBroadcastToAll)
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
+                        <p class="text-sm font-semibold text-slate-900">Hebahan kepada semua guru</p>
+                        <p class="mt-1 text-xs text-slate-500">
+                            {{ $message->recipients()->count() }} penerima
+                        </p>
                     </div>
-                @endforeach
+                @else
+                    @foreach($participants as $participant)
+                        <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2">
+                            <x-avatar :user="$participant" size="h-10 w-10" rounded="rounded-xl" />
+                            <div class="min-w-0">
+                                <p class="truncate text-sm font-semibold text-slate-900">{{ $participant->display_name }}</p>
+                                <p class="truncate text-xs text-slate-500">{{ $participant->guru?->pasti?->name ?? $participant->email ?? '-' }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
             </div>
         </aside>
     </section>
