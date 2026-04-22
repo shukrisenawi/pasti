@@ -1,12 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
         @php
+            $onlineThreshold = now()->subMinutes(5);
             $participants = $message->participants()
                 ->sortByDesc(function ($participant) {
                     $lastLoginAt = $participant?->last_login_at;
 
                     return $lastLoginAt && $lastLoginAt->gte(now()->subMinutes(5));
                 })
+                ->values();
+            $recipientParticipants = $message->recipients()
+                ->with('guru.pasti')
+                ->get()
+                ->sortByDesc(fn ($participant) => $participant->last_login_at && $participant->last_login_at->gte($onlineThreshold))
                 ->values();
             $isBroadcastToAll = $message->sent_to_all;
             $participantsSummary = $isBroadcastToAll
@@ -88,10 +94,26 @@
                         <p class="mt-1 text-xs text-slate-500">
                             {{ $message->recipients()->count() }} penerima
                         </p>
+                        <div class="mt-4 flex flex-wrap gap-3">
+                            @foreach($recipientParticipants as $participant)
+                                @php($isOnline = $participant->last_login_at && $participant->last_login_at->gte($onlineThreshold))
+                                <div class="group relative">
+                                    <div class="relative">
+                                        <x-avatar :user="$participant" size="h-11 w-11" rounded="rounded-full" />
+                                        @if($isOnline)
+                                            <span class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500"></span>
+                                        @endif
+                                    </div>
+                                    <div class="pointer-events-none absolute left-1/2 top-full z-10 mt-2 hidden w-max max-w-44 -translate-x-1/2 rounded-xl bg-slate-900 px-2.5 py-1.5 text-xs text-white shadow-lg group-hover:block">
+                                        {{ $participant->display_name }}
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 @else
                     @foreach($participants as $participant)
-                        @php($isOnline = $participant->last_login_at && $participant->last_login_at->gte(now()->subMinutes(5)))
+                        @php($isOnline = $participant->last_login_at && $participant->last_login_at->gte($onlineThreshold))
                         <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2">
                             <div class="relative shrink-0">
                                 <x-avatar :user="$participant" size="h-10 w-10" rounded="rounded-full" />
