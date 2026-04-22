@@ -2,6 +2,7 @@
     <x-slot name="header">
         @php
             $onlineThreshold = now()->subMinutes(5);
+            $broadcastPreviewCount = 24;
             $participants = $message->participants()
                 ->sortByDesc(function ($participant) {
                     $lastLoginAt = $participant?->last_login_at;
@@ -89,15 +90,19 @@
             <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.participants') }}</p>
             <div class="mt-3 space-y-3">
                 @if($isBroadcastToAll)
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
+                    <div x-data="{ expanded: false }" class="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
                         <p class="text-sm font-semibold text-slate-900">Hebahan kepada semua guru</p>
                         <p class="mt-1 text-xs text-slate-500">
                             {{ $message->recipients()->count() }} penerima
                         </p>
-                        <div class="mt-4 flex flex-wrap gap-3">
+                        <div class="mt-4 grid grid-cols-4 gap-3">
                             @foreach($recipientParticipants as $participant)
                                 @php($isOnline = $participant->last_login_at && $participant->last_login_at->gte($onlineThreshold))
-                                <div class="group relative">
+                                <div
+                                    class="group relative"
+                                    x-show="expanded || {{ $loop->index < $broadcastPreviewCount ? 'true' : 'false' }}"
+                                    x-transition.opacity.duration.150ms
+                                >
                                     <div class="relative">
                                         <x-avatar :user="$participant" size="h-11 w-11" rounded="rounded-full" />
                                         @if($isOnline)
@@ -110,6 +115,14 @@
                                 </div>
                             @endforeach
                         </div>
+                        @if($recipientParticipants->count() > $broadcastPreviewCount)
+                            <button
+                                type="button"
+                                class="mt-4 inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-primary/30 hover:text-primary"
+                                @click="expanded = !expanded"
+                                x-text="expanded ? 'Tunjuk ringkas' : 'Tunjuk semua'"
+                            ></button>
+                        @endif
                     </div>
                 @else
                     @foreach($participants as $participant)
