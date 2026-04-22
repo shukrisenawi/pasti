@@ -437,6 +437,29 @@ class AdminMessageConversationTest extends TestCase
         ]);
     }
 
+    public function test_sender_sees_delete_icon_for_message_without_reply(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-delete-icon@example.test', 'Cikgu Ikon');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Ikon',
+            'body' => 'Mesej belum berbalas',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertSee('aria-label="Padam mesej"', false);
+    }
+
     public function test_sender_cannot_delete_message_after_it_has_received_a_reply(): void
     {
         [$pasti] = $this->createPastiFixtures();
@@ -466,6 +489,35 @@ class AdminMessageConversationTest extends TestCase
         $this->assertDatabaseHas('admin_messages', [
             'id' => $message->id,
         ]);
+    }
+
+    public function test_sender_does_not_see_delete_icon_after_message_has_reply(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-delete-hide@example.test', 'Cikgu Sorok');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Sorok',
+            'body' => 'Mesej sudah dibalas',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        AdminMessageReply::query()->create([
+            'admin_message_id' => $message->id,
+            'sender_id' => $guru->id,
+            'body' => 'Balas awal',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertDontSee('aria-label="Padam mesej"', false);
     }
 
     /**
