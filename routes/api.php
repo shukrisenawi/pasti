@@ -20,6 +20,8 @@ Route::prefix('guru')->group(function () {
         Route::post('/profile/complete', [GuruMobileApiController::class, 'completeProfile'])->name('api.guru.complete-profile');
         Route::post('/password/change', [GuruMobileApiController::class, 'changePassword'])->name('api.guru.change-password');
         Route::get('/pasti-options', [GuruMobileApiController::class, 'pastiOptions'])->name('api.guru.pasti-options');
+        Route::post('/fcm-token', [GuruMobileApiController::class, 'registerFcmToken'])->name('api.guru.fcm-token.store');
+        Route::delete('/fcm-token', [GuruMobileApiController::class, 'unregisterFcmToken'])->name('api.guru.fcm-token.destroy');
         Route::post('/logout', [GuruMobileApiController::class, 'logout'])->name('api.guru.logout');
 
         Route::middleware('guru.profile.completed')->group(function () {
@@ -30,4 +32,3 @@ Route::prefix('guru')->group(function () {
         });
     });
 });
-

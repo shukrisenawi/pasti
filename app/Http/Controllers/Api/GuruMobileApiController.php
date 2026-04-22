@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\FcmToken;
 use App\Models\Guru;
 use App\Models\LeaveNotice;
 use App\Models\Pasti;
@@ -33,15 +34,17 @@ class GuruMobileApiController extends Controller
 
     public function login(Request $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-            'device_name' => 'required',
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+            'device_name' => ['required', 'string', 'max:255'],
+            'fcm_token' => ['nullable', 'string', 'max:4096'],
+            'platform' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $data['email'])->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($data['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
             ]);
@@ -51,7 +54,8 @@ class GuruMobileApiController extends Controller
             return response()->json(['message' => 'Unauthorized. Only gurus can log in here.'], 403);
         }
 
-        $token = $user->createToken($request->device_name)->plainTextToken;
+        $token = $user->createToken($data['device_name'])->plainTextToken;
+        $this->syncFcmToken($user, $data);
 
         return response()->json([
             'token' => $token,
@@ -65,6 +69,39 @@ class GuruMobileApiController extends Controller
                 'pasti' => $user->guru?->pasti?->name,
                 'kawasan' => $user->guru?->pasti?->kawasan?->name,
             ],
+        ]);
+    }
+
+    public function registerFcmToken(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $data = $request->validate([
+            'fcm_token' => ['required', 'string', 'max:4096'],
+            'device_name' => ['nullable', 'string', 'max:255'],
+            'platform' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $this->syncFcmToken($user, $data);
+
+        return response()->json([
+            'message' => 'Token FCM berjaya didaftarkan.',
+        ]);
+    }
+
+    public function unregisterFcmToken(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'fcm_token' => ['required', 'string', 'max:4096'],
+        ]);
+
+        FcmToken::query()
+            ->where('user_id', $request->user()->id)
+            ->where('token', $data['fcm_token'])
+            ->delete();
+
+        return response()->json([
+            'message' => 'Token FCM berjaya dibuang.',
         ]);
     }
 
@@ -408,6 +445,17 @@ class GuruMobileApiController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'fcm_token' => ['nullable', 'string', 'max:4096'],
+        ]);
+
+        if (filled($validated['fcm_token'] ?? null)) {
+            FcmToken::query()
+                ->where('user_id', $request->user()->id)
+                ->where('token', $validated['fcm_token'])
+                ->delete();
+        }
+
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out successfully']);
     }
@@ -423,6 +471,28 @@ class GuruMobileApiController extends Controller
         }
 
         return asset($path);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function syncFcmToken(User $user, array $data): void
+    {
+        $fcmToken = $data['fcm_token'] ?? null;
+
+        if (! is_string($fcmToken) || trim($fcmToken) === '') {
+            return;
+        }
+
+        FcmToken::query()->updateOrCreate(
+            ['token' => $fcmToken],
+            [
+                'user_id' => $user->id,
+                'device_name' => isset($data['device_name']) && is_string($data['device_name']) ? $data['device_name'] : null,
+                'platform' => isset($data['platform']) && is_string($data['platform']) ? $data['platform'] : null,
+                'last_used_at' => now(),
+            ],
+        );
     }
 
     /**
@@ -451,5 +521,4 @@ class GuruMobileApiController extends Controller
         ];
     }
 }
-
 

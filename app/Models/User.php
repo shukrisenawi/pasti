@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use App\Models\AdminMessage;
 use App\Models\AdminMessageReply;
+use App\Models\FcmToken;
 use App\Support\NameFormatter;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -101,6 +102,11 @@ class User extends Authenticatable
         return $this->hasMany(AdminMessageReply::class, 'sender_id');
     }
 
+    public function fcmTokens(): HasMany
+    {
+        return $this->hasMany(FcmToken::class);
+    }
+
     public function getAvatarUrlAttribute(): ?string
     {
         return $this->avatar_path
@@ -156,5 +162,16 @@ class User extends Authenticatable
         }
 
         return 0;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function routeNotificationForFcm(): array
+    {
+        return $this->fcmTokens->pluck('token')
+            ->filter(fn ($token) => is_string($token) && $token !== '')
+            ->values()
+            ->all();
     }
 }
