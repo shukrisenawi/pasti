@@ -37,7 +37,7 @@
         </div>
     </x-slot>
 
-    <section class="flex min-h-[calc(100dvh-5rem)] flex-col gap-0 pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:grid lg:min-h-0 lg:gap-4 lg:pb-0 {{ $message->isBulkConversation() ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : '' }}">
+    <section class="flex min-h-[calc(100dvh-5rem)] flex-col gap-0 pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:grid lg:min-h-0 lg:gap-4 lg:pb-0 {{ $message->isBulkConversation() ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : '' }}">
         <div class="flex flex-1 flex-col space-y-0 lg:space-y-4">
             <article
                 class="-mx-4 flex flex-1 flex-col border-y border-slate-200 bg-slate-50/70 sm:-mx-6 lg:mx-0 lg:block lg:flex-none lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-slate-50/80 lg:p-6"
@@ -67,7 +67,7 @@
                 }"
                 x-init="init()"
             >
-                <div x-ref="chatScroller" class="h-[calc(100dvh-11.5rem)] min-h-[calc(100dvh-11.5rem)] overflow-y-auto px-4 py-4 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-0 lg:py-0 lg:pr-2">
+                <div x-ref="chatScroller" class="h-[calc(100dvh-10.75rem)] min-h-[calc(100dvh-10.75rem)] overflow-y-auto px-4 pt-4 pb-0 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-0 lg:py-0 lg:pr-2">
                     <div class="flex min-h-full flex-col justify-end space-y-4 lg:min-h-[400px]">
                         @foreach($conversationEntries as $entry)
                             @php($isMine = (int) ($entry['sender']?->id ?? 0) === (int) auth()->id())
