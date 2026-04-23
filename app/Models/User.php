@@ -6,6 +6,8 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use App\Models\AdminMessage;
 use App\Models\AdminMessageReply;
+use App\Notifications\AdminMessageReceivedNotification;
+use App\Notifications\AdminMessageReplyNotification;
 use App\Models\FcmToken;
 use App\Support\NameFormatter;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -162,6 +164,27 @@ class User extends Authenticatable
         }
 
         return 0;
+    }
+
+    public function unreadInboxMessagesCount(): int
+    {
+        $unreadRecipientMessageIds = $this->receivedAdminMessages()
+            ->wherePivotNull('read_at')
+            ->pluck('admin_messages.id');
+
+        $unreadNotificationMessageIds = $this->unreadNotifications()
+            ->whereIn('type', [
+                AdminMessageReceivedNotification::class,
+                AdminMessageReplyNotification::class,
+            ])
+            ->get()
+            ->pluck('data.admin_message_id');
+
+        return $unreadRecipientMessageIds
+            ->merge($unreadNotificationMessageIds)
+            ->filter()
+            ->unique()
+            ->count();
     }
 
     /**

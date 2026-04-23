@@ -113,7 +113,7 @@
         {{-- Drawer Navigation --}}
         <nav class="space-y-1 px-3 py-2 text-sm">
             @php
-                $drawerInboxCount = $authUser->unreadNotifications()->where('type', 'like', '%Message%')->count();
+                $drawerInboxCount = $authUser->unreadInboxMessagesCount();
                 $drawerUpcomingProgramCount = \App\Models\Program::query()
                     ->when($isGuruOnly, fn ($q) => $q->whereHas('gurus', fn ($q2) => $q2->where('gurus.id', $authUser->guru?->id ?? 0)))
                     ->whereDate('program_date', '>=', now()->toDateString())
@@ -235,7 +235,7 @@
                     <a href="{{ route('guru-directory.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('guru-directory.*') ? 'menu-link-active' : '' }}">Senarai Guru</a>
                     <a href="{{ route('messages.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                         <span>{{ __('messages.inbox') }}</span>
-                        @if($drawerInboxCount > 0)<span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerInboxCount > 99 ? '99+' : $drawerInboxCount }}</span>@endif
+                        @if($drawerInboxCount > 0)<span class="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerInboxCount > 99 ? '99+' : $drawerInboxCount }}</span>@endif
                     </a>
                     <a href="{{ route('leave-notices.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                         <span>{{ __('messages.leave_notice') }}</span>
@@ -351,7 +351,7 @@
 
             <nav class="mt-5 space-y-1.5 text-sm">
                 @php
-                    $menuInboxCount = $authUser->unreadNotifications()->where('type', 'like', '%Message%')->count();
+                    $menuInboxCount = $authUser->unreadInboxMessagesCount();
 
                     $menuUpcomingProgramCount = \App\Models\Program::query()
                         ->when(
@@ -478,7 +478,7 @@
                             <a href="{{ route('messages.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.inbox') }}</span>
                                 @if(($menuInboxCount ?? 0) > 0)
-                                    <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuInboxCount ?? 0) > 99 ? '99+' : ($menuInboxCount ?? 0) }}</span>
+                                    <span class="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuInboxCount ?? 0) > 99 ? '99+' : ($menuInboxCount ?? 0) }}</span>
                                 @endif
                             </a>
                             
@@ -526,7 +526,7 @@
                         <a href="{{ route('messages.index') }}" wire:navigate class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                             <span>{{ __('messages.inbox') }}</span>
                             @if(($menuInboxCount ?? 0) > 0)
-                                <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuInboxCount ?? 0) > 99 ? '99+' : ($menuInboxCount ?? 0) }}</span>
+                                <span class="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuInboxCount ?? 0) > 99 ? '99+' : ($menuInboxCount ?? 0) }}</span>
                             @endif
                         </a>
                         <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">

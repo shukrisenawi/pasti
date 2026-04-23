@@ -450,6 +450,31 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('Balasan terkini');
     }
 
+    public function test_messages_index_shows_red_inbox_badges_for_unread_messages(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-badge@example.test', 'Cikgu Badge');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Hebahan Badge',
+            'body' => 'Mesej belum dibaca',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+            'read_at' => null,
+        ]);
+
+        $response = $this->actingAs($guru)->get(route('messages.index'));
+
+        $response->assertOk();
+        $response->assertSee('rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">1</span>', false);
+        $response->assertSee('absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">1</span>', false);
+    }
+
     public function test_message_show_uses_scrollable_chat_window_that_sticks_to_latest_message(): void
     {
         [$pasti] = $this->createPastiFixtures();
