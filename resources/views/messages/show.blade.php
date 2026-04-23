@@ -1,6 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         @php
+            $authUser = auth()->user();
+            $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
             $onlineThreshold = now()->subMinutes(5);
             $broadcastPreviewCount = 24;
             $participants = $message->participants()
@@ -21,6 +23,18 @@
             $participantsSummary = $isBroadcastToAll
                 ? 'Hebahan kepada semua guru'
                 : $participants->pluck('display_name')->implode(', ');
+            $mobileSectionMinHeight = $isGuruOnly
+                ? 'min-h-[calc(100dvh-9.5rem)]'
+                : 'min-h-[calc(100dvh-5rem)]';
+            $mobileSectionPaddingBottom = $isGuruOnly
+                ? 'pb-[calc(10.25rem+env(safe-area-inset-bottom))]'
+                : 'pb-[calc(5.75rem+env(safe-area-inset-bottom))]';
+            $mobileScrollerHeight = $isGuruOnly
+                ? 'h-[calc(100dvh-15.25rem)] min-h-[calc(100dvh-15.25rem)]'
+                : 'h-[calc(100dvh-10.75rem)] min-h-[calc(100dvh-10.75rem)]';
+            $mobileComposerPosition = $isGuruOnly
+                ? 'bottom-[calc(4.5rem+env(safe-area-inset-bottom))] pb-3'
+                : 'bottom-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]';
         @endphp
         <div class="hidden lg:flex lg:flex-wrap lg:items-center lg:justify-between lg:gap-3">
             <div>
@@ -37,7 +51,7 @@
         </div>
     </x-slot>
 
-    <section class="flex min-h-[calc(100dvh-5rem)] flex-col gap-0 pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:grid lg:min-h-0 lg:gap-4 lg:pb-0 {{ $message->isBulkConversation() ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : '' }}">
+    <section class="flex {{ $mobileSectionMinHeight }} flex-col gap-0 {{ $mobileSectionPaddingBottom }} lg:grid lg:min-h-0 lg:gap-4 lg:pb-0 {{ $message->isBulkConversation() ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : '' }}">
         <div class="flex flex-1 flex-col space-y-0 lg:space-y-4">
             <article
                 class="-mx-4 flex flex-1 flex-col border-y border-slate-200 bg-slate-50/70 sm:-mx-6 lg:mx-0 lg:block lg:flex-none lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-slate-50/80 lg:p-6"
@@ -67,7 +81,7 @@
                 }"
                 x-init="init()"
             >
-                <div x-ref="chatScroller" class="h-[calc(100dvh-10.75rem)] min-h-[calc(100dvh-10.75rem)] overflow-y-auto px-4 pt-4 pb-0 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-0 lg:py-0 lg:pr-2">
+                <div x-ref="chatScroller" class="{{ $mobileScrollerHeight }} overflow-y-auto px-4 pt-4 pb-0 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-0 lg:py-0 lg:pr-2">
                     <div class="flex min-h-full flex-col justify-end space-y-4 pb-3 lg:min-h-[400px] lg:pb-0">
                         @foreach($conversationEntries as $entry)
                             @php($isMine = (int) ($entry['sender']?->id ?? 0) === (int) auth()->id())
@@ -133,7 +147,7 @@
             </article>
 
             @if($canReply)
-                <article class="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur sm:px-6 lg:static lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-white/95 lg:px-6 lg:py-6 lg:backdrop-blur-none" x-data="messageComposer(@js(old('body', '')))" x-init="init()">
+                <article class="fixed inset-x-0 {{ $mobileComposerPosition }} z-20 border-t border-slate-200 bg-white/95 px-4 pt-3 backdrop-blur sm:px-6 lg:static lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-white/95 lg:px-6 lg:py-6 lg:backdrop-blur-none" x-data="messageComposer(@js(old('body', '')))" x-init="init()">
                     <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="space-y-3">
                         @csrf
                         <div class="relative flex items-end gap-3">

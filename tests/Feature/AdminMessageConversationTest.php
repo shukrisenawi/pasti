@@ -574,7 +574,34 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('pb-[calc(5.75rem+env(safe-area-inset-bottom))]', false);
         $response->assertSee('h-[calc(100dvh-10.75rem)]', false);
         $response->assertSee('pt-4 pb-0', false);
-        $response->assertSee('fixed inset-x-0 bottom-0 z-20', false);
+        $response->assertSee('fixed inset-x-0', false);
+        $response->assertSee('bottom-0', false);
+    }
+
+    public function test_message_show_offsets_mobile_chat_for_guru_bottom_nav(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-mobile-offset@example.test', 'Cikgu Offset');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Offset',
+            'body' => 'Mesej mobile guru',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        $response = $this->actingAs($guru)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertSee('min-h-[calc(100dvh-9.5rem)]', false);
+        $response->assertSee('pb-[calc(10.25rem+env(safe-area-inset-bottom))]', false);
+        $response->assertSee('h-[calc(100dvh-15.25rem)] min-h-[calc(100dvh-15.25rem)]', false);
+        $response->assertSee('fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] pb-3 z-20', false);
     }
 
     public function test_message_show_displays_delete_icon_for_entry_owner_and_admin(): void
