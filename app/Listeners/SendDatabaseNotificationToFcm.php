@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Notifications\FcmMessage;
 use App\Services\FcmNotificationService;
 use Illuminate\Notifications\Events\NotificationSent;
+use Throwable;
 
 class SendDatabaseNotificationToFcm
 {
@@ -46,10 +47,18 @@ class SendDatabaseNotificationToFcm
             $notificationId,
         );
 
-        $this->fcmNotificationService->sendToNotifiable(
-            $event->notifiable,
-            $message,
-            $event->notification,
-        );
+        try {
+            $this->fcmNotificationService->sendToNotifiable(
+                $event->notifiable,
+                $message,
+                $event->notification,
+            );
+        } catch (Throwable $exception) {
+            try {
+                report($exception);
+            } catch (Throwable) {
+                // Swallow reporting failure so chat reply flow never breaks.
+            }
+        }
     }
 }

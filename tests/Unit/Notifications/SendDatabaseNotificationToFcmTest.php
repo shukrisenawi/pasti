@@ -108,4 +108,40 @@ class SendDatabaseNotificationToFcmTest extends TestCase
 
         $this->addToAssertionCount(1);
     }
+
+    public function test_it_does_not_throw_when_fcm_service_fails(): void
+    {
+        $user = new User([
+            'name' => 'Guru Ujian',
+            'email' => 'guru@ujian.test',
+        ]);
+
+        $notification = new class extends Notification
+        {
+            public function toArray(object $notifiable): array
+            {
+                return [
+                    'notification_title' => 'Tajuk Ujian',
+                    'notification_message' => 'Mesej ujian terus ke FCM.',
+                    'url' => '/messages/2',
+                ];
+            }
+        };
+
+        $service = Mockery::mock(FcmNotificationService::class);
+        $service->shouldReceive('sendToNotifiable')
+            ->once()
+            ->andThrow(new \RuntimeException('FCM down'));
+
+        $listener = new SendDatabaseNotificationToFcm($service);
+
+        $listener->handle(new NotificationSent(
+            $user,
+            $notification,
+            'database',
+            new DatabaseNotification(['id' => 'notif-500'])
+        ));
+
+        $this->addToAssertionCount(1);
+    }
 }
