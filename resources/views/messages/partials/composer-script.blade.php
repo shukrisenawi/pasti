@@ -6,6 +6,7 @@
             attachmentName: '',
             attachmentPreviewUrl: null,
             attachmentIsImage: false,
+            isSubmitting: false,
             viewportSyncRegistered: false,
             emojis: ['😀', '😁', '😂', '😊', '😍', '🥰', '😘', '🤗', '🤔', '😎', '🥳', '🙏', '👍', '👏', '💪', '🔥', '🌟', '❤️', '💚', '💙', '🎉', '📌', '📣', '✅'],
             init() {
@@ -13,6 +14,15 @@
             },
             hasVariableToken() {
                 return this.body.includes('@nama') || this.body.includes('@pasti');
+            },
+            handleSubmit(event) {
+                if (this.isSubmitting) {
+                    event?.preventDefault();
+                    return false;
+                }
+
+                this.isSubmitting = true;
+                return true;
             },
             handleComposerFocus() {
                 this.syncChatToLatest();

@@ -571,6 +571,9 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('aria-label="Lampiran"', false);
         $response->assertSee('aria-label="Hantar balasan"', false);
         $response->assertSee('@focus="handleComposerFocus()"', false);
+        $response->assertSee('@submit="handleSubmit($event)"', false);
+        $response->assertSee(':disabled="isSubmitting"', false);
+        $response->assertSee('animate-spin', false);
         $response->assertSee('window.visualViewport', false);
     }
 

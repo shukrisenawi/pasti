@@ -140,7 +140,7 @@
 
             @if($canReply)
                 <article class="fixed inset-x-0 {{ $mobileComposerPosition }} z-20 border-t border-slate-200 bg-white/95 px-4 pt-3 backdrop-blur sm:px-6 lg:static lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-white/95 lg:px-6 lg:py-6 lg:backdrop-blur-none" x-data="messageComposer(@js(old('body', '')))" x-init="init()">
-                    <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="space-y-3">
+                    <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="space-y-3" @submit="handleSubmit($event)">
                         @csrf
                         <div class="relative flex items-end gap-3">
                             <input id="reply-attachment-input" x-ref="attachmentInput" type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip" class="hidden" @change="previewAttachment($event)">
@@ -200,12 +200,17 @@
                             </div>
                             <button
                                 type="submit"
-                                class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark"
+                                class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-80"
                                 title="Hantar balasan"
                                 aria-label="Hantar balasan"
+                                :disabled="isSubmitting"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                                <svg x-show="!isSubmitting" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M3.4 20.4l17.45-7.48a1 1 0 000-1.84L3.4 3.6a.85.85 0 00-1.17.95l1.62 6.48a1 1 0 00.76.73l7.2 1.24-7.2 1.24a1 1 0 00-.76.73l-1.62 6.48a.85.85 0 001.17.95z" />
+                                </svg>
+                                <svg x-show="isSubmitting" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="9" stroke-opacity="0.25" />
+                                    <path stroke-linecap="round" d="M21 12a9 9 0 00-9-9" />
                                 </svg>
                             </button>
                         </div>
