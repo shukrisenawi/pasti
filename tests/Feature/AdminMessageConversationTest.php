@@ -510,8 +510,38 @@ class AdminMessageConversationTest extends TestCase
         $response = $this->actingAs($admin)->get(route('messages.show', $message));
 
         $response->assertOk();
-        $this->assertMatchesRegularExpression('/<span class="font-semibold">Admin Utama<\/span>\s*<span>•<\/span>\s*<span>\d{1,2}:\d{2} (AM|PM)<\/span>/', $response->getContent());
-        $this->assertDoesNotMatchRegularExpression('/\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/', $response->getContent());
+        $expectedTimestamp = $message->fresh()->created_at->format('g:i A');
+        $response->assertSee($expectedTimestamp);
+        $this->assertDoesNotMatchRegularExpression('/\d{2}\/\d{2}\/\d{4} \d{1,2}:\d{2} (AM|PM)/', $response->getContent());
+    }
+
+    public function test_message_show_displays_full_date_for_chat_from_different_day(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-old-time-format@example.test', 'Cikgu Lama');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Lama',
+            'body' => 'Mesej lama',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        $message->forceFill([
+            'created_at' => now()->subDay()->setTime(14, 5),
+            'updated_at' => now()->subDay()->setTime(14, 5),
+        ])->save();
+
+        $response = $this->actingAs($admin)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $expectedTimestamp = $message->fresh()->created_at->format('d/m/Y g:i A');
+        $response->assertSee($expectedTimestamp);
     }
 
     public function test_message_show_displays_delete_icon_for_entry_owner_and_admin(): void
