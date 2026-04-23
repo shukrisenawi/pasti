@@ -131,7 +131,7 @@
                 }"
                 x-init="init()"
             >
-                <div x-ref="chatScroller" class="{{ $mobileScrollerHeight }} overflow-y-auto px-4 pt-0 pb-0 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-0 lg:py-0 lg:pr-2">
+                <div x-ref="chatScroller" class="{{ $mobileScrollerHeight }} overflow-y-auto px-4 pt-3 pb-2 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-2 lg:pt-2 lg:pb-1 lg:pr-2">
                     <div x-ref="entriesContainer" class="flex min-h-full flex-col justify-start space-y-4 pb-2 lg:min-h-[400px] lg:justify-end lg:pb-0">
                         @include('messages.partials.conversation-entries', ['conversationEntries' => $conversationEntries])
                     </div>
