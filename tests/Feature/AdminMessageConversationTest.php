@@ -458,7 +458,8 @@ class AdminMessageConversationTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('x-ref="chatScroller"', false);
-        $response->assertSee('min-h-[400px] max-h-[400px] overflow-y-auto', false);
+        $response->assertSee('overflow-y-auto', false);
+        $response->assertSee('lg:min-h-[400px] lg:max-h-[400px]', false);
         $response->assertSee('x-init="init()"', false);
     }
 
@@ -542,6 +543,32 @@ class AdminMessageConversationTest extends TestCase
         $response->assertOk();
         $expectedTimestamp = $message->fresh()->created_at->format('d/m/Y g:i A');
         $response->assertSee($expectedTimestamp);
+    }
+
+    public function test_message_show_uses_mobile_full_height_chat_layout(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-mobile-layout@example.test', 'Cikgu Mobile');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Mobile',
+            'body' => 'Mesej mobile',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertSee('hidden lg:flex lg:flex-wrap lg:items-center lg:justify-between lg:gap-3', false);
+        $response->assertSee('min-h-[calc(100dvh-5rem)]', false);
+        $response->assertSee('h-[calc(100dvh-11.5rem)]', false);
+        $response->assertSee('fixed inset-x-0 bottom-0 z-20', false);
     }
 
     public function test_message_show_displays_delete_icon_for_entry_owner_and_admin(): void

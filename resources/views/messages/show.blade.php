@@ -22,7 +22,7 @@
                 ? 'Hebahan kepada semua guru'
                 : $participants->pluck('display_name')->implode(', ');
         @endphp
-        <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="hidden lg:flex lg:flex-wrap lg:items-center lg:justify-between lg:gap-3">
             <div>
                 <h2 class="text-lg font-bold">{{ $message->conversationTitleFor(auth()->user()) }}</h2>
                 <p class="text-sm text-slate-500">
@@ -37,10 +37,10 @@
         </div>
     </x-slot>
 
-    <section class="grid gap-4 {{ $message->isBulkConversation() ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : '' }}">
-        <div class="space-y-4">
+    <section class="flex min-h-[calc(100dvh-5rem)] flex-col gap-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:grid lg:min-h-0 lg:gap-4 lg:pb-0 {{ $message->isBulkConversation() ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : '' }}">
+        <div class="flex flex-1 flex-col space-y-4">
             <article
-                class="card border-primary/10 bg-slate-50/80"
+                class="-mx-4 flex flex-1 flex-col border-y border-slate-200 bg-slate-50/70 sm:-mx-6 lg:mx-0 lg:block lg:flex-none lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-slate-50/80 lg:p-6"
                 x-data="{
                     init() {
                         this.$nextTick(() => {
@@ -67,8 +67,8 @@
                 }"
                 x-init="init()"
             >
-                <div x-ref="chatScroller" class="min-h-[400px] max-h-[400px] overflow-y-auto pr-2">
-                    <div class="flex min-h-[400px] flex-col justify-end space-y-4">
+                <div x-ref="chatScroller" class="h-[calc(100dvh-11.5rem)] min-h-[calc(100dvh-11.5rem)] overflow-y-auto px-4 py-4 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-0 lg:py-0 lg:pr-2">
+                    <div class="flex min-h-full flex-col justify-end space-y-4 lg:min-h-[400px]">
                         @foreach($conversationEntries as $entry)
                             @php($isMine = (int) ($entry['sender']?->id ?? 0) === (int) auth()->id())
                             <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
@@ -133,7 +133,7 @@
             </article>
 
             @if($canReply)
-                <article class="card border-primary/10 bg-white/95" x-data="messageComposer(@js(old('body', '')))">
+                <article class="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur sm:px-6 lg:static lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-white/95 lg:px-6 lg:py-6 lg:backdrop-blur-none" x-data="messageComposer(@js(old('body', '')))">
                     <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="space-y-3">
                         @csrf
                         <div class="relative flex items-end gap-3">
@@ -227,7 +227,7 @@
         </div>
 
         @if($message->isBulkConversation())
-            <aside class="card border-primary/10 bg-white/95">
+            <aside class="hidden lg:block card border-primary/10 bg-white/95">
                 <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.participants') }}</p>
                 <div class="mt-3 space-y-3">
                     @if($isBroadcastToAll)
