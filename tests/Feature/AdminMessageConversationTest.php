@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\AdminMessageReceivedNotification;
 use App\Notifications\AdminMessageReplyNotification;
 use App\Services\N8nWebhookService;
+use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
@@ -485,6 +486,32 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('aria-label="Pilih emoji"', false);
         $response->assertSee('aria-label="Lampiran"', false);
         $response->assertSee('aria-label="Hantar balasan"', false);
+    }
+
+    public function test_message_show_displays_chat_time_in_twelve_hour_format(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-time-format@example.test', 'Cikgu Masa');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Masa',
+            'body' => 'Mesej masa',
+            'sent_to_all' => false,
+            'created_at' => Carbon::parse('2026-04-23 14:05:00'),
+            'updated_at' => Carbon::parse('2026-04-23 14:05:00'),
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $this->assertMatchesRegularExpression('/<span class="font-semibold">Admin Utama<\/span>\s*<span>•<\/span>\s*<span>\d{1,2}:\d{2} (AM|PM)<\/span>/', $response->getContent());
+        $this->assertDoesNotMatchRegularExpression('/\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/', $response->getContent());
     }
 
     public function test_message_show_displays_delete_icon_for_entry_owner_and_admin(): void

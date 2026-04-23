@@ -77,7 +77,7 @@
                                         <div class="flex items-center gap-2 text-xs {{ $entry['is_deleted'] ? 'text-slate-400' : ($isMine ? 'text-white/80' : 'text-slate-500') }}">
                                             <span class="font-semibold">{{ $entry['sender']?->display_name ?? '-' }}</span>
                                             <span>•</span>
-                                            <span>{{ optional($entry['created_at'])->format('d/m/Y H:i') }}</span>
+                                            <span>{{ optional($entry['created_at'])->format('g:i A') }}</span>
                                         </div>
                                         @if($entry['can_delete'])
                                             <form method="POST" action="{{ $entry['delete_route'] }}" onsubmit="return confirm('Padam item mesej ini?')">
