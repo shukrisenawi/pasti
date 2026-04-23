@@ -592,7 +592,7 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('min-h-[calc(100dvh-5rem)]', false);
         $response->assertSee('pb-[calc(5.75rem+env(safe-area-inset-bottom))]', false);
         $response->assertSee('h-[calc(100dvh-10.75rem)]', false);
-        $response->assertSee('pt-4 pb-0', false);
+        $response->assertSee('pt-0 pb-0', false);
         $response->assertSee('fixed inset-x-0', false);
         $response->assertSee('bottom-0', false);
     }
