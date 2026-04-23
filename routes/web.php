@@ -120,6 +120,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/messages/create', [AdminMessageController::class, 'create'])->name('messages.create');
         Route::post('/messages', [AdminMessageController::class, 'store'])->name('messages.store');
         Route::get('/messages/{message}', [AdminMessageController::class, 'show'])->name('messages.show');
+        Route::get('/messages/{message}/stream', [AdminMessageController::class, 'stream'])->name('messages.stream');
         Route::post('/messages/{message}/reply', [AdminMessageController::class, 'reply'])->name('messages.reply');
         Route::delete('/messages/{message}/replies/{reply}', [AdminMessageController::class, 'destroyReply'])->name('messages.replies.destroy');
         Route::delete('/messages/{message}', [AdminMessageController::class, 'destroy'])->name('messages.destroy');

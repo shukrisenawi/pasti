@@ -505,6 +505,45 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('overflow-y-auto', false);
         $response->assertSee('lg:min-h-[400px] lg:max-h-[400px]', false);
         $response->assertSee('x-init="init()"', false);
+        $response->assertSee('fetchLatestEntries()', false);
+    }
+
+    public function test_message_stream_returns_latest_conversation_html_without_page_refresh(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-stream@example.test', 'Cikgu Stream');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan realtime',
+            'body' => 'Mesej awal realtime',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+            'read_at' => null,
+        ]);
+
+        AdminMessageReply::query()->create([
+            'admin_message_id' => $message->id,
+            'sender_id' => $admin->id,
+            'body' => 'Balasan realtime',
+        ]);
+
+        $response = $this->actingAs($guru)->getJson(route('messages.stream', $message));
+
+        $response->assertOk();
+        $response->assertJsonStructure(['signature', 'html', 'count']);
+        $response->assertJsonPath('count', 2);
+        $this->assertStringContainsString('Balasan realtime', (string) $response->json('html'));
+
+        $this->assertDatabaseMissing('admin_message_recipients', [
+            'admin_message_id' => $message->id,
+            'user_id' => $guru->id,
+            'read_at' => null,
+        ]);
     }
 
     public function test_message_show_uses_whatsapp_style_reply_input(): void

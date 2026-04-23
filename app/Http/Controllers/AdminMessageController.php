@@ -12,6 +12,7 @@ use App\Notifications\AdminMessageReplyNotification;
 use App\Services\N8nWebhookService;
 use App\Support\ConversationMessageFormatter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -95,26 +96,45 @@ class AdminMessageController extends Controller
             'replies.sender.guru.pasti',
         ]);
 
-        AdminMessageRecipient::query()
-            ->where('admin_message_id', $message->id)
-            ->where('user_id', $user->id)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
-
-        DatabaseNotification::query()
-            ->where('notifiable_type', User::class)
-            ->where('notifiable_id', $user->id)
-            ->whereIn('type', [AdminMessageReceivedNotification::class, AdminMessageReplyNotification::class])
-            ->where('data->admin_message_id', $message->id)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+        $this->markMessageAsRead($user, $message);
+        $conversationEntries = $this->conversationEntries($message, $user);
 
         return view('messages.show', [
             'message' => $message,
             'canReply' => true,
             'canDeleteMessage' => $message->canBeDeletedBy($user),
             'canViewRecipients' => $user->hasAnyRole(['master_admin', 'admin']),
-            'conversationEntries' => $this->conversationEntries($message, $user),
+            'conversationEntries' => $conversationEntries,
+            'conversationSignature' => $this->conversationEntriesSignature($conversationEntries),
+            'streamUrl' => route('messages.stream', $message),
+        ]);
+    }
+
+    public function stream(Request $request, AdminMessage $message): JsonResponse
+    {
+        $user = $request->user();
+
+        $this->ensureMessageAccessible($user, $message);
+        $message->load([
+            'sender',
+            'recipients.guru.pasti',
+            'recipientLinks',
+            'replies.sender.guru.pasti',
+        ]);
+
+        $this->markMessageAsRead($user, $message);
+
+        $conversationEntries = $this->conversationEntries($message, $user);
+        $signature = $this->conversationEntriesSignature($conversationEntries);
+
+        $html = view('messages.partials.conversation-entries', [
+            'conversationEntries' => $conversationEntries,
+        ])->render();
+
+        return response()->json([
+            'signature' => $signature,
+            'html' => $html,
+            'count' => $conversationEntries->count(),
         ]);
     }
 
@@ -212,6 +232,23 @@ class AdminMessageController extends Controller
             ->exists();
 
         abort_unless($isRecipient, 403);
+    }
+
+    private function markMessageAsRead(User $user, AdminMessage $message): void
+    {
+        AdminMessageRecipient::query()
+            ->where('admin_message_id', $message->id)
+            ->where('user_id', $user->id)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
+        DatabaseNotification::query()
+            ->where('notifiable_type', User::class)
+            ->where('notifiable_id', $user->id)
+            ->whereIn('type', [AdminMessageReceivedNotification::class, AdminMessageReplyNotification::class])
+            ->where('data->admin_message_id', $message->id)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
     }
 
     private function availableRecipientUsersQuery(User $user)
@@ -406,5 +443,18 @@ class AdminMessageController extends Controller
                 ];
             })
         )->sortBy('created_at')->values();
+    }
+
+    private function conversationEntriesSignature(Collection $conversationEntries): string
+    {
+        $payload = $conversationEntries->map(fn (array $entry): array => [
+            'id' => $entry['id'] ?? null,
+            'body' => (string) ($entry['body'] ?? ''),
+            'attachment_url' => (string) ($entry['attachment_url'] ?? ''),
+            'is_deleted' => (bool) ($entry['is_deleted'] ?? false),
+            'created_at' => optional($entry['created_at'] ?? null)?->timestamp,
+        ])->values()->all();
+
+        return md5((string) json_encode($payload));
     }
 }
