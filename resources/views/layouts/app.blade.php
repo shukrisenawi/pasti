@@ -330,7 +330,7 @@
         </div>
     </header>
 
-    <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8 guru-mobile-fixed-header-layout">
+    <div class="mx-auto grid max-w-7xl {{ request()->routeIs('messages.show') ? 'gap-0 px-0 py-0 sm:px-6 sm:py-6 lg:gap-6 lg:px-8' : 'gap-6 px-4 py-6 sm:px-6 lg:px-8' }} lg:grid-cols-[280px_minmax(0,1fr)] guru-mobile-fixed-header-layout">
         <aside class="card desktop-sidebar h-fit overflow-hidden border-primary/10 bg-white/90">
             <div class="rounded-[1.6rem] bg-gradient-to-br from-primary via-primary-dark to-emerald-700 p-5 text-primary-content shadow-lg">
                 <div class="flex items-center gap-4">
@@ -436,8 +436,8 @@
                             <a href="{{ route('financial.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('financial.*') ? 'menu-link-active' : '' }}">{{ __('messages.kewangan') }}</a>
                             <a href="{{ route('claims.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.claim') }}</span>
-                                @if($menuPendingClaimsCount > 0)
-                                    <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ $menuPendingClaimsCount > 99 ? '99+' : $menuPendingClaimsCount }}</span>
+                                @if(($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) > 0)
+                                    <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ ($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) > 99 ? '99+' : ($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) }}</span>
                                 @endif
                             </a>
                             <a href="{{ route('kpi.gurus.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kpi.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.kpi_guru') }}</a>
@@ -456,36 +456,36 @@
                             
                             <a href="{{ route('pasti-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.maklumat_pasti') }}</span>
-                                @if($menuPastiInfoPendingCount > 0)
-                                    <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuPastiInfoPendingCount > 99 ? '99+' : $menuPastiInfoPendingCount }}</span>
+                                @if(($menuPastiInfoPendingCount ?? 0) > 0)
+                                    <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuPastiInfoPendingCount ?? 0) > 99 ? '99+' : ($menuPastiInfoPendingCount ?? 0) }}</span>
                                 @endif
                             </a>
                             <a href="{{ route('guru-salary-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.guru_salary_information') }}</span>
-                                @if($menuGuruSalaryPendingCount > 0)
-                                    <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuGuruSalaryPendingCount > 99 ? '99+' : $menuGuruSalaryPendingCount }}</span>
+                                @if(($menuGuruSalaryPendingCount ?? 0) > 0)
+                                    <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuGuruSalaryPendingCount ?? 0) > 99 ? '99+' : ($menuGuruSalaryPendingCount ?? 0) }}</span>
                                 @endif
                             </a>
                             <a href="{{ route('kursus-guru.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                             
                             <a href="{{ route('programs.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.programs') }}</span>
-                                @if($menuUpcomingProgramCount > 0)
-                                    <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuUpcomingProgramCount > 99 ? '99+' : $menuUpcomingProgramCount }}</span>
+                                @if(($menuUpcomingProgramCount ?? 0) > 0)
+                                    <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuUpcomingProgramCount ?? 0) > 99 ? '99+' : ($menuUpcomingProgramCount ?? 0) }}</span>
                                 @endif
                             </a>
                             
                             <a href="{{ route('messages.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.inbox') }}</span>
-                                @if($menuInboxCount > 0)
-                                    <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuInboxCount > 99 ? '99+' : $menuInboxCount }}</span>
+                                @if(($menuInboxCount ?? 0) > 0)
+                                    <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuInboxCount ?? 0) > 99 ? '99+' : ($menuInboxCount ?? 0) }}</span>
                                 @endif
                             </a>
                             
                             <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.leave_notice') }}</span>
-                                @if($menuOnLeaveGuruCount > 0)
-                                    <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuOnLeaveGuruCount > 99 ? '99+' : $menuOnLeaveGuruCount }}</span>
+                                @if(($menuOnLeaveGuruCount ?? 0) > 0)
+                                    <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuOnLeaveGuruCount ?? 0) > 99 ? '99+' : ($menuOnLeaveGuruCount ?? 0) }}</span>
                                 @endif
                             </a>
                         </div>
@@ -498,41 +498,41 @@
                     @if(!auth()->user()->hasAnyRole(['master_admin', 'admin']))
                         <a href="{{ route('claims.index') }}" wire:navigate class="menu-link {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.claim') }}</span>
-                            @if($menuPendingClaimsCount > 0)
-                                <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ $menuPendingClaimsCount > 99 ? '99+' : $menuPendingClaimsCount }}</span>
+                            @if(($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) > 0)
+                                <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ ($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) > 99 ? '99+' : ($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) }}</span>
                             @endif
                         </a>
                         <a href="{{ route('pemarkahan.index') }}" wire:navigate class="menu-link {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
                         <a href="{{ route('pasti-information.index') }}" wire:navigate class="menu-link {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                             <span>{{ __('messages.maklumat_pasti') }}</span>
-                            @if($menuPastiInfoPendingCount > 0)
-                                <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuPastiInfoPendingCount > 99 ? '99+' : $menuPastiInfoPendingCount }}</span>
+                            @if(($menuPastiInfoPendingCount ?? 0) > 0)
+                                <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuPastiInfoPendingCount ?? 0) > 99 ? '99+' : ($menuPastiInfoPendingCount ?? 0) }}</span>
                             @endif
                         </a>
                         <a href="{{ route('guru-salary-information.index') }}" wire:navigate class="menu-link {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                             <span>{{ __('messages.guru_salary_information') }}</span>
-                            @if($menuGuruSalaryPendingCount > 0)
-                                <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuGuruSalaryPendingCount > 99 ? '99+' : $menuGuruSalaryPendingCount }}</span>
+                            @if(($menuGuruSalaryPendingCount ?? 0) > 0)
+                                <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuGuruSalaryPendingCount ?? 0) > 99 ? '99+' : ($menuGuruSalaryPendingCount ?? 0) }}</span>
                             @endif
                         </a>
                         <a href="{{ route('kursus-guru.index') }}" wire:navigate class="menu-link {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                         <a href="{{ route('programs.index') }}" wire:navigate class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                             <span>{{ __('messages.programs') }}</span>
-                            @if($menuUpcomingProgramCount > 0)
-                                <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuUpcomingProgramCount > 99 ? '99+' : $menuUpcomingProgramCount }}</span>
+                            @if(($menuUpcomingProgramCount ?? 0) > 0)
+                                <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuUpcomingProgramCount ?? 0) > 99 ? '99+' : ($menuUpcomingProgramCount ?? 0) }}</span>
                             @endif
                         </a>
                         <a href="{{ route('guru-directory.index') }}" wire:navigate class="menu-link {{ request()->routeIs('guru-directory.*') ? 'menu-link-active' : '' }}">Senarai Guru</a>
                         <a href="{{ route('messages.index') }}" wire:navigate class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                             <span>{{ __('messages.inbox') }}</span>
-                            @if($menuInboxCount > 0)
-                                <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $menuInboxCount > 99 ? '99+' : $menuInboxCount }}</span>
+                            @if(($menuInboxCount ?? 0) > 0)
+                                <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuInboxCount ?? 0) > 99 ? '99+' : ($menuInboxCount ?? 0) }}</span>
                             @endif
                         </a>
                         <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.leave_notice') }}</span>
-                            @if($menuOnLeaveGuruCount > 0)
-                                <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $menuOnLeaveGuruCount > 99 ? '99+' : $menuOnLeaveGuruCount }}</span>
+                            @if(($menuOnLeaveGuruCount ?? 0) > 0)
+                                <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuOnLeaveGuruCount ?? 0) > 99 ? '99+' : ($menuOnLeaveGuruCount ?? 0) }}</span>
                             @endif
                         </a>
                         @if(auth()->user()->guru)
@@ -544,9 +544,9 @@
             </nav>
         </aside>
 
-        <main class="min-w-0 space-y-4 {{ $isGuruOnly ? 'guru-main-with-bottom-nav' : '' }}">
+        <main class="min-w-0 {{ request()->routeIs('messages.show') ? 'space-y-0 lg:space-y-4' : 'space-y-4' }} {{ $isGuruOnly ? 'guru-main-with-bottom-nav' : '' }}">
             @isset($header)
-                <div class="card border-primary/10 bg-white/95 {{ $isGuruOnly && request()->routeIs('dashboard') ? 'hidden min-[360px]:block' : '' }}">
+                <div class="card border-primary/10 bg-white/95 {{ $isGuruOnly && request()->routeIs('dashboard') ? 'hidden min-[360px]:block' : '' }} {{ request()->routeIs('messages.show') ? 'hidden lg:block' : '' }}">
                     {{ $header }}
                 </div>
             @endisset
@@ -659,5 +659,3 @@
 </script>
 </body>
 </html>
-
-

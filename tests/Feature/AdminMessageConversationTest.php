@@ -566,6 +566,8 @@ class AdminMessageConversationTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('hidden lg:flex lg:flex-wrap lg:items-center lg:justify-between lg:gap-3', false);
+        $response->assertSee('hidden lg:block', false);
+        $response->assertSee('gap-0 px-0 py-0 sm:px-6 sm:py-6 lg:gap-6 lg:px-8', false);
         $response->assertSee('min-h-[calc(100dvh-5rem)]', false);
         $response->assertSee('h-[calc(100dvh-11.5rem)]', false);
         $response->assertSee('fixed inset-x-0 bottom-0 z-20', false);

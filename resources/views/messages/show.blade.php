@@ -37,8 +37,8 @@
         </div>
     </x-slot>
 
-    <section class="flex min-h-[calc(100dvh-5rem)] flex-col gap-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:grid lg:min-h-0 lg:gap-4 lg:pb-0 {{ $message->isBulkConversation() ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : '' }}">
-        <div class="flex flex-1 flex-col space-y-4">
+    <section class="flex min-h-[calc(100dvh-5rem)] flex-col gap-0 pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:grid lg:min-h-0 lg:gap-4 lg:pb-0 {{ $message->isBulkConversation() ? 'lg:grid-cols-[minmax(0,1fr)_280px]' : '' }}">
+        <div class="flex flex-1 flex-col space-y-0 lg:space-y-4">
             <article
                 class="-mx-4 flex flex-1 flex-col border-y border-slate-200 bg-slate-50/70 sm:-mx-6 lg:mx-0 lg:block lg:flex-none lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-slate-50/80 lg:p-6"
                 x-data="{
