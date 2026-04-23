@@ -618,7 +618,7 @@ class AdminMessageConversationTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('min-h-[calc(100dvh-9.5rem)]', false);
-        $response->assertSee('pb-[calc(10.25rem+env(safe-area-inset-bottom))]', false);
+        $response->assertSee('pb-[calc(9.5rem+env(safe-area-inset-bottom))]', false);
         $response->assertSee('h-[calc(100dvh-15.25rem)] min-h-[calc(100dvh-15.25rem)]', false);
         $response->assertSee('fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] pb-3 z-20', false);
     }
@@ -644,6 +644,29 @@ class AdminMessageConversationTest extends TestCase
 
         $response->assertOk();
         $response->assertDontSee('guru-main-with-bottom-nav', false);
+    }
+
+    public function test_message_show_uses_top_alignment_for_mobile_chat_entries(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-top-align@example.test', 'Cikgu Atas');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Atas',
+            'body' => 'Mesej atas',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        $response = $this->actingAs($guru)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertSee('justify-start space-y-4 pb-2 lg:min-h-[400px] lg:justify-end lg:pb-0', false);
     }
 
     public function test_message_show_hides_impersonation_alert_on_mobile_layout(): void

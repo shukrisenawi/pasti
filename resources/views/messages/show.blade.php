@@ -27,7 +27,7 @@
                 ? 'min-h-[calc(100dvh-9.5rem)]'
                 : 'min-h-[calc(100dvh-5rem)]';
             $mobileSectionPaddingBottom = $isGuruOnly
-                ? 'pb-[calc(10.25rem+env(safe-area-inset-bottom))]'
+                ? 'pb-[calc(9.5rem+env(safe-area-inset-bottom))]'
                 : 'pb-[calc(5.75rem+env(safe-area-inset-bottom))]';
             $mobileScrollerHeight = $isGuruOnly
                 ? 'h-[calc(100dvh-15.25rem)] min-h-[calc(100dvh-15.25rem)]'
@@ -82,7 +82,7 @@
                 x-init="init()"
             >
                 <div x-ref="chatScroller" class="{{ $mobileScrollerHeight }} overflow-y-auto px-4 pt-4 pb-0 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-0 lg:py-0 lg:pr-2">
-                    <div class="flex min-h-full flex-col justify-end space-y-4 pb-3 lg:min-h-[400px] lg:pb-0">
+                    <div class="flex min-h-full flex-col justify-start space-y-4 pb-2 lg:min-h-[400px] lg:justify-end lg:pb-0">
                         @foreach($conversationEntries as $entry)
                             @php($isMine = (int) ($entry['sender']?->id ?? 0) === (int) auth()->id())
                             <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}" data-chat-entry>
