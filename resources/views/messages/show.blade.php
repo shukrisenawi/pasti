@@ -129,43 +129,71 @@
                     <h3 class="text-base font-bold text-slate-900">{{ __('messages.reply') }}</h3>
                     <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="mt-4 space-y-3">
                         @csrf
-                        <div class="relative">
-                            <textarea x-ref="textarea" name="body" rows="4" class="input-base pr-24 pb-12" placeholder="{{ __('messages.write_reply') }}" x-model="body">{{ old('body') }}</textarea>
+                        <div class="relative flex items-end gap-3">
                             <input id="reply-attachment-input" x-ref="attachmentInput" type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip" class="hidden" @change="previewAttachment($event)">
-                            <button
-                                type="button"
-                                class="absolute bottom-3 right-14 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-primary/30 hover:text-primary"
-                                @click="document.getElementById('reply-attachment-input').click()"
-                                title="{{ __('messages.attachment') }}"
-                                aria-label="{{ __('messages.attachment') }}"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-8.49 8.49a6 6 0 11-8.49-8.49l9.19-9.19a4 4 0 115.66 5.66l-9.2 9.19a2 2 0 11-2.82-2.83l8.49-8.48" />
-                                </svg>
-                            </button>
-                            <button
-                                type="button"
-                                class="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-lg shadow-sm transition hover:border-primary/30 hover:text-primary"
-                                @click="emojiOpen = !emojiOpen"
-                            >😊</button>
-                            <div
-                                x-show="emojiOpen"
-                                x-cloak
-                                @click.outside="emojiOpen = false"
-                                class="absolute bottom-14 right-0 z-20 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl"
-                            >
-                                <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Pilih emoji</p>
-                                <div class="grid grid-cols-6 gap-2">
-                                    <template x-for="emoji in emojis" :key="emoji">
-                                        <button
-                                            type="button"
-                                            class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-lg transition hover:border-primary/30 hover:bg-primary/5"
-                                            @click="insertEmoji(emoji)"
-                                            x-text="emoji"
-                                        ></button>
-                                    </template>
+                            <div class="relative flex-1">
+                                <button
+                                    type="button"
+                                    class="absolute inset-y-0 left-3 inline-flex h-11 w-11 items-center justify-center self-center rounded-full text-slate-500 transition hover:bg-primary/5 hover:text-primary"
+                                    @click="emojiOpen = !emojiOpen"
+                                    title="Pilih emoji"
+                                    aria-label="Pilih emoji"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="9" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 10h.01M15 10h.01" />
+                                    </svg>
+                                </button>
+                                <input
+                                    x-ref="textarea"
+                                    type="text"
+                                    name="body"
+                                    value="{{ old('body') }}"
+                                    class="input-base h-14 rounded-full border-slate-200 bg-white pl-16 pr-14 shadow-sm"
+                                    placeholder="{{ __('messages.write_reply') }}"
+                                    x-model="body"
+                                >
+                                <button
+                                    type="button"
+                                    class="absolute inset-y-0 right-2 inline-flex h-10 w-10 items-center justify-center self-center rounded-full text-slate-500 transition hover:bg-primary/5 hover:text-primary"
+                                    @click="document.getElementById('reply-attachment-input').click()"
+                                    title="{{ __('messages.attachment') }}"
+                                    aria-label="{{ __('messages.attachment') }}"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-8.49 8.49a6 6 0 11-8.49-8.49l9.19-9.19a4 4 0 115.66 5.66l-9.2 9.19a2 2 0 11-2.82-2.83l8.49-8.48" />
+                                    </svg>
+                                </button>
+                                <div
+                                    x-show="emojiOpen"
+                                    x-cloak
+                                    @click.outside="emojiOpen = false"
+                                    class="absolute bottom-16 left-0 z-20 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl"
+                                >
+                                    <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Pilih emoji</p>
+                                    <div class="grid grid-cols-6 gap-2">
+                                        <template x-for="emoji in emojis" :key="emoji">
+                                            <button
+                                                type="button"
+                                                class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-lg transition hover:border-primary/30 hover:bg-primary/5"
+                                                @click="insertEmoji(emoji)"
+                                                x-text="emoji"
+                                            ></button>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
+                            <button
+                                type="submit"
+                                class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/25 transition hover:bg-primary-dark"
+                                title="Hantar balasan"
+                                aria-label="Hantar balasan"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3.4 20.4l17.45-7.48a1 1 0 000-1.84L3.4 3.6a.85.85 0 00-1.17.95l1.62 6.48a1 1 0 00.76.73l7.2 1.24-7.2 1.24a1 1 0 00-.76.73l-1.62 6.48a.85.85 0 001.17.95z" />
+                                </svg>
+                            </button>
                         </div>
                         <div x-show="attachmentName" x-cloak class="rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
                             <template x-if="attachmentIsImage && attachmentPreviewUrl">
@@ -185,9 +213,6 @@
                                     </svg>
                                 </button>
                             </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button class="btn btn-primary">{{ __('messages.send_reply') }}</button>
                         </div>
                     </form>
                 </article>

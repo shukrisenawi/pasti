@@ -461,6 +461,32 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('x-init="init()"', false);
     }
 
+    public function test_message_show_uses_whatsapp_style_reply_input(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-input-style@example.test', 'Cikgu Input');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Input',
+            'body' => 'Mesej awal',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertSee('type="text"', false);
+        $response->assertSee('aria-label="Pilih emoji"', false);
+        $response->assertSee('aria-label="Lampiran"', false);
+        $response->assertSee('aria-label="Hantar balasan"', false);
+    }
+
     public function test_message_show_displays_delete_icon_for_entry_owner_and_admin(): void
     {
         [$pasti] = $this->createPastiFixtures();
