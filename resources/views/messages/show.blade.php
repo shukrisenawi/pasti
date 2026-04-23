@@ -126,8 +126,7 @@
 
             @if($canReply)
                 <article class="card border-primary/10 bg-white/95" x-data="messageComposer(@js(old('body', '')))">
-                    <h3 class="text-base font-bold text-slate-900">{{ __('messages.reply') }}</h3>
-                    <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="mt-4 space-y-3">
+                    <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="space-y-3">
                         @csrf
                         <div class="relative flex items-end gap-3">
                             <input id="reply-attachment-input" x-ref="attachmentInput" type="file" name="attachment" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,image/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,text/plain,text/csv,application/zip" class="hidden" @change="previewAttachment($event)">
