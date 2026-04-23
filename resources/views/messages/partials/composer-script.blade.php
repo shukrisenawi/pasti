@@ -6,9 +6,60 @@
             attachmentName: '',
             attachmentPreviewUrl: null,
             attachmentIsImage: false,
+            viewportSyncRegistered: false,
             emojis: ['😀', '😁', '😂', '😊', '😍', '🥰', '😘', '🤗', '🤔', '😎', '🥳', '🙏', '👍', '👏', '💪', '🔥', '🌟', '❤️', '💚', '💙', '🎉', '📌', '📣', '✅'],
+            init() {
+                this.registerViewportSync();
+            },
             hasVariableToken() {
                 return this.body.includes('@nama') || this.body.includes('@pasti');
+            },
+            handleComposerFocus() {
+                this.syncChatToLatest();
+                this.syncChatToLatest(140);
+                this.syncChatToLatest(320);
+            },
+            registerViewportSync() {
+                if (this.viewportSyncRegistered || ! window.visualViewport) {
+                    return;
+                }
+
+                this.viewportSyncRegistered = true;
+
+                const syncIfFocused = () => {
+                    if (document.activeElement !== this.$refs.textarea) {
+                        return;
+                    }
+
+                    this.syncChatToLatest(40);
+                    this.syncChatToLatest(180);
+                };
+
+                window.visualViewport.addEventListener('resize', syncIfFocused);
+                window.visualViewport.addEventListener('scroll', syncIfFocused);
+            },
+            syncChatToLatest(delay = 0) {
+                const run = () => {
+                    const chatScroller = document.querySelector('[x-ref="chatScroller"]');
+
+                    if (! chatScroller) {
+                        return;
+                    }
+
+                    chatScroller.scrollTop = chatScroller.scrollHeight;
+
+                    const entries = chatScroller.querySelectorAll('[data-chat-entry]');
+                    const latestEntry = entries[entries.length - 1];
+
+                    latestEntry?.scrollIntoView({ block: 'end' });
+                };
+
+                if (delay > 0) {
+                    window.setTimeout(run, delay);
+                    return;
+                }
+
+                this.$nextTick(run);
             },
             previewHtml() {
                 return this.escapeHtml(this.body)

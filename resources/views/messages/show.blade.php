@@ -71,7 +71,7 @@
                     <div class="flex min-h-full flex-col justify-end space-y-4 pb-3 lg:min-h-[400px] lg:pb-0">
                         @foreach($conversationEntries as $entry)
                             @php($isMine = (int) ($entry['sender']?->id ?? 0) === (int) auth()->id())
-                            <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
+                            <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}" data-chat-entry>
                                 <div class="max-w-2xl rounded-3xl px-4 py-3 shadow-sm {{ $entry['is_deleted'] ? 'border border-slate-200 bg-slate-100 text-slate-500' : ($isMine ? 'bg-primary text-white' : 'border border-slate-200 bg-white text-slate-800') }}">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="flex items-center gap-2 text-xs {{ $entry['is_deleted'] ? 'text-slate-400' : ($isMine ? 'text-white/80' : 'text-slate-500') }}">
@@ -133,7 +133,7 @@
             </article>
 
             @if($canReply)
-                <article class="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur sm:px-6 lg:static lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-white/95 lg:px-6 lg:py-6 lg:backdrop-blur-none" x-data="messageComposer(@js(old('body', '')))">
+                <article class="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur sm:px-6 lg:static lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-white/95 lg:px-6 lg:py-6 lg:backdrop-blur-none" x-data="messageComposer(@js(old('body', '')))" x-init="init()">
                     <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="space-y-3">
                         @csrf
                         <div class="relative flex items-end gap-3">
@@ -160,6 +160,7 @@
                                     class="input-base h-14 rounded-full border-slate-200 bg-white pl-16 pr-14 shadow-sm"
                                     placeholder="{{ __('messages.write_reply') }}"
                                     x-model="body"
+                                    @focus="handleComposerFocus()"
                                 >
                                 <button
                                     type="button"

@@ -487,6 +487,8 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('aria-label="Pilih emoji"', false);
         $response->assertSee('aria-label="Lampiran"', false);
         $response->assertSee('aria-label="Hantar balasan"', false);
+        $response->assertSee('@focus="handleComposerFocus()"', false);
+        $response->assertSee('window.visualViewport', false);
     }
 
     public function test_message_show_displays_chat_time_in_twelve_hour_format(): void
