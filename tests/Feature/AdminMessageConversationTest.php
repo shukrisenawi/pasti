@@ -29,6 +29,8 @@ class AdminMessageConversationTest extends TestCase
             $table->string('name')->nullable();
             $table->string('nama_samaran')->nullable();
             $table->string('email')->unique();
+            $table->string('avatar_path')->nullable();
+            $table->date('tarikh_lahir')->nullable();
             $table->date('tarikh_exp_skim_pas')->nullable();
             $table->timestamp('last_login_at')->nullable();
             $table->string('password')->nullable();
@@ -166,6 +168,21 @@ class AdminMessageConversationTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('ajk_positions', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->string('description')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('user_ajk_positions', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('ajk_position_id');
+            $table->unsignedBigInteger('assigned_by')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('kpi_snapshots', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('guru_id')->nullable();
@@ -203,6 +220,8 @@ class AdminMessageConversationTest extends TestCase
         Schema::dropIfExists('claims');
         Schema::dropIfExists('leave_notices');
         Schema::dropIfExists('guru_salary_requests');
+        Schema::dropIfExists('user_ajk_positions');
+        Schema::dropIfExists('ajk_positions');
         Schema::dropIfExists('kpi_snapshots');
         Schema::dropIfExists('pasti_information_requests');
         Schema::dropIfExists('guru_program');
@@ -602,6 +621,57 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('pb-[calc(10.25rem+env(safe-area-inset-bottom))]', false);
         $response->assertSee('h-[calc(100dvh-15.25rem)] min-h-[calc(100dvh-15.25rem)]', false);
         $response->assertSee('fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] pb-3 z-20', false);
+    }
+
+    public function test_dashboard_view_accepts_latest_message_activity_as_string(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-dashboard@example.test', 'Cikgu Dashboard');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Hebahan Dashboard',
+            'body' => 'Mesej untuk dashboard guru',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        AdminMessageReply::query()->create([
+            'admin_message_id' => $message->id,
+            'sender_id' => $admin->id,
+            'body' => 'Balasan terkini untuk dashboard',
+        ]);
+
+        $message->forceFill([
+            'replies_max_created_at' => now()->subMinutes(5)->toDateTimeString(),
+        ]);
+
+        view()->share('errors', new \Illuminate\Support\ViewErrorBag());
+
+        $response = $this->actingAs($guru)->view('dashboard', [
+            'latestPrograms' => collect(),
+            'latestProgram' => null,
+            'currentParticipation' => null,
+            'statuses' => collect(),
+            'canUpdateOwnStatus' => false,
+            'topKpiGurus' => collect(),
+            'latestYear' => now()->year,
+            'latestInboxMessage' => $message,
+            'pendingPastiInfoCount' => 0,
+            'guruLeaveDays' => 0,
+            'guruTeachingDuration' => '-',
+            'userAjkPositions' => collect(),
+            'adminCashBalance' => 0,
+            'adminBankBalance' => 0,
+            'birthdayUsers' => collect(),
+        ]);
+
+        $response->assertSee('Hebahan Dashboard');
+        $response->assertSee('Mesej untuk dashboard guru');
     }
 
     public function test_message_show_displays_delete_icon_for_entry_owner_and_admin(): void

@@ -126,6 +126,11 @@
 
     @if($latestInboxMessage)
         @php($latestMessageActivity = $latestInboxMessage->replies_max_created_at ?? $latestInboxMessage->created_at)
+        @php(
+            $latestMessageActivity = is_string($latestMessageActivity) && $latestMessageActivity !== ''
+                ? \Illuminate\Support\Carbon::parse($latestMessageActivity)
+                : $latestMessageActivity
+        )
         <section class="mb-8">
             <div class="bg-white rounded-2xl p-5 shadow-card border border-slate-50 relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
