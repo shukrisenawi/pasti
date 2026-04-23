@@ -27,13 +27,13 @@
                 ? 'min-h-[calc(100dvh-9.5rem)]'
                 : 'min-h-[calc(100dvh-5rem)]';
             $mobileSectionPaddingBottom = $isGuruOnly
-                ? 'pb-[calc(9.5rem+env(safe-area-inset-bottom))]'
+                ? 'pb-[calc(8.75rem+env(safe-area-inset-bottom))]'
                 : 'pb-[calc(5.75rem+env(safe-area-inset-bottom))]';
             $mobileScrollerHeight = $isGuruOnly
                 ? 'h-[calc(100dvh-15.25rem)] min-h-[calc(100dvh-15.25rem)]'
                 : 'h-[calc(100dvh-10.75rem)] min-h-[calc(100dvh-10.75rem)]';
             $mobileComposerPosition = $isGuruOnly
-                ? 'bottom-[calc(4.5rem+env(safe-area-inset-bottom))] pb-3'
+                ? 'bottom-[calc(3.75rem+env(safe-area-inset-bottom))] pb-2'
                 : 'bottom-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]';
         @endphp
         <div class="hidden lg:flex lg:flex-wrap lg:items-center lg:justify-between lg:gap-3">

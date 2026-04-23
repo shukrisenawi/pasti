@@ -618,9 +618,9 @@ class AdminMessageConversationTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('min-h-[calc(100dvh-9.5rem)]', false);
-        $response->assertSee('pb-[calc(9.5rem+env(safe-area-inset-bottom))]', false);
+        $response->assertSee('pb-[calc(8.75rem+env(safe-area-inset-bottom))]', false);
         $response->assertSee('h-[calc(100dvh-15.25rem)] min-h-[calc(100dvh-15.25rem)]', false);
-        $response->assertSee('fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] pb-3 z-20', false);
+        $response->assertSee('fixed inset-x-0 bottom-[calc(3.75rem+env(safe-area-inset-bottom))] pb-2 z-20', false);
     }
 
     public function test_message_show_does_not_apply_global_guru_bottom_nav_spacing(): void
