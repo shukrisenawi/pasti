@@ -33,8 +33,8 @@
                 ? 'h-[calc(100dvh-15.25rem)] min-h-[calc(100dvh-15.25rem)]'
                 : 'h-[calc(100dvh-10.75rem)] min-h-[calc(100dvh-10.75rem)]';
             $mobileComposerPosition = $isGuruOnly
-                ? 'bottom-[calc(3.75rem+env(safe-area-inset-bottom))] pb-2'
-                : 'bottom-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]';
+                ? 'bottom-[calc(3.75rem+env(safe-area-inset-bottom))]'
+                : 'bottom-0';
         @endphp
         <div class="hidden lg:flex lg:flex-wrap lg:items-center lg:justify-between lg:gap-3">
             <div>
@@ -131,7 +131,7 @@
                 }"
                 x-init="init()"
             >
-                <div x-ref="chatScroller" class="{{ $mobileScrollerHeight }} overflow-y-auto px-4 pt-3 pb-2 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-2 lg:pt-2 lg:pb-1 lg:pr-2">
+                <div x-ref="chatScroller" class="{{ $mobileScrollerHeight }} overflow-y-auto px-4 pt-0 pb-2 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-2 lg:pt-2 lg:pb-1 lg:pr-2">
                     <div x-ref="entriesContainer" class="flex min-h-full flex-col justify-start space-y-4 pb-2 lg:min-h-[400px] lg:justify-end lg:pb-0">
                         @include('messages.partials.conversation-entries', ['conversationEntries' => $conversationEntries])
                     </div>
@@ -139,7 +139,7 @@
             </article>
 
             @if($canReply)
-                <article class="fixed inset-x-0 {{ $mobileComposerPosition }} z-20 border-t border-slate-200 bg-white/95 px-4 pt-3 backdrop-blur sm:px-6 lg:static lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-white/95 lg:px-6 lg:py-6 lg:backdrop-blur-none" x-data="messageComposer(@js(old('body', '')))" x-init="init()">
+                <article class="fixed inset-x-0 {{ $mobileComposerPosition }} z-20 border-t-0 bg-transparent px-4 pt-2 pb-0 sm:px-6 lg:static lg:rounded-3xl lg:border lg:border-primary/10 lg:bg-white/95 lg:px-6 lg:py-6 lg:backdrop-blur-none" x-data="messageComposer(@js(old('body', '')))" x-init="init()">
                     <form method="POST" action="{{ route('messages.reply', $message) }}" enctype="multipart/form-data" class="space-y-3" @submit="handleSubmit($event)">
                         @csrf
                         <div class="relative flex items-end gap-3">
