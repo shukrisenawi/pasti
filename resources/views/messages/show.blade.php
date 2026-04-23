@@ -68,7 +68,7 @@
                 x-init="init()"
             >
                 <div x-ref="chatScroller" class="h-[calc(100dvh-10.75rem)] min-h-[calc(100dvh-10.75rem)] overflow-y-auto px-4 pt-4 pb-0 sm:px-6 lg:min-h-[400px] lg:max-h-[400px] lg:h-auto lg:px-0 lg:py-0 lg:pr-2">
-                    <div class="flex min-h-full flex-col justify-end space-y-4 lg:min-h-[400px]">
+                    <div class="flex min-h-full flex-col justify-end space-y-4 pb-3 lg:min-h-[400px] lg:pb-0">
                         @foreach($conversationEntries as $entry)
                             @php($isMine = (int) ($entry['sender']?->id ?? 0) === (int) auth()->id())
                             <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
