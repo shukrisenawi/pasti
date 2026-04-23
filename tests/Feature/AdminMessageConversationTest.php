@@ -623,6 +623,55 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] pb-3 z-20', false);
     }
 
+    public function test_message_show_does_not_apply_global_guru_bottom_nav_spacing(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-no-global-spacing@example.test', 'Cikgu Rapat');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Rapat',
+            'body' => 'Mesej rapat',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        $response = $this->actingAs($guru)->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertDontSee('guru-main-with-bottom-nav', false);
+    }
+
+    public function test_message_show_hides_impersonation_alert_on_mobile_layout(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+        $guru = $this->createGuruUser($pasti, 'guru-impersonate@example.test', 'Cikgu Samaran');
+
+        $message = AdminMessage::query()->create([
+            'sender_id' => $admin->id,
+            'title' => 'Perbualan dengan Cikgu Samaran',
+            'body' => 'Mesej samaran',
+            'sent_to_all' => false,
+        ]);
+
+        $message->recipientLinks()->create([
+            'user_id' => $guru->id,
+        ]);
+
+        $response = $this
+            ->withSession(['impersonator_user_id' => $admin->id])
+            ->actingAs($guru)
+            ->get(route('messages.show', $message));
+
+        $response->assertOk();
+        $response->assertSee('hidden lg:flex', false);
+    }
+
     public function test_dashboard_view_accepts_latest_message_activity_as_string(): void
     {
         [$pasti] = $this->createPastiFixtures();

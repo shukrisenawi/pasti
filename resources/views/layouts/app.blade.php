@@ -544,7 +544,7 @@
             </nav>
         </aside>
 
-        <main class="min-w-0 {{ request()->routeIs('messages.show') ? 'space-y-0 lg:space-y-4' : 'space-y-4' }} {{ $isGuruOnly ? 'guru-main-with-bottom-nav' : '' }}">
+        <main class="min-w-0 {{ request()->routeIs('messages.show') ? 'space-y-0 lg:space-y-4' : 'space-y-4' }} {{ $isGuruOnly && ! request()->routeIs('messages.show') ? 'guru-main-with-bottom-nav' : '' }}">
             @isset($header)
                 <div class="card border-primary/10 bg-white/95 {{ $isGuruOnly && request()->routeIs('dashboard') ? 'hidden min-[360px]:block' : '' }} {{ request()->routeIs('messages.show') ? 'hidden lg:block' : '' }}">
                     {{ $header }}
@@ -552,7 +552,7 @@
             @endisset
 
             @if ($isImpersonatingGuru)
-                <div class="alert border-amber-300 bg-amber-50 text-amber-900 flex items-center justify-between gap-3">
+                <div class="alert border-amber-300 bg-amber-50 text-amber-900 flex items-center justify-between gap-3 {{ request()->routeIs('messages.show') ? 'hidden lg:flex' : '' }}">
                     <span class="text-sm font-semibold">Anda sedang masuk sebagai guru: {{ $authUser->display_name }}</span>
                     <a href="{{ route('impersonation.stop') }}" class="btn btn-xs btn-outline border-amber-400 text-amber-900 hover:bg-amber-100">Kembali ke Admin</a>
                 </div>
