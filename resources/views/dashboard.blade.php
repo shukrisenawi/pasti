@@ -150,7 +150,6 @@
                     <div class="flex items-center justify-between gap-3">
                         <div>
                             <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">Pengumuman</p>
-                            <h3 class="mt-1 text-lg font-black text-slate-900">Makluman Untuk Guru</h3>
                         </div>
                     </div>
 
