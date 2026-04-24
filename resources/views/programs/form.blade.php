@@ -102,7 +102,7 @@
                                 name="require_absence_reason"
                                 value="1"
                                 class="checkbox checkbox-sm"
-                                @checked((bool) old('require_absence_reason', $program->require_absence_reason))
+                                @checked((bool) old('require_absence_reason', $program->exists ? $program->require_absence_reason : true))
                             >
                             <span class="text-sm text-slate-700">{{ __('messages.require_absence_reason_hint') }}</span>
                         </label>

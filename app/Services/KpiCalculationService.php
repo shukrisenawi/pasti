@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Guru;
 use App\Models\KpiSnapshot;
 use App\Models\ProgramStatus;
+use App\Services\ProgramParticipationService;
 
 class KpiCalculationService
 {
@@ -21,11 +22,27 @@ class KpiCalculationService
             ->where('is_hadir', true)
             ->pluck('id');
 
-        $totalHadir = $hadirStatusIds->isEmpty()
-            ? 0
-            : (int) (clone $baseQuery)
-                ->whereIn('program_teacher.program_status_id', $hadirStatusIds)
-                ->sum('programs.markah');
+        $absentStatusIds = ProgramStatus::query()
+            ->where('code', 'TIDAK_HADIR')
+            ->pluck('id');
+
+        $totalHadir = (int) (clone $baseQuery)
+            ->where(function ($query) use ($hadirStatusIds, $absentStatusIds): void {
+                if ($hadirStatusIds->isNotEmpty()) {
+                    $query->whereIn('program_teacher.program_status_id', $hadirStatusIds);
+                }
+
+                if ($absentStatusIds->isNotEmpty()) {
+                    $method = $hadirStatusIds->isNotEmpty() ? 'orWhere' : 'where';
+
+                    $query->{$method}(function ($approvedAbsenceQuery) use ($absentStatusIds): void {
+                        $approvedAbsenceQuery
+                            ->whereIn('program_teacher.program_status_id', $absentStatusIds)
+                            ->where('program_teacher.absence_reason_status', ProgramParticipationService::ABSENCE_REASON_APPROVED);
+                    });
+                }
+            })
+            ->sum('programs.markah');
 
         $score = $totalHadir;
 

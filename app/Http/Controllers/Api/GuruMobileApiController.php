@@ -195,6 +195,7 @@ class GuruMobileApiController extends Controller
                 'status_code' => $statusMap->get($p->pivot->program_status_id)?->code,
                 'status_name' => $statusMap->get($p->pivot->program_status_id)?->name,
                 'absence_reason' => $p->pivot->absence_reason,
+                'absence_reason_status' => $p->pivot->absence_reason_status,
             ]),
         ]);
     }
@@ -297,7 +298,12 @@ class GuruMobileApiController extends Controller
             $guru->id,
             $data['program_status_id'],
             $selectedStatus->code === 'TIDAK_HADIR' ? $data['absence_reason'] : null,
-            $user->id
+            $user->id,
+            $selectedStatus->code === 'TIDAK_HADIR' && filled($data['absence_reason'] ?? null)
+                ? \App\Services\ProgramParticipationService::ABSENCE_REASON_PENDING
+                : null,
+            null,
+            null
         );
 
         $this->kpiCalculationService->recalculateForGuru($guru);
@@ -323,6 +329,7 @@ class GuruMobileApiController extends Controller
                 'program_status_name' => $selectedStatus->name,
                 'program_status_code' => $selectedStatus->code,
                 'absence_reason' => $participation->absence_reason,
+                'absence_reason_status' => $participation->absence_reason_status,
                 'updated_at' => $participation->updated_at?->toDateTimeString(),
             ],
         ]);
@@ -521,4 +528,3 @@ class GuruMobileApiController extends Controller
         ];
     }
 }
-

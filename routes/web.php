@@ -115,6 +115,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/programs/{program}', [ProgramController::class, 'show'])->name('programs.show');
         Route::post('/programs/{program}/teachers/{guruId}/status', [ProgramParticipationController::class, 'updateStatus'])
             ->name('programs.teachers.status.update');
+        Route::post('/programs/{program}/teachers/{guruId}/absence-review', [ProgramParticipationController::class, 'reviewAbsenceReason'])
+            ->name('programs.teachers.absence-review');
         Route::get('/kpi/guru/{guru}', [KpiController::class, 'show'])->name('kpi.guru.show');
         Route::get('/leave-notices', [LeaveNoticeController::class, 'index'])->name('leave-notices.index');
         Route::delete('/leave-notices/{leaveNotice}', [LeaveNoticeController::class, 'destroy'])->name('leave-notices.destroy');

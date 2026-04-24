@@ -62,7 +62,14 @@ class Guru extends Model
     public function programs(): BelongsToMany
     {
         return $this->belongsToMany(Program::class, 'program_teacher')
-            ->withPivot(['program_status_id', 'updated_by'])
+            ->withPivot([
+                'program_status_id',
+                'absence_reason',
+                'absence_reason_status',
+                'absence_reason_reviewed_by',
+                'absence_reason_reviewed_at',
+                'updated_by',
+            ])
             ->withTimestamps();
     }
 

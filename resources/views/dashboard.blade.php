@@ -286,15 +286,38 @@
                             
                             @if($loop->first && $canUpdateOwnStatus && $currentParticipation)
                                 <div class="mt-4 border-t border-slate-50 pt-4">
-                                     <form method="POST" action="{{ route('programs.teachers.status.update', [$p, $currentParticipation->guru_id]) }}" class="flex flex-wrap items-center gap-2">
+                                     @php($dashboardStatusCodeById = $statuses->mapWithKeys(fn ($status) => [(string) $status->id => $status->code]))
+                                     <form
+                                        method="POST"
+                                        action="{{ route('programs.teachers.status.update', [$p, $currentParticipation->guru_id]) }}"
+                                        class="flex flex-wrap items-center gap-2"
+                                        x-data="{
+                                            selectedStatusId: @js((string) $currentParticipation->program_status_id),
+                                            statusCodeById: @js($dashboardStatusCodeById),
+                                            requiresAbsenceReason() {
+                                                return this.statusCodeById[this.selectedStatusId] === 'TIDAK_HADIR';
+                                            }
+                                        }"
+                                     >
                                         @csrf
-                                        <select name="program_status_id" class="text-xs font-bold rounded-xl border-slate-200 bg-slate-50 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/20">
+                                        <select name="program_status_id" class="text-xs font-bold rounded-xl border-slate-200 bg-slate-50 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/20" x-model="selectedStatusId">
                                             @foreach($statuses as $status)
                                                 <option value="{{ $status->id }}" @selected($currentParticipation->program_status_id == $status->id)>
                                                     {{ $status->name }}
                                                 </option>
                                             @endforeach
                                         </select>
+                                        @if($p->require_absence_reason)
+                                            <input
+                                                x-show="requiresAbsenceReason()"
+                                                x-cloak
+                                                type="text"
+                                                name="absence_reason"
+                                                class="min-w-[220px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20"
+                                                placeholder="{{ __('messages.absence_reason_placeholder') }}"
+                                                value="{{ old('absence_reason', $currentParticipation->absence_reason) }}"
+                                            >
+                                        @endif
                                         <button class="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all">
                                             {{ __('messages.save') }}
                                         </button>

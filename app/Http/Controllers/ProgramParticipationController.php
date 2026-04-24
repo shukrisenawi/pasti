@@ -57,13 +57,19 @@ class ProgramParticipationController extends Controller
             ->first();
 
         $newAbsenceReason = $selectedStatus?->code === 'TIDAK_HADIR' ? ($data['absence_reason'] ?? null) : null;
+        $newAbsenceReasonStatus = $selectedStatus?->code === 'TIDAK_HADIR' && filled($newAbsenceReason)
+            ? ProgramParticipationService::ABSENCE_REASON_PENDING
+            : null;
 
         $participation = $this->participationService->updateStatus(
             $program->id,
             $guruId,
             $data['program_status_id'] ?? null,
             $newAbsenceReason,
-            $user->id
+            $user->id,
+            $newAbsenceReasonStatus,
+            null,
+            null
         );
 
         $shouldNotifyAbsenceReason = $user->hasRole('guru')
@@ -98,6 +104,50 @@ class ProgramParticipationController extends Controller
         $this->kpiCalculationService->recalculateForGuru($participation->guru);
 
         return back()->with('status', __('messages.saved'));
+    }
+
+    public function reviewAbsenceReason(Request $request, Program $program, int $guruId): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+
+        $data = $request->validate([
+            'decision' => ['required', 'in:approved,rejected'],
+        ]);
+
+        $participation = ProgramParticipation::query()
+            ->where('program_id', $program->id)
+            ->where('guru_id', $guruId)
+            ->firstOrFail();
+
+        $absentStatusIds = ProgramStatus::query()
+            ->where('code', 'TIDAK_HADIR')
+            ->pluck('id')
+            ->all();
+
+        abort_unless(
+            in_array((int) $participation->program_status_id, $absentStatusIds, true)
+            && filled($participation->absence_reason),
+            422
+        );
+
+        $decision = $data['decision'] === 'approved'
+            ? ProgramParticipationService::ABSENCE_REASON_APPROVED
+            : ProgramParticipationService::ABSENCE_REASON_REJECTED;
+
+        $participation->update([
+            'absence_reason_status' => $decision,
+            'absence_reason_reviewed_by' => $user->id,
+            'absence_reason_reviewed_at' => now(),
+            'updated_by' => $user->id,
+        ]);
+
+        $participation->loadMissing('guru');
+        $this->kpiCalculationService->recalculateForGuru($participation->guru);
+
+        return redirect()
+            ->route('programs.show', $program)
+            ->with('status', __('messages.saved'));
     }
 
     private function isGuruOnly($user): bool
