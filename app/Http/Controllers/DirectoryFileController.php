@@ -23,7 +23,8 @@ class DirectoryFileController extends Controller
 
         $filesQuery = DirectoryFile::query()
             ->with(['uploader', 'recipients.user', 'recipients.pasti'])
-            ->latest('id');
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
 
         if ($user->hasRole('guru')) {
             $guruId = (int) ($user->guru?->id ?? 0);
