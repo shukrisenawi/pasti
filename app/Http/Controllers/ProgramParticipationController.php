@@ -103,7 +103,11 @@ class ProgramParticipationController extends Controller
 
         $this->kpiCalculationService->recalculateForGuru($participation->guru);
 
-        return back()->with('status', __('messages.saved'));
+        return back()
+            ->with('status', __('messages.saved'))
+            ->with('program_status_success_message', 'Dah berjaya update')
+            ->with('program_status_success_actor', $user->hasAnyRole(['master_admin', 'admin']) ? 'admin' : 'guru')
+            ->with('program_status_updated_guru_id', $guruId);
     }
 
     public function reviewAbsenceReason(Request $request, Program $program, int $guruId): RedirectResponse
@@ -147,7 +151,10 @@ class ProgramParticipationController extends Controller
 
         return redirect()
             ->route('programs.show', $program)
-            ->with('status', __('messages.saved'));
+            ->with('status', __('messages.saved'))
+            ->with('program_status_success_message', 'Dah berjaya update')
+            ->with('program_status_success_actor', 'admin')
+            ->with('program_status_updated_guru_id', $guruId);
     }
 
     private function isGuruOnly($user): bool

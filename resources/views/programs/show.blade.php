@@ -39,7 +39,29 @@
             $statusCodeById = $statuses->mapWithKeys(
                 fn ($status) => [(string) $status->id => $status->code]
             );
+            $programStatusSuccessMessage = session('program_status_success_actor') === 'admin'
+                ? session('program_status_success_message')
+                : null;
         @endphp
+        @if(filled($programStatusSuccessMessage))
+            <div data-testid="program-status-success-alert" hidden>{{ $programStatusSuccessMessage }}</div>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    if (! window.Swal) {
+                        return;
+                    }
+
+                    window.Swal.fire({
+                        icon: 'success',
+                        title: @js($programStatusSuccessMessage),
+                        timer: 1700,
+                        showConfirmButton: false,
+                        allowOutsideClick: true,
+                    });
+                }, { once: true });
+            </script>
+        @endif
         <div class="mb-3 flex items-center justify-between gap-3">
             <div>
                 <h3 class="ml-[20px] text-sm font-black text-slate-900">Guru Terlibat</h3>

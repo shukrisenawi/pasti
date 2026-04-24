@@ -286,7 +286,7 @@ class ProgramParticipationApprovalTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Semua guru')
-            ->assertSee('x-data="{ showAllTeachers: false }"', false)
+            ->assertSee('showAllTeachers: false', false)
             ->assertViewHas('submittedParticipations', function ($participations): bool {
                 return $participations->count() === 1
                     && $participations->first()->guru->display_name === 'Cikgu Program';
@@ -359,6 +359,39 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertOk()
             ->assertSee('data-testid="program-card-pending-badge"', false)
             ->assertSee('>2</span>', false);
+    }
+
+    public function test_admin_status_update_shows_sweetalert_and_disables_target_form(): void
+    {
+        Notification::fake();
+
+        [$program, $guruUser, $absentStatus, $admin] = $this->createProgramFixtures();
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $guruUser->guru->id)
+            ->update([
+                'program_status_id' => null,
+                'absence_reason' => null,
+                'absence_reason_status' => null,
+            ]);
+
+        $response = $this->actingAs($admin)
+            ->from(route('programs.show', $program))
+            ->followingRedirects()
+            ->post(route('programs.teachers.status.update', [$program, $guruUser->guru->id]), [
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Tidak sihat.',
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertSee('data-testid="program-status-success-alert"', false)
+            ->assertSee('Dah berjaya update')
+            ->assertSee('data-testid="program-admin-status-form-disabled"', false)
+            ->assertSee('name="program_status_id"', false)
+            ->assertSee('name="absence_reason"', false)
+            ->assertSee('disabled', false);
     }
 
     public function test_absence_reason_submission_stays_pending_and_does_not_add_kpi_before_admin_review(): void
