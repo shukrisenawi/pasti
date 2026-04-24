@@ -103,7 +103,10 @@ class ProgramParticipationController extends Controller
 
         $this->kpiCalculationService->recalculateForGuru($participation->guru);
 
-        return back()->with('status', __('messages.saved'));
+        return back()
+            ->with('status', __('messages.saved'))
+            ->with('program_status_updated_guru_id', $guruId)
+            ->with('program_status_success_message', 'Kemaskini berjaya');
     }
 
     public function reviewAbsenceReason(Request $request, Program $program, int $guruId): RedirectResponse

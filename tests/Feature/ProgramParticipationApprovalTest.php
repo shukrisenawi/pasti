@@ -224,7 +224,7 @@ class ProgramParticipationApprovalTest extends TestCase
     {
         Notification::fake();
 
-        [$program, $guruUser, $absentStatus] = $this->createProgramFixtures();
+        [$program, $guruUser, $absentStatus] = $this->createProgramFixtures(firstGuruHasStatus: false);
 
         $response = $this->actingAs($guruUser)
             ->from(route('programs.show', $program))
@@ -286,7 +286,7 @@ class ProgramParticipationApprovalTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Semua guru')
-            ->assertSee('x-data="{ showAllTeachers: false }"', false)
+            ->assertSee('showAllTeachers: false', false)
             ->assertViewHas('submittedParticipations', function ($participations): bool {
                 return $participations->count() === 1
                     && $participations->first()->guru->display_name === 'Cikgu Program';
@@ -361,11 +361,35 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertSee('>2</span>', false);
     }
 
+    public function test_guru_status_update_shows_success_alert_and_disables_own_form(): void
+    {
+        Notification::fake();
+
+        [$program, $guruUser, $absentStatus] = $this->createProgramFixtures(firstGuruHasStatus: false);
+
+        $response = $this->actingAs($guruUser)
+            ->from(route('programs.show', $program))
+            ->followingRedirects()
+            ->post(route('programs.teachers.status.update', [$program, $guruUser->guru->id]), [
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Tidak sihat.',
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertSee('data-testid="program-status-success-alert"', false)
+            ->assertSee('Kemaskini berjaya')
+            ->assertSee('data-testid="program-status-form-disabled"', false)
+            ->assertSee('name="program_status_id"', false)
+            ->assertSee('name="absence_reason"', false)
+            ->assertSee('disabled', false);
+    }
+
     public function test_absence_reason_submission_stays_pending_and_does_not_add_kpi_before_admin_review(): void
     {
         Notification::fake();
 
-        [$program, $guruUser, $absentStatus] = $this->createProgramFixtures();
+        [$program, $guruUser, $absentStatus] = $this->createProgramFixtures(firstGuruHasStatus: false);
 
         $response = $this->actingAs($guruUser)
             ->post(route('programs.teachers.status.update', [$program, $guruUser->guru->id]), [
@@ -392,7 +416,7 @@ class ProgramParticipationApprovalTest extends TestCase
     {
         Notification::fake();
 
-        [$program, $guruUser, $absentStatus, $admin] = $this->createProgramFixtures();
+        [$program, $guruUser, $absentStatus, $admin] = $this->createProgramFixtures(firstGuruHasStatus: false);
 
         $this->actingAs($guruUser)
             ->post(route('programs.teachers.status.update', [$program, $guruUser->guru->id]), [
@@ -423,7 +447,7 @@ class ProgramParticipationApprovalTest extends TestCase
     {
         Notification::fake();
 
-        [$program, $guruUser, $absentStatus, $admin] = $this->createProgramFixtures();
+        [$program, $guruUser, $absentStatus, $admin] = $this->createProgramFixtures(firstGuruHasStatus: false);
 
         $this->actingAs($guruUser)
             ->post(route('programs.teachers.status.update', [$program, $guruUser->guru->id]), [
@@ -453,7 +477,11 @@ class ProgramParticipationApprovalTest extends TestCase
     /**
      * @return array{0: Program, 1: User, 2: ProgramStatus, 3: User, 4: ?User}
      */
-    private function createProgramFixtures(bool $withSecondGuru = false, bool $secondGuruHasStatus = true): array
+    private function createProgramFixtures(
+        bool $withSecondGuru = false,
+        bool $secondGuruHasStatus = true,
+        bool $firstGuruHasStatus = true
+    ): array
     {
         $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
         $pasti = Pasti::query()->create([
@@ -508,7 +536,7 @@ class ProgramParticipationApprovalTest extends TestCase
         \DB::table('program_teacher')->insert([
             'program_id' => $program->id,
             'guru_id' => $guru->id,
-            'program_status_id' => $hadirStatus->id,
+            'program_status_id' => $firstGuruHasStatus ? $hadirStatus->id : null,
             'updated_by' => $admin->id,
             'created_at' => now()->subMinutes(10),
             'updated_at' => now()->subMinutes(10),
