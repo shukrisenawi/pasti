@@ -78,12 +78,19 @@
 
             <div>
                 <x-input-label for="kursus_guru" :value="__('messages.kursus_guru')" />
-                @php
-                    $currentKursus = old('kursus_guru', $user->guru?->kursus_guru);
-                    $kursusLabel = $currentKursus ? __('messages.kursus_guru_' . $currentKursus) : ('- ' . __('messages.select') . ' -');
-                @endphp
-                <input id="kursus_guru" type="text" class="input-base mt-1 block w-full bg-slate-100 text-slate-700" value="{{ $kursusLabel }}" disabled>
-                <p class="mt-2 text-xs text-slate-500">Status kursus guru dikemaskini automatik selepas anda respon permintaan kursus daripada admin.</p>
+                <select id="kursus_guru" name="kursus_guru" class="input-base mt-1 block w-full" required>
+                    <option value="">- {{ __('messages.select') }} -</option>
+                    <option value="belum_kursus" @selected(old('kursus_guru', $user->guru?->kursus_guru) === 'belum_kursus')>{{ __('messages.kursus_guru_belum_kursus') }}</option>
+                    <option value="semester_1" @selected(old('kursus_guru', $user->guru?->kursus_guru) === 'semester_1')>{{ __('messages.kursus_guru_semester_1') }}</option>
+                    <option value="semester_2" @selected(old('kursus_guru', $user->guru?->kursus_guru) === 'semester_2')>{{ __('messages.kursus_guru_semester_2') }}</option>
+                    <option value="semester_3" @selected(old('kursus_guru', $user->guru?->kursus_guru) === 'semester_3')>{{ __('messages.kursus_guru_semester_3') }}</option>
+                    <option value="semester_4" @selected(old('kursus_guru', $user->guru?->kursus_guru) === 'semester_4')>{{ __('messages.kursus_guru_semester_4') }}</option>
+                    <option value="semester_5" @selected(old('kursus_guru', $user->guru?->kursus_guru) === 'semester_5')>{{ __('messages.kursus_guru_semester_5') }}</option>
+                    <option value="semester_6" @selected(old('kursus_guru', $user->guru?->kursus_guru) === 'semester_6')>{{ __('messages.kursus_guru_semester_6') }}</option>
+                    <option value="semester_7" @selected(old('kursus_guru', $user->guru?->kursus_guru) === 'semester_7')>{{ __('messages.kursus_guru_semester_7') }}</option>
+                    <option value="terima_anugerah" @selected(old('kursus_guru', $user->guru?->kursus_guru) === 'terima_anugerah')>{{ __('messages.kursus_guru_terima_anugerah') }}</option>
+                </select>
+                <x-input-error class="mt-2" :messages="$errors->get('kursus_guru')" />
             </div>
         @endif
 
@@ -126,5 +133,4 @@
         </div>
     </form>
 </section>
-
 

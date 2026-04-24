@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Guru;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -35,6 +36,7 @@ class ProfileUpdateRequest extends FormRequest
             'remove_avatar' => ['nullable', 'boolean'],
             'phone' => [...$requiredOrNullable(), 'string', 'max:30'],
             'marital_status' => [...$requiredOrNullable(), 'string', 'in:single,married,widowed,divorced'],
+            'kursus_guru' => ['nullable', 'string', Rule::in(Guru::KURSUS_GURU_OPTIONS)],
             'joined_at' => [...$requiredOrNullable(), 'date'],
         ];
     }
@@ -57,5 +59,4 @@ class ProfileUpdateRequest extends FormRequest
         });
     }
 }
-
 
