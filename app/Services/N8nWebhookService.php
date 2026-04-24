@@ -28,6 +28,7 @@ class N8nWebhookService
     public const KEY_TEXT_ADMIN_BROADCAST = 'n8n_text_admin_broadcast';
     public const KEY_TEXT_GURU_MESSAGE_TO_ADMIN = 'n8n_text_guru_message_to_admin';
     public const KEY_TEXT_DIRECTORY_FILE_ALL_GURU = 'n8n_text_directory_file_all_guru';
+    public const KEY_TEXT_ANNOUNCEMENT_ALL_GURU = 'n8n_text_announcement_all_guru';
 
     private const DEFAULT_TEXT_PROGRAM_CREATED = '{tajuk} akan diadakan pada {tarikh} ({hari}){masa}{lokasi}.';
     private const DEFAULT_TEXT_SALARY_REQUEST = 'Permintaan kemaskini elaun guru telah dihantar pada {tarikh}. Sila kemaskini elaun dan elaun tambahan semasa.';
@@ -40,6 +41,7 @@ class N8nWebhookService
     private const DEFAULT_TEXT_ADMIN_BROADCAST = '{nama_penghantar} hantar hebahan kepada {jumlah_guru} guru. Mesej: {mesej}.';
     private const DEFAULT_TEXT_GURU_MESSAGE_TO_ADMIN = '{nama_guru} dari {pasti} hantar mesej kepada admin. Mesej: {mesej}.';
     private const DEFAULT_TEXT_DIRECTORY_FILE_ALL_GURU = '{nama_penghantar} muat naik fail directory untuk semua guru: {nama_fail}.';
+    private const DEFAULT_TEXT_ANNOUNCEMENT_ALL_GURU = '{nama_penghantar} hantar pengumuman kepada {jumlah_guru} guru: {tajuk}. Tamat pada {tarikh_tamat}.';
 
     public function send(string $text, ?string $link = null, ?string $gambar = null): void
     {
@@ -205,6 +207,7 @@ class N8nWebhookService
             'text_admin_broadcast' => $this->template(self::KEY_TEXT_ADMIN_BROADCAST),
             'text_guru_message_to_admin' => $this->template(self::KEY_TEXT_GURU_MESSAGE_TO_ADMIN),
             'text_directory_file_all_guru' => $this->template(self::KEY_TEXT_DIRECTORY_FILE_ALL_GURU),
+            'text_announcement_all_guru' => $this->template(self::KEY_TEXT_ANNOUNCEMENT_ALL_GURU),
         ];
     }
 
@@ -263,6 +266,7 @@ class N8nWebhookService
             self::KEY_TEXT_ADMIN_BROADCAST => $this->setting($key, self::DEFAULT_TEXT_ADMIN_BROADCAST),
             self::KEY_TEXT_GURU_MESSAGE_TO_ADMIN => $this->setting($key, self::DEFAULT_TEXT_GURU_MESSAGE_TO_ADMIN),
             self::KEY_TEXT_DIRECTORY_FILE_ALL_GURU => $this->setting($key, self::DEFAULT_TEXT_DIRECTORY_FILE_ALL_GURU),
+            self::KEY_TEXT_ANNOUNCEMENT_ALL_GURU => $this->setting($key, self::DEFAULT_TEXT_ANNOUNCEMENT_ALL_GURU),
             default => '',
         };
     }

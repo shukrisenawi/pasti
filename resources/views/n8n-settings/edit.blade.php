@@ -128,6 +128,12 @@
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_penghantar}</code>, <code>{nama_fail}</code></p>
             </div>
 
+            <div>
+                <label for="text_announcement_all_guru" class="label-base">Teks Group Guru - Pengumuman</label>
+                <textarea id="text_announcement_all_guru" name="text_announcement_all_guru" rows="3" required class="input-base">{{ old('text_announcement_all_guru', $settings['text_announcement_all_guru'] ?? '') }}</textarea>
+                <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_penghantar}</code>, <code>{jumlah_guru}</code>, <code>{tajuk}</code>, <code>{tarikh_tamat}</code></p>
+            </div>
+
             <div class="flex gap-2">
                 <button type="submit" class="btn btn-primary">Simpan</button>
             </div>

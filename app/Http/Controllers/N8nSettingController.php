@@ -50,6 +50,7 @@ class N8nSettingController extends Controller
             'text_admin_broadcast' => ['required', 'string', 'max:2000'],
             'text_guru_message_to_admin' => ['required', 'string', 'max:2000'],
             'text_directory_file_all_guru' => ['required', 'string', 'max:2000'],
+            'text_announcement_all_guru' => ['required', 'string', 'max:2000'],
         ]);
 
         $mapping = [
@@ -70,6 +71,7 @@ class N8nSettingController extends Controller
             'text_admin_broadcast' => N8nWebhookService::KEY_TEXT_ADMIN_BROADCAST,
             'text_guru_message_to_admin' => N8nWebhookService::KEY_TEXT_GURU_MESSAGE_TO_ADMIN,
             'text_directory_file_all_guru' => N8nWebhookService::KEY_TEXT_DIRECTORY_FILE_ALL_GURU,
+            'text_announcement_all_guru' => N8nWebhookService::KEY_TEXT_ANNOUNCEMENT_ALL_GURU,
         ];
 
         foreach ($mapping as $inputKey => $settingKey) {

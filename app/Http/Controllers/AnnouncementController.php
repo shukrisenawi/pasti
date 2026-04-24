@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use App\Models\Guru;
 use App\Models\User;
+use App\Services\N8nWebhookService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,10 @@ use Illuminate\View\View;
 
 class AnnouncementController extends Controller
 {
+    public function __construct(
+        private readonly N8nWebhookService $n8nWebhookService,
+    ) {}
+
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -60,6 +65,17 @@ class AnnouncementController extends Controller
             ]);
 
             $announcement->recipients()->sync($recipientUserIds);
+
+            $this->n8nWebhookService->sendByTemplate(
+                N8nWebhookService::KEY_TEXT_ANNOUNCEMENT_ALL_GURU,
+                [
+                    'nama_penghantar' => $user->display_name ?? $user->name,
+                    'jumlah_guru' => count($recipientUserIds),
+                    'tajuk' => trim((string) $data['title']),
+                    'tarikh_tamat' => $announcement->expires_at?->format('d/m/Y') ?? '-',
+                ],
+                $this->n8nWebhookService->toActionUrl(route('dashboard'))
+            );
         });
 
         return redirect()->route('announcements.index')->with('status', __('messages.saved'));
@@ -97,4 +113,3 @@ class AnnouncementController extends Controller
             ->get();
     }
 }
-
