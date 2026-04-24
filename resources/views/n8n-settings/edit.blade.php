@@ -123,7 +123,7 @@
             </div>
 
             <div>
-                <label for="text_directory_file_all_guru" class="label-base">Teks Group Guru - Directory Semua Guru <span class="text-rose-600">*</span></label>
+                <label for="text_directory_file_all_guru" class="label-base">Teks Group Guru - Fail Rujukan Semua Guru <span class="text-rose-600">*</span></label>
                 <textarea id="text_directory_file_all_guru" name="text_directory_file_all_guru" rows="3" required class="input-base">{{ old('text_directory_file_all_guru', $settings['text_directory_file_all_guru'] ?? '') }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_penghantar}</code>, <code>{nama_fail}</code></p>
             </div>

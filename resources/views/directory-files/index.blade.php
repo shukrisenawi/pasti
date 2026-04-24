@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="text-lg font-bold">Directory</h2>
+            <h2 class="text-lg font-bold">Fail Rujukan</h2>
         </div>
     </x-slot>
 
@@ -74,7 +74,7 @@
                     </div>
                 @empty
                     <div class="rounded-xl border-2 border-dashed border-slate-100 p-8 text-center text-slate-400">
-                        Tiada fail directory lagi.
+                        Tiada fail rujukan lagi.
                     </div>
                 @endforelse
             </div>
@@ -86,7 +86,7 @@
 
         @if($canUpload)
             <div class="card border-primary/10 bg-white/95" x-show="activeTab === 'tambah'" x-cloak>
-                <h3 class="text-base font-bold text-slate-900">Tambah Fail</h3>
+                <h3 class="text-base font-bold text-slate-900">Tambah Fail Rujukan</h3>
                 <form method="POST" action="{{ route('directory-files.store') }}" enctype="multipart/form-data" class="mt-4 space-y-4" x-data="{ targetType: '{{ old('target_type', 'all') }}' }">
                     @csrf
                     <input type="hidden" name="_directory_tab" value="tambah">

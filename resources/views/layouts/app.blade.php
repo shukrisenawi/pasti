@@ -221,7 +221,7 @@
                             @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
                         </a>
                         <a href="{{ route('announcements.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('announcements.*') ? 'menu-link-active' : '' }}">Pengumuman</a>
-                        <a href="{{ route('directory-files.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Directory</a>
+                        <a href="{{ route('directory-files.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Fail Rujukan</a>
                     </div>
                 </div>
             @endrole
@@ -279,7 +279,7 @@
                                 <span>{{ __('messages.leave_notice') }}</span>
                                 @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
                             </a>
-                            <a href="{{ route('directory-files.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Directory</a>
+                            <a href="{{ route('directory-files.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Fail Rujukan</a>
                         </div>
                     </div>
 
@@ -552,7 +552,7 @@
                                 @endif
                             </a>
                             <a href="{{ route('announcements.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('announcements.*') ? 'menu-link-active' : '' }}">Pengumuman</a>
-                            <a href="{{ route('directory-files.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Directory</a>
+                            <a href="{{ route('directory-files.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Fail Rujukan</a>
                         </div>
                     </div>
                 @endrole
@@ -623,7 +623,7 @@
                                         <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuOnLeaveGuruCount ?? 0) > 99 ? '99+' : ($menuOnLeaveGuruCount ?? 0) }}</span>
                                     @endif
                                 </a>
-                                <a href="{{ route('directory-files.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Directory</a>
+                                <a href="{{ route('directory-files.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Fail Rujukan</a>
                             </div>
                         </div>
 
