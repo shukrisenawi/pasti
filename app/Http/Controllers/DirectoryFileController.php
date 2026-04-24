@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\DirectoryFile;
 use App\Models\Guru;
 use App\Models\User;
+use App\Notifications\DirectoryFileAssignedNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -69,7 +71,8 @@ class DirectoryFileController extends Controller
             'guru_ids.required_if' => 'Sila pilih sekurang-kurangnya seorang guru.',
         ]);
 
-        $allowedGuruIds = $this->availableGurusForUploader($user)->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $availableGurus = $this->availableGurusForUploader($user);
+        $allowedGuruIds = $availableGurus->pluck('id')->map(fn ($id) => (int) $id)->all();
         $selectedGuruIds = collect($data['guru_ids'] ?? [])->map(fn ($id) => (int) $id)->unique()->values()->all();
 
         if (($data['target_type'] ?? 'all') === 'selected') {
@@ -85,7 +88,7 @@ class DirectoryFileController extends Controller
             ])->withInput();
         }
 
-        DB::transaction(function () use ($request, $user, $data, $selectedGuruIds): void {
+        $directoryFile = DB::transaction(function () use ($request, $user, $data, $selectedGuruIds): DirectoryFile {
             $storedPath = $request->file('attachment')->store('directory-files', 'public');
 
             $directoryFile = DirectoryFile::query()->create([
@@ -99,7 +102,26 @@ class DirectoryFileController extends Controller
             if ($directoryFile->target_type === 'selected') {
                 $directoryFile->recipients()->sync($selectedGuruIds);
             }
+
+            return $directoryFile;
         });
+
+        $recipientUsers = $directoryFile->target_type === 'all'
+            ? $availableGurus
+                ->map(fn (Guru $guru) => $guru->user)
+                ->filter()
+                ->unique('id')
+                ->values()
+            : $availableGurus
+                ->filter(fn (Guru $guru) => in_array((int) $guru->id, $selectedGuruIds, true))
+                ->map(fn (Guru $guru) => $guru->user)
+                ->filter()
+                ->unique('id')
+                ->values();
+
+        if ($recipientUsers->isNotEmpty()) {
+            Notification::send($recipientUsers, new DirectoryFileAssignedNotification($directoryFile, $user));
+        }
 
         return redirect()->route('directory-files.index')->with('status', __('messages.saved'));
     }
