@@ -143,33 +143,6 @@
         </section>
     @endif
 
-    @if($latestInboxMessage)
-        @php($latestMessageActivity = $latestInboxMessage->replies_max_created_at ?? $latestInboxMessage->created_at)
-        @php(
-            $latestMessageActivity = is_string($latestMessageActivity) && $latestMessageActivity !== ''
-                ? \Illuminate\Support\Carbon::parse($latestMessageActivity)
-                : $latestMessageActivity
-        )
-        <section class="mb-8">
-            <div class="bg-white rounded-2xl p-5 shadow-card border border-slate-50 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
-                <div class="flex flex-wrap items-start justify-between gap-3 relative z-10">
-                    <div class="min-w-0">
-                        <p class="text-[10px] font-bold uppercase tracking-[0.22em] text-primary leading-none mb-3">{{ __('messages.latest_message') }}</p>
-                        <h3 class="truncate text-lg font-extrabold tracking-tight text-slate-900">{{ $latestInboxMessage->title }}</h3>
-                        <p class="mt-1 text-xs text-slate-400 font-medium">
-                            {{ $latestInboxMessage->sender?->display_name ?? 'Admin' }} · {{ $latestMessageActivity?->diffForHumans() }}
-                        </p>
-                    </div>
-                    <a href="{{ route('messages.show', $latestInboxMessage) }}" class="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
-                        {{ __('messages.view') }}
-                    </a>
-                </div>
-                <p class="mt-4 text-sm leading-6 text-slate-600 relative z-10">{{ \Illuminate\Support\Str::limit($latestInboxMessage->body, 120) }}</p>
-            </div>
-        </section>
-    @endif
-
     @role('guru')
         @if(($activeAnnouncements ?? collect())->isNotEmpty())
             <section class="mb-8">
