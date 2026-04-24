@@ -125,6 +125,21 @@
                         <x-input-error class="mt-2" :messages="$errors->get('guru_ids.*')" />
                     </div>
 
+                    <div x-show="targetType === 'all'" x-cloak>
+                        <p class="label-base">Hantar pemberitahuan ke group Guru</p>
+                        <div class="mt-2 flex flex-wrap gap-3">
+                            <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                                <input type="radio" name="notify_group_guru" value="1" @checked((string) old('notify_group_guru', '1') === '1')>
+                                <span>On</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                                <input type="radio" name="notify_group_guru" value="0" @checked((string) old('notify_group_guru') === '0')>
+                                <span>Off</span>
+                            </label>
+                        </div>
+                        <x-input-error class="mt-2" :messages="$errors->get('notify_group_guru')" />
+                    </div>
+
                     <div>
                         <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>

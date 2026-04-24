@@ -71,6 +71,7 @@ class DirectoryFileController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'target_type' => ['required', 'in:all,selected'],
+            'notify_group_guru' => ['nullable', 'boolean'],
             'guru_ids' => ['nullable', 'array', 'required_if:target_type,selected'],
             'guru_ids.*' => ['integer', 'exists:gurus,id'],
             'attachment' => ['required', 'file', 'max:20480'],
@@ -130,7 +131,10 @@ class DirectoryFileController extends Controller
             Notification::send($recipientUsers, new DirectoryFileAssignedNotification($directoryFile, $user));
         }
 
-        if ($directoryFile->target_type === 'all') {
+        $shouldNotifyGroupGuru = ($directoryFile->target_type === 'all')
+            && ((int) ($data['notify_group_guru'] ?? 1) === 1);
+
+        if ($shouldNotifyGroupGuru) {
             $this->n8nWebhookService->send(
                 sprintf(
                     '%s muat naik fail directory untuk semua guru: %s',
