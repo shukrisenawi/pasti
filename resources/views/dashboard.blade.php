@@ -24,11 +24,6 @@
     
     @php
         $user = auth()->user();
-        $isGuruOnly = $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
-        $activeAnnouncementCount = ($activeAnnouncements ?? collect())->count();
-        $latestProgramCount = ($latestPrograms ?? collect())->count();
-        $pastiName = $user->guru?->pasti?->name ?? 'PASTI belum ditetapkan';
-        $dashboardDateLabel = now()->translatedFormat('d M Y');
         $skimPasAlert = null;
         if ($user->tarikh_exp_skim_pas) {
             $today = now()->startOfDay();
@@ -79,267 +74,36 @@
         </div>
     @endif
 
-    @if($isGuruOnly)
-        <section class="mb-10 space-y-6">
-            <div class="relative overflow-hidden rounded-[2rem] border border-emerald-200/70 bg-gradient-to-br from-[#0f3f34] via-[#145647] to-[#1b6f5a] p-5 text-white shadow-[0_24px_60px_-24px_rgba(15,63,52,0.55)] sm:p-7">
-                <div class="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.08),transparent_35%)]"></div>
-                <div class="absolute -right-10 top-10 h-32 w-32 rounded-full border border-white/10"></div>
-                <div class="absolute bottom-0 right-24 h-24 w-24 translate-y-1/2 rounded-full bg-white/10 blur-2xl"></div>
-
-                <div class="relative z-10 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_360px]">
-                    <div class="space-y-5">
-                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div class="flex items-center gap-4">
-                                <x-avatar :user="$user" size="h-16 w-16 sm:h-20 sm:w-20" rounded="rounded-[1.5rem]" border="border border-white/20" />
-                                <div class="min-w-0">
-                                    <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-emerald-100/80">Dashboard Guru</p>
-                                    <h2 class="mt-2 truncate text-2xl font-black tracking-tight text-white sm:text-3xl">{{ $user->display_name }}</h2>
-                                    <p class="mt-1 text-sm text-emerald-50/80">{{ $pastiName }}</p>
-                                </div>
-                            </div>
-                            <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-left backdrop-blur-sm sm:text-right">
-                                <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-50/65">Kemas Kini</p>
-                                <p class="mt-1 text-lg font-black">{{ $dashboardDateLabel }}</p>
-                            </div>
-                        </div>
-
-                        <div class="max-w-2xl">
-                            <p class="text-sm leading-7 text-emerald-50/85 sm:text-[15px]">
-                                Paparan ringkas untuk semak prestasi semasa, tindakan penting, pengumuman terbaru dan program yang perlu diberi perhatian tanpa perlu buka banyak menu.
-                            </p>
-                        </div>
-
-                        <div class="flex flex-wrap gap-2">
-                            <span class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90">KPI {{ number_format($user->guru?->kpiSnapshot?->score ?? 0, 1) }}%</span>
-                            <span class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90">{{ $guruLeaveDays }} hari cuti</span>
-                            <span class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90">{{ $activeAnnouncementCount }} pengumuman aktif</span>
+    @role('guru')
+        <section class="mb-8 space-y-5">
+            <div class="overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary-dark to-emerald-700 p-5 text-white shadow-xl sm:p-6">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                        <x-avatar :user="$user" size="h-14 w-14" rounded="rounded-2xl" border="border border-white/25" />
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-[0.2em] text-white/70">Guru Dashboard</p>
+                            <p class="mt-1 text-xl font-black sm:text-2xl">{{ auth()->user()->display_name }}</p>
+                            <p class="text-xs text-white/80">{{ $user->email }}</p>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="rounded-[1.6rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
-                            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-50/65">Skor KPI</p>
-                            <p class="mt-3 text-3xl font-black">{{ number_format($user->guru?->kpiSnapshot?->score ?? 0, 1) }}%</p>
-                            <p class="mt-2 text-xs text-emerald-50/75">Prestasi semasa tahun ini</p>
+                    <div class="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-3">
+                        <div class="min-w-0 rounded-2xl border border-white/20 bg-white/10 px-3 py-2">
+                            <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/70">KPI</p>
+                            <p class="mt-1 truncate text-xl font-extrabold">{{ number_format($user->guru?->kpiSnapshot?->score ?? 0, 1) }}%</p>
                         </div>
-                        <div class="rounded-[1.6rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
-                            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-50/65">Jumlah Cuti</p>
-                            <p class="mt-3 text-3xl font-black">{{ $guruLeaveDays }}</p>
-                            <p class="mt-2 text-xs text-emerald-50/75">Rekod cuti semasa</p>
+                        <div class="min-w-0 rounded-2xl border border-white/20 bg-white/10 px-3 py-2">
+                            <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/70">Cuti</p>
+                            <p class="mt-1 truncate text-xl font-extrabold">{{ $guruLeaveDays }} Hari</p>
                         </div>
-                        <div class="rounded-[1.6rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
-                            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-50/65">Tempoh Mengajar</p>
-                            <p class="mt-3 text-xl font-black">{{ $guruTeachingDuration }}</p>
-                            <p class="mt-2 text-xs text-emerald-50/75">Pengalaman mengajar</p>
-                        </div>
-                        <div class="rounded-[1.6rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
-                            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-50/65">Program Semasa</p>
-                            <p class="mt-3 text-3xl font-black">{{ $latestProgramCount }}</p>
-                            <p class="mt-2 text-xs text-emerald-50/75">Program akan datang</p>
+                        <div class="col-span-2 min-w-0 rounded-2xl border border-white/20 bg-white/10 px-3 py-2 sm:col-span-1">
+                            <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/70">Tempoh Mengajar</p>
+                            <p class="mt-1 truncate text-xl font-extrabold">{{ $guruTeachingDuration }}</p>
                         </div>
                     </div>
-                </div>
-
-                <div class="relative z-10 mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <a href="{{ route('leave-notices.create') }}" class="group rounded-[1.6rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white/14">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/14 text-white">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                            </div>
-                            <span class="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-50/60">Tindakan</span>
-                        </div>
-                        <p class="mt-4 text-base font-black text-white">Minta Cuti</p>
-                        <p class="mt-1 text-sm text-emerald-50/75">Hantar notis cuti dengan cepat.</p>
-                    </a>
-
-                    <a href="{{ route('pasti.self.edit') }}" class="group rounded-[1.6rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white/14">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/14 text-white">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                            </div>
-                            <span class="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-50/60">Profil</span>
-                        </div>
-                        <p class="mt-4 text-base font-black text-white">Pasti Saya</p>
-                        <p class="mt-1 text-sm text-emerald-50/75">Semak dan kemaskini maklumat.</p>
-                    </a>
-
-                    <a href="{{ route('pemarkahan.index') }}" class="group rounded-[1.6rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white/14">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/14 text-white">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            </div>
-                            <span class="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-50/60">Kelas</span>
-                        </div>
-                        <p class="mt-4 text-base font-black text-white">Pemarkahan</p>
-                        <p class="mt-1 text-sm text-emerald-50/75">Terus ke modul penilaian murid.</p>
-                    </a>
-
-                    <a
-                        href="https://www.pastimalaysia.com/epasti-online/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onclick="return openPastiMalaysiaExternal(event)"
-                        class="group rounded-[1.6rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white/14"
-                    >
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/14 text-white">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 015.657 5.656l-3 3a4 4 0 01-5.657-5.656m-1.414 1.414a4 4 0 01-5.657-5.656l3-3a4 4 0 115.657 5.656" />
-                                </svg>
-                            </div>
-                            <span class="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-50/60">Luar</span>
-                        </div>
-                        <p class="mt-4 text-base font-black text-white">ePASTI Online</p>
-                        <p class="mt-1 text-sm text-emerald-50/75">Buka laman rasmi dalam tab baharu.</p>
-                    </a>
-                </div>
-            </div>
-
-            <div class="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_360px]">
-                <div class="space-y-6">
-                    <section class="rounded-[2rem] border border-slate-200/80 bg-white/95 p-5 shadow-card sm:p-6">
-                        <div class="flex flex-wrap items-start justify-between gap-3">
-                            <div>
-                                <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700">Program Guru</p>
-                                <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">{{ __('messages.upcoming_programs') }}</h3>
-                                <p class="mt-2 text-sm text-slate-500">Jadual program yang paling hampir dan perlu diberi perhatian.</p>
-                            </div>
-                            <a href="{{ route('programs.index') }}" class="inline-flex items-center rounded-2xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
-                                Lihat Semua
-                            </a>
-                        </div>
-
-                        @if($latestPrograms->isNotEmpty())
-                            <div class="mt-6 space-y-4">
-                                @foreach($latestPrograms as $p)
-                                    <div class="rounded-[1.6rem] border {{ $loop->first ? 'border-emerald-200 bg-emerald-50/55' : 'border-slate-200 bg-slate-50/70' }} p-4 sm:p-5">
-                                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                                            <div class="flex min-w-0 gap-4">
-                                                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl {{ $loop->first ? 'bg-emerald-100 text-emerald-700' : 'bg-white text-slate-500' }}">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4v-4m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                                </div>
-                                                <div class="min-w-0">
-                                                    <div class="flex flex-wrap items-center gap-2">
-                                                        <h4 class="text-lg font-black text-slate-900">{{ $p->title }}</h4>
-                                                        @if($loop->first)
-                                                            <span class="inline-flex rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">Fokus</span>
-                                                        @endif
-                                                    </div>
-                                                    <div class="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
-                                                        <span class="inline-flex items-center gap-1.5">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4v-4m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                                            {{ $p->program_date?->format('d/m/Y') ?? '-' }}
-                                                        </span>
-                                                        <span class="inline-flex items-center gap-1.5">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                            {{ $p->program_time?->format('H:i') ?? '-' }}
-                                                        </span>
-                                                        <span class="inline-flex items-center gap-1.5">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                                            {{ $p->location ?? '-' }}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <a href="{{ route('programs.show', $p) }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
-                                                {{ __('messages.view') }}
-                                            </a>
-                                        </div>
-
-                                        @if($loop->first && $canUpdateOwnStatus && $currentParticipation)
-                                            <div class="mt-4 border-t border-emerald-100 pt-4">
-                                                <form method="POST" action="{{ route('programs.teachers.status.update', [$p, $currentParticipation->guru_id]) }}" class="flex flex-wrap items-center gap-2">
-                                                    @csrf
-                                                    <select name="program_status_id" class="rounded-2xl border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100">
-                                                        @foreach($statuses as $status)
-                                                            <option value="{{ $status->id }}" @selected($currentParticipation->program_status_id == $status->id)>
-                                                                {{ $status->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                    <button class="rounded-2xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-700">
-                                                        {{ __('messages.save') }}
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="mt-6 rounded-[1.6rem] border border-dashed border-slate-200 bg-slate-50/60 px-5 py-10 text-center">
-                                <p class="text-sm font-semibold text-slate-500">{{ __('messages.program_terbaru') }}: tiada rekod akan datang</p>
-                            </div>
-                        @endif
-                    </section>
-                </div>
-
-                <div class="space-y-6">
-                    @if($latestInboxMessage)
-                        @php($latestMessageActivity = $latestInboxMessage->replies_max_created_at ?? $latestInboxMessage->created_at)
-                        @php(
-                            $latestMessageActivity = is_string($latestMessageActivity) && $latestMessageActivity !== ''
-                                ? \Illuminate\Support\Carbon::parse($latestMessageActivity)
-                                : $latestMessageActivity
-                        )
-                        <section class="rounded-[2rem] border border-slate-200 bg-white/95 p-5 shadow-card">
-                            <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700">{{ __('messages.latest_message') }}</p>
-                            <h3 class="mt-3 text-xl font-black tracking-tight text-slate-900">{{ $latestInboxMessage->title }}</h3>
-                            <p class="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                {{ $latestInboxMessage->sender?->display_name ?? 'Admin' }} · {{ $latestMessageActivity?->diffForHumans() }}
-                            </p>
-                            <p class="mt-4 text-sm leading-7 text-slate-600">{{ \Illuminate\Support\Str::limit($latestInboxMessage->body, 140) }}</p>
-                            <a href="{{ route('messages.show', $latestInboxMessage) }}" class="mt-5 inline-flex items-center rounded-2xl bg-slate-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-700">
-                                {{ __('messages.view') }}
-                            </a>
-                        </section>
-                    @endif
-
-                    @if(($activeAnnouncements ?? collect())->isNotEmpty())
-                        <section class="rounded-[2rem] border border-indigo-100 bg-gradient-to-br from-white to-indigo-50 p-5 shadow-card">
-                            <div class="flex items-center justify-between gap-3">
-                                <div>
-                                    <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-600">Pengumuman</p>
-                                    <h3 class="mt-2 text-xl font-black tracking-tight text-slate-900">Makluman Terkini</h3>
-                                </div>
-                                <span class="inline-flex rounded-full bg-indigo-100 px-3 py-1 text-[11px] font-bold text-indigo-700">{{ $activeAnnouncementCount }}</span>
-                            </div>
-
-                            <div class="mt-5 space-y-3">
-                                @foreach($activeAnnouncements as $announcement)
-                                    <div class="rounded-[1.4rem] border border-white bg-white/90 p-4">
-                                        <p class="text-sm font-black text-slate-900">{{ $announcement->title }}</p>
-                                        <p class="mt-2 text-sm leading-6 text-slate-600 whitespace-pre-wrap">{{ \Illuminate\Support\Str::limit($announcement->body, 140) }}</p>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </section>
-                    @endif
-
-                    @if($userAjkPositions->isNotEmpty())
-                        <section class="rounded-[2rem] border border-amber-100 bg-white/95 p-5 shadow-card">
-                            <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-amber-700">{{ __('messages.ajk_program') }}</p>
-                            <h3 class="mt-2 text-xl font-black tracking-tight text-slate-900">{{ __('messages.my_ajk_positions') }}</h3>
-                            <div class="mt-5 space-y-3">
-                                @foreach($userAjkPositions as $position)
-                                    <div class="rounded-[1.4rem] border border-amber-100 bg-amber-50/60 p-4">
-                                        <div class="flex items-center gap-2">
-                                            <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
-                                            <p class="text-sm font-black text-slate-900">{{ $position->name }}</p>
-                                        </div>
-                                        @if($position->description)
-                                            <p class="mt-2 text-sm leading-6 text-slate-600">{{ $position->description }}</p>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        </section>
-                    @endif
                 </div>
             </div>
         </section>
-    @endif
+    @endrole
 
     @if($user->hasAnyRole(['master_admin', 'admin']))
         <section class="mb-8">
@@ -379,7 +143,7 @@
         </section>
     @endif
 
-    @if($latestInboxMessage && ! $isGuruOnly)
+    @if($latestInboxMessage)
         @php($latestMessageActivity = $latestInboxMessage->replies_max_created_at ?? $latestInboxMessage->created_at)
         @php(
             $latestMessageActivity = is_string($latestMessageActivity) && $latestMessageActivity !== ''
@@ -406,7 +170,7 @@
         </section>
     @endif
 
-    @if(! $isGuruOnly)
+    @role('guru')
         @if(($activeAnnouncements ?? collect())->isNotEmpty())
             <section class="mb-8">
                 <div class="rounded-3xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50 p-5 shadow-card sm:p-6">
@@ -430,9 +194,9 @@
                 </div>
             </section>
         @endif
-    @endif
+    @endrole
 
-    @if($userAjkPositions->isNotEmpty() && ! $isGuruOnly)
+    @if($userAjkPositions->isNotEmpty())
         <section class="mb-8">
             <div class="rounded-3xl border border-primary/20 bg-gradient-to-br from-white to-primary/5 p-5 shadow-card sm:p-6">
                 <div class="flex items-center gap-3">
@@ -461,7 +225,7 @@
         </section>
     @endif
 
-    @if($latestPrograms->isNotEmpty() && ! $isGuruOnly)
+    @if($latestPrograms->isNotEmpty())
         <section class="mb-8">
             <div class="flex items-center justify-between mb-4">
                <h3 class="text-sm font-black uppercase tracking-[0.24em] text-slate-400">{{ __('messages.upcoming_programs') }}</h3>
@@ -555,7 +319,7 @@
                 @endif
             </div>
         </section>
-    @elseif(! $isGuruOnly)
+    @else
         <div class="card mb-8 text-sm text-slate-500 bg-white border border-dashed border-slate-200 text-center py-10">
             <div class="flex flex-col items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4v-4m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -601,6 +365,51 @@
             </div>
         </section>
     @endif
+
+    @role('guru')
+        <section class="mt-5">
+            <div class="rounded-3xl border border-slate-100 bg-white p-4 shadow-card sm:p-5">
+                <div class="flex items-center justify-between gap-3">
+                    <h3 class="text-sm font-black uppercase tracking-[0.2em] text-slate-500">Akses Pantas</h3>
+                    <span class="text-xs font-semibold text-slate-400">Desktop & Mobile Friendly</span>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <a href="{{ route('leave-notices.create') }}" class="rounded-2xl border border-orange-100 bg-orange-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
+                        <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                        </div>
+                        <p class="mt-2 text-xs font-bold text-slate-700">Minta Cuti</p>
+                    </a>
+                    <a href="{{ route('pasti.self.edit') }}" class="rounded-2xl border border-primary/10 bg-primary/5 px-3 py-4 text-center transition hover:-translate-y-0.5">
+                        <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        </div>
+                        <p class="mt-2 text-xs font-bold text-slate-700">Pasti Saya</p>
+                    </a>
+                    <a href="{{ route('pemarkahan.index') }}" class="rounded-2xl border border-purple-100 bg-purple-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
+                        <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        </div>
+                        <p class="mt-2 text-xs font-bold text-slate-700">Pemarkahan</p>
+                    </a>
+                    <a
+                        href="https://www.pastimalaysia.com/epasti-online/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onclick="return openPastiMalaysiaExternal(event)"
+                        class="rounded-2xl border border-sky-100 bg-sky-50 px-3 py-4 text-center transition hover:-translate-y-0.5"
+                    >
+                        <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 015.657 5.656l-3 3a4 4 0 01-5.657-5.656m-1.414 1.414a4 4 0 01-5.657-5.656l3-3a4 4 0 115.657 5.656" />
+                            </svg>
+                        </div>
+                        <p class="mt-2 text-xs font-bold text-slate-700">ePASTI Online</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+    @endrole
 
     @once
         <script>
