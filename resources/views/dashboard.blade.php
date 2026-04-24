@@ -38,7 +38,11 @@
     @endphp
 
     @if(($birthdayUsers ?? collect())->isNotEmpty())
-        <div class="mb-6 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 p-4 shadow-sm">
+        <div 
+            x-data 
+            x-init="setTimeout(() => { window.balloons(); }, 500)"
+            class="mb-6 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 p-4 shadow-sm"
+        >
             <div class="space-y-1">
                 @foreach($birthdayUsers as $birthdayUser)
                     <div class="flex items-center gap-3">

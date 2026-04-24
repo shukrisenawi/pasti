@@ -1,8 +1,10 @@
-﻿import './bootstrap';
+import './bootstrap';
 
 import Alpine from 'alpinejs';
+import { balloons } from 'balloons-js';
 
 window.Alpine = Alpine;
+window.balloons = balloons;
 
 Alpine.start();
 
