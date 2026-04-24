@@ -118,15 +118,19 @@ class ProgramController extends Controller
             'participations.guru.user',
             'participations.status',
         ]);
-        $program->setRelation(
-            'participations',
-            $program->participations->sortByDesc(
-                fn ($participation) => optional($participation->updated_at)->getTimestamp() ?? 0
-            )->values()
-        );
+        $allParticipations = $program->participations->sortByDesc(
+            fn ($participation) => optional($participation->updated_at)->getTimestamp() ?? 0
+        )->values();
+        $submittedParticipations = $allParticipations
+            ->filter(fn ($participation) => filled($participation->program_status_id))
+            ->values();
+
+        $program->setRelation('participations', $allParticipations);
 
         return view('programs.show', [
             'program' => $program,
+            'allParticipations' => $allParticipations,
+            'submittedParticipations' => $submittedParticipations,
             'statuses' => ProgramStatus::query()
                 ->whereIn('code', ['HADIR', 'TIDAK_HADIR'])
                 ->orderBy('is_hadir', 'desc')

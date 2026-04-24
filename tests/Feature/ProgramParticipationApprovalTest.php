@@ -271,6 +271,32 @@ class ProgramParticipationApprovalTest extends TestCase
             ]);
     }
 
+    public function test_program_show_page_defaults_to_submitted_gurus_and_exposes_toggle_for_all_gurus(): void
+    {
+        Notification::fake();
+
+        [$program, , , $admin, $latestGuruUser] = $this->createProgramFixtures(
+            withSecondGuru: true,
+            secondGuruHasStatus: false
+        );
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('Semua guru')
+            ->assertSee('x-data="{ showAllTeachers: false }"', false)
+            ->assertViewHas('submittedParticipations', function ($participations): bool {
+                return $participations->count() === 1
+                    && $participations->first()->guru->display_name === 'Cikgu Program';
+            })
+            ->assertViewHas('allParticipations', function ($participations) use ($latestGuruUser): bool {
+                return $participations->count() === 2
+                    && $participations->first()->guru->display_name === $latestGuruUser->display_name;
+            });
+    }
+
     public function test_absence_reason_submission_stays_pending_and_does_not_add_kpi_before_admin_review(): void
     {
         Notification::fake();
@@ -363,7 +389,7 @@ class ProgramParticipationApprovalTest extends TestCase
     /**
      * @return array{0: Program, 1: User, 2: ProgramStatus, 3: User, 4: ?User}
      */
-    private function createProgramFixtures(bool $withSecondGuru = false): array
+    private function createProgramFixtures(bool $withSecondGuru = false, bool $secondGuruHasStatus = true): array
     {
         $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
         $pasti = Pasti::query()->create([
@@ -445,7 +471,7 @@ class ProgramParticipationApprovalTest extends TestCase
             \DB::table('program_teacher')->insert([
                 'program_id' => $program->id,
                 'guru_id' => $latestGuru->id,
-                'program_status_id' => $absentStatus->id,
+                'program_status_id' => $secondGuruHasStatus ? $absentStatus->id : null,
                 'updated_by' => $admin->id,
                 'created_at' => now(),
                 'updated_at' => now(),
