@@ -157,9 +157,6 @@
                         @foreach($activeAnnouncements as $announcement)
                             <div class="shine-border-panel rounded-2xl bg-white p-4 shadow-sm">
                                 <p class="mt-2 text-sm leading-6 text-slate-600 whitespace-pre-wrap">{{ $announcement->body }}</p>
-                                <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                                    Tarikh Tamat: {{ $announcement->expires_at?->format('d/m/Y') ?? '-' }}
-                                </p>
                             </div>
                         @endforeach
                     </div>
