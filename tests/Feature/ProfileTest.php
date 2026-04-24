@@ -2,8 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Models\Guru;
+use App\Models\Kawasan;
+use App\Models\Pasti;
 use App\Models\User;
+use App\Support\GuruProfileCompletionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -95,5 +101,50 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->fresh());
+    }
+
+    public function test_password_onboarding_step_shows_only_password_form_without_tabs(): void
+    {
+        Role::findOrCreate('guru');
+
+        $user = User::factory()->create([
+            'nama_samaran' => 'Guru Ujian',
+            'tarikh_lahir' => '1990-01-01',
+            'avatar_path' => 'avatars/guru-ujian.jpg',
+            'password' => Hash::make(GuruProfileCompletionService::DEFAULT_GURU_PASSWORD),
+            'force_password_change' => true,
+        ]);
+        $user->assignRole('guru');
+
+        $kawasan = Kawasan::query()->create([
+            'name' => 'Kawasan Ujian',
+            'code' => 'KUJ',
+        ]);
+
+        $pasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Ujian',
+            'code' => 'PUJ',
+        ]);
+
+        Guru::query()->create([
+            'user_id' => $user->id,
+            'pasti_id' => $pasti->id,
+            'name' => $user->name,
+            'phone' => '0123456789',
+            'marital_status' => 'married',
+            'joined_at' => '2024-01-01',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/profile?step=password');
+
+        $response
+            ->assertOk()
+            ->assertDontSee('data-testid="profile-tab-switcher"', false)
+            ->assertDontSee('data-testid="profile-tab-panel"', false)
+            ->assertSee('data-testid="password-tab-panel"', false)
+            ->assertSee('Update Password');
     }
 }
