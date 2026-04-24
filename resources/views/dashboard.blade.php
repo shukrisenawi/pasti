@@ -107,18 +107,37 @@
 
     @if($user->hasAnyRole(['master_admin', 'admin']))
         <section class="mb-8">
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div class="rounded-2xl border border-emerald-100 bg-white p-4 shadow-card">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{{ __('messages.cash_balance') }}</p>
-                    <p class="mt-2 text-3xl font-black {{ $adminCashBalance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                        RM {{ number_format($adminCashBalance, 2) }}
-                    </p>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div class="relative overflow-hidden rounded-2xl border border-emerald-100 bg-white p-5 shadow-card">
+                    <div class="relative z-10">
+                        <div class="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a5 5 0 00-10 0v2m-2 0h14a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1z" />
+                            </svg>
+                        </div>
+                        <p class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.cash_balance') }}</p>
+                        <p class="mt-1 text-4xl font-black tracking-tight {{ $adminCashBalance < 0 ? 'text-rose-600' : 'text-slate-900' }}">
+                            RM{{ number_format($adminCashBalance, 2) }}
+                        </p>
+                        <p class="mt-2 text-sm font-medium text-slate-500">Baki tunai semasa sistem.</p>
+                    </div>
+                    <span aria-hidden="true" class="pointer-events-none absolute -bottom-10 -right-10 h-28 w-28 rounded-full bg-emerald-100/70"></span>
                 </div>
-                <div class="rounded-2xl border border-blue-100 bg-white p-4 shadow-card">
-                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{{ __('messages.bank_balance') }}</p>
-                    <p class="mt-2 text-3xl font-black {{ $adminBankBalance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                        RM {{ number_format($adminBankBalance, 2) }}
-                    </p>
+
+                <div class="relative overflow-hidden rounded-2xl border border-sky-100 bg-white p-5 shadow-card">
+                    <div class="relative z-10">
+                        <div class="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h5M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" />
+                            </svg>
+                        </div>
+                        <p class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.bank_balance') }}</p>
+                        <p class="mt-1 text-4xl font-black tracking-tight {{ $adminBankBalance < 0 ? 'text-rose-600' : 'text-slate-900' }}">
+                            RM{{ number_format($adminBankBalance, 2) }}
+                        </p>
+                        <p class="mt-2 text-sm font-medium text-slate-500">Baki akaun bank semasa.</p>
+                    </div>
+                    <span aria-hidden="true" class="pointer-events-none absolute -bottom-10 -right-10 h-28 w-28 rounded-full bg-sky-100/70"></span>
                 </div>
             </div>
         </section>
