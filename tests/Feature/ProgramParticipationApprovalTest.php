@@ -394,6 +394,35 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertSee('disabled', false);
     }
 
+    public function test_admin_absence_review_shows_sweetalert_and_disables_review_buttons(): void
+    {
+        Notification::fake();
+
+        [$program, $guruUser, $absentStatus, $admin] = $this->createProgramFixtures();
+
+        $this->actingAs($guruUser)
+            ->post(route('programs.teachers.status.update', [$program, $guruUser->guru->id]), [
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Anak sakit.',
+            ]);
+
+        $response = $this->actingAs($admin)
+            ->from(route('programs.show', $program))
+            ->followingRedirects()
+            ->post(route('programs.teachers.absence-review', [$program, $guruUser->guru->id]), [
+                'decision' => 'approved',
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertSee('data-testid="program-status-success-alert"', false)
+            ->assertSee('Dah berjaya update')
+            ->assertSee('data-testid="program-admin-review-buttons-disabled"', false)
+            ->assertSee('Luluskan alasan')
+            ->assertSee('Tolak alasan')
+            ->assertSee('disabled', false);
+    }
+
     public function test_absence_reason_submission_stays_pending_and_does_not_add_kpi_before_admin_review(): void
     {
         Notification::fake();

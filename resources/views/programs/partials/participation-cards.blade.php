@@ -5,6 +5,9 @@
             $shouldDisableAdminStatusForm = $canManage
                 && session('program_status_success_actor') === 'admin'
                 && (int) session('program_status_updated_guru_id') === (int) $participation->guru_id;
+            $shouldDisableAdminReviewButtons = $canManage
+                && session('program_status_success_actor') === 'admin'
+                && (int) session('program_status_updated_guru_id') === (int) $participation->guru_id;
             $absenceReviewLabel = match ($absenceReviewStatus) {
                 \App\Services\ProgramParticipationService::ABSENCE_REASON_APPROVED => __('messages.absence_reason_approved'),
                 \App\Services\ProgramParticipationService::ABSENCE_REASON_REJECTED => __('messages.absence_reason_rejected'),
@@ -98,16 +101,16 @@
                             && filled($participation->absence_reason)
                             && ($participation->status?->code === 'TIDAK_HADIR')
                         )
-                            <div class="flex flex-wrap gap-2">
+                            <div class="flex flex-wrap gap-2 {{ $shouldDisableAdminReviewButtons ? 'opacity-70' : '' }}" @if($shouldDisableAdminReviewButtons) data-testid="program-admin-review-buttons-disabled" @endif>
                                 <form method="POST" action="{{ route('programs.teachers.absence-review', [$program, $participation->guru_id]) }}">
                                     @csrf
                                     <input type="hidden" name="decision" value="approved">
-                                    <button class="btn btn-success btn-xs">{{ __('messages.approve_reason') }}</button>
+                                    <button class="btn btn-success btn-xs" @disabled($shouldDisableAdminReviewButtons)>{{ __('messages.approve_reason') }}</button>
                                 </form>
                                 <form method="POST" action="{{ route('programs.teachers.absence-review', [$program, $participation->guru_id]) }}">
                                     @csrf
                                     <input type="hidden" name="decision" value="rejected">
-                                    <button class="btn btn-error btn-xs">{{ __('messages.reject_reason') }}</button>
+                                    <button class="btn btn-error btn-xs" @disabled($shouldDisableAdminReviewButtons)>{{ __('messages.reject_reason') }}</button>
                                 </form>
                             </div>
                         @endif
