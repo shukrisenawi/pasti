@@ -34,35 +34,12 @@
         <p><strong>{{ __('messages.description') }}:</strong> {{ $program->description ?? '-' }}</p>
     </div>
 
-    <div
-        class="mt-4"
-        x-data="{
-            showAllTeachers: false,
-            showStatusSuccessAlert: @js(filled(session('program_status_success_message'))),
-        }"
-        x-init="if (showStatusSuccessAlert) { setTimeout(() => { showStatusSuccessAlert = false }, 1800) }"
-    >
+    <div class="mt-4" x-data="{ showAllTeachers: false }">
         @php
             $statusCodeById = $statuses->mapWithKeys(
                 fn ($status) => [(string) $status->id => $status->code]
             );
         @endphp
-        <div
-            x-show="showStatusSuccessAlert"
-            x-cloak
-            data-testid="program-status-success-alert"
-            class="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-900/35 px-4 backdrop-blur-sm"
-        >
-            <div class="w-full max-w-xs rounded-3xl bg-white p-5 text-center shadow-2xl">
-                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                <p class="mt-3 text-base font-black text-slate-900">{{ session('program_status_success_message') }}</p>
-            </div>
-        </div>
-
         <div class="mb-3 flex items-center justify-between gap-3">
             <div>
                 <h3 class="ml-[20px] text-sm font-black text-slate-900">Guru Terlibat</h3>

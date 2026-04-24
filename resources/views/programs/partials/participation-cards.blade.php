@@ -2,10 +2,6 @@
     @forelse($participations as $participation)
         @php
             $absenceReviewStatus = $participation->absence_reason_status;
-            $shouldDisableOwnStatusForm = ! $canManage
-                && $canUpdateOwn
-                && $currentGuruId === $participation->guru_id
-                && filled($participation->program_status_id);
             $absenceReviewLabel = match ($absenceReviewStatus) {
                 \App\Services\ProgramParticipationService::ABSENCE_REASON_APPROVED => __('messages.absence_reason_approved'),
                 \App\Services\ProgramParticipationService::ABSENCE_REASON_REJECTED => __('messages.absence_reason_rejected'),
@@ -62,8 +58,7 @@
                         <form
                             method="POST"
                             action="{{ route('programs.teachers.status.update', [$program, $participation->guru_id]) }}"
-                            class="grid gap-2 {{ $program->require_absence_reason ? 'md:grid-cols-[170px_1fr_auto]' : 'md:grid-cols-[170px_auto]' }} md:items-center {{ $shouldDisableOwnStatusForm ? 'opacity-70' : '' }}"
-                            @if($shouldDisableOwnStatusForm) data-testid="program-status-form-disabled" @endif
+                            class="grid gap-2 {{ $program->require_absence_reason ? 'md:grid-cols-[170px_1fr_auto]' : 'md:grid-cols-[170px_auto]' }} md:items-center"
                             x-data="{
                                 selectedStatusId: @js((string) $participation->program_status_id),
                                 statusCodeById: @js($statusCodeById),
@@ -73,7 +68,7 @@
                             }"
                         >
                             @csrf
-                            <select name="program_status_id" class="input-base max-w-xs text-xs" x-model="selectedStatusId" @disabled($shouldDisableOwnStatusForm)>
+                            <select name="program_status_id" class="input-base max-w-xs text-xs" x-model="selectedStatusId">
                                 <option value="">-</option>
                                 @foreach($statuses as $status)
                                     <option value="{{ $status->id }}" @selected($participation->program_status_id === $status->id)>{{ $status->name }}</option>
@@ -87,11 +82,10 @@
                                         class="input-base text-xs"
                                         placeholder="{{ __('messages.absence_reason_placeholder') }}"
                                         value="{{ old('absence_reason', $participation->absence_reason) }}"
-                                        @disabled($shouldDisableOwnStatusForm)
                                     >
                                 </div>
                             @endif
-                            <button class="btn btn-outline btn-sm" @disabled($shouldDisableOwnStatusForm)>{{ __('messages.save') }}</button>
+                            <button class="btn btn-outline btn-sm">{{ __('messages.save') }}</button>
                         </form>
 
                         @if(
