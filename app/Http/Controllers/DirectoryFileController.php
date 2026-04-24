@@ -135,12 +135,12 @@ class DirectoryFileController extends Controller
             && ((int) ($data['notify_group_guru'] ?? 1) === 1);
 
         if ($shouldNotifyGroupGuru) {
-            $this->n8nWebhookService->send(
-                sprintf(
-                    '%s muat naik fail directory untuk semua guru: %s',
-                    $user->display_name,
-                    $directoryFile->title
-                ),
+            $this->n8nWebhookService->sendByTemplate(
+                N8nWebhookService::KEY_TEXT_DIRECTORY_FILE_ALL_GURU,
+                [
+                    'nama_penghantar' => $user->display_name,
+                    'nama_fail' => $directoryFile->title,
+                ],
                 $this->n8nWebhookService->toActionUrl(route('directory-files.index'))
             );
         }

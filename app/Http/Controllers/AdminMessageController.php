@@ -339,13 +339,13 @@ class AdminMessageController extends Controller
         Notification::send($recipientUsers, new AdminMessageReceivedNotification($message->load('sender', 'recipients')));
 
         if ($data['conversation_type'] === 'bulk') {
-            $this->n8nWebhookService->send(
-                sprintf(
-                    '%s hantar hebahan kepada %d guru. Mesej: %s',
-                    $user->display_name,
-                    $recipientUsers->count(),
-                    Str::limit($message->body, 120)
-                ),
+            $this->n8nWebhookService->sendByTemplate(
+                N8nWebhookService::KEY_TEXT_ADMIN_BROADCAST,
+                [
+                    'nama_penghantar' => $user->display_name,
+                    'jumlah_guru' => $recipientUsers->count(),
+                    'mesej' => Str::limit($message->body, 120),
+                ],
                 $this->n8nWebhookService->toActionUrl(route('messages.show', $message))
             );
         }
@@ -397,13 +397,13 @@ class AdminMessageController extends Controller
 
         Notification::send($recipientUsers, new AdminMessageReceivedNotification($message->load('sender', 'recipients')));
 
-        $this->n8nWebhookService->sendGroup2(
-            sprintf(
-                '%s dari %s hantar mesej kepada admin. Mesej: %s',
-                $user->display_name,
-                $user->guru?->pasti?->name ?? 'PASTI',
-                Str::limit($message->body, 120)
-            ),
+        $this->n8nWebhookService->sendGroup2ByTemplate(
+            N8nWebhookService::KEY_TEXT_GURU_MESSAGE_TO_ADMIN,
+            [
+                'nama_guru' => $user->display_name,
+                'pasti' => $user->guru?->pasti?->name ?? 'PASTI',
+                'mesej' => Str::limit($message->body, 120),
+            ],
             $this->n8nWebhookService->toActionUrl(route('messages.show', $message))
         );
 

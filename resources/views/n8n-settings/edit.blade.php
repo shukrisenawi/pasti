@@ -110,6 +110,24 @@
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{tarikh}</code></p>
             </div>
 
+            <div>
+                <label for="text_admin_broadcast" class="label-base">Teks Group Guru - Hebahan Admin <span class="text-rose-600">*</span></label>
+                <textarea id="text_admin_broadcast" name="text_admin_broadcast" rows="3" required class="input-base">{{ old('text_admin_broadcast', $settings['text_admin_broadcast'] ?? '') }}</textarea>
+                <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_penghantar}</code>, <code>{jumlah_guru}</code>, <code>{mesej}</code></p>
+            </div>
+
+            <div>
+                <label for="text_guru_message_to_admin" class="label-base">Teks Group AJK - Mesej Guru ke Admin <span class="text-rose-600">*</span></label>
+                <textarea id="text_guru_message_to_admin" name="text_guru_message_to_admin" rows="3" required class="input-base">{{ old('text_guru_message_to_admin', $settings['text_guru_message_to_admin'] ?? '') }}</textarea>
+                <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_guru}</code>, <code>{pasti}</code>, <code>{mesej}</code></p>
+            </div>
+
+            <div>
+                <label for="text_directory_file_all_guru" class="label-base">Teks Group Guru - Directory Semua Guru <span class="text-rose-600">*</span></label>
+                <textarea id="text_directory_file_all_guru" name="text_directory_file_all_guru" rows="3" required class="input-base">{{ old('text_directory_file_all_guru', $settings['text_directory_file_all_guru'] ?? '') }}</textarea>
+                <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_penghantar}</code>, <code>{nama_fail}</code></p>
+            </div>
+
             <div class="flex gap-2">
                 <button type="submit" class="btn btn-primary">Simpan</button>
             </div>
