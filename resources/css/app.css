@@ -154,6 +154,10 @@
     @apply bg-transparent text-slate-600 hover:bg-primary/10 hover:text-primary;
   }
 
+  .btn-success {
+    @apply bg-emerald-600 text-white shadow-sm hover:bg-emerald-700;
+  }
+
   .btn-error {
     @apply bg-error text-white shadow-sm hover:bg-red-700;
   }
