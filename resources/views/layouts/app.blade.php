@@ -139,6 +139,7 @@
                     ->distinct('guru_id')
                     ->count('guru_id');
                 $drawerPendingClaimsCount = $authUser->pending_claims_count;
+                $expiredSkimPasCount = \App\Models\User::where('tarikh_exp_skim_pas', '<', now()->startOfDay())->count();
             @endphp
 
             <a href="{{ route('dashboard') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('dashboard') ? 'menu-link-active' : '' }}">{{ __('messages.dashboard') }}</a>
@@ -170,6 +171,9 @@
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                             <span>{{ __('Laporan/Aktiviti') }}</span>
+                            @if(($drawerPendingClaimsCount > 0 || $expiredSkimPasCount > 0 || $drawerPastiInfoPendingCount > 0 || $drawerGuruSalaryPendingCount > 0 || $drawerUpcomingProgramCount > 0))
+                                <div class="dot-pulse-yellow ml-2"></div>
+                            @endif
                         </div>
                         <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                     </button>
@@ -180,7 +184,6 @@
                             @if($drawerPendingClaimsCount > 0)<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ $drawerPendingClaimsCount > 99 ? '99+' : $drawerPendingClaimsCount }}</span>@endif
                         </a>
                         <a href="{{ route('kpi.gurus.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kpi.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.kpi_guru') }}</a>
-                        @php $expiredSkimPasCount = \App\Models\User::where('tarikh_exp_skim_pas', '<', now()->startOfDay())->count(); @endphp
                         <a href="{{ route('users.expired-skim-pas') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('users.expired-skim-pas') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span class="truncate">{{ __('messages.skim_pas_expired_list') }}</span>
                             @if($expiredSkimPasCount > 0)<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $expiredSkimPasCount }}</span>@endif
@@ -208,6 +211,9 @@
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                             <span>{{ __('Komunikasi & Fail') }}</span>
+                            @if(($drawerInboxCount > 0 || $drawerOnLeaveGuruCount > 0))
+                                <div class="dot-pulse-yellow ml-2"></div>
+                            @endif
                         </div>
                         <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                     </button>
@@ -234,6 +240,9 @@
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                 <span>Prestasi & Tugasan</span>
+                                @if(($drawerPendingClaimsCount > 0 || $drawerPastiInfoPendingCount > 0 || $drawerGuruSalaryPendingCount > 0 || $drawerUpcomingProgramCount > 0))
+                                    <div class="dot-pulse-yellow ml-2"></div>
+                                @endif
                             </div>
                             <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
@@ -267,6 +276,9 @@
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                                 <span>Komunikasi & Fail</span>
+                                @if(($drawerInboxCount > 0 || $drawerOnLeaveGuruCount > 0))
+                                    <div class="dot-pulse-yellow ml-2"></div>
+                                @endif
                             </div>
                             <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
@@ -480,6 +492,9 @@
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                 <span>{{ __('Laporan/Aktiviti') }}</span>
+                                @if(($menuPendingClaimsCount > 0 || $expiredSkimPasCount > 0 || $menuPastiInfoPendingCount > 0 || $menuGuruSalaryPendingCount > 0 || $menuUpcomingProgramCount > 0))
+                                    <div class="dot-pulse-yellow ml-2"></div>
+                                @endif
                             </div>
                             <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
@@ -535,6 +550,9 @@
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                                 <span>{{ __('Komunikasi & Fail') }}</span>
+                                @if(($menuInboxCount > 0 || $menuOnLeaveGuruCount > 0))
+                                    <div class="dot-pulse-yellow ml-2"></div>
+                                @endif
                             </div>
                             <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
@@ -566,6 +584,9 @@
                                 <div class="flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                     <span>Prestasi & Tugasan</span>
+                                    @if(($menuPendingClaimsCount > 0 || $menuPastiInfoPendingCount > 0 || $menuGuruSalaryPendingCount > 0 || $menuUpcomingProgramCount > 0))
+                                        <div class="dot-pulse-yellow ml-2"></div>
+                                    @endif
                                 </div>
                                 <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                             </button>
@@ -607,6 +628,9 @@
                                 <div class="flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                                     <span>Komunikasi & Fail</span>
+                                    @if(($menuInboxCount > 0 || $menuOnLeaveGuruCount > 0))
+                                        <div class="dot-pulse-yellow ml-2"></div>
+                                    @endif
                                 </div>
                                 <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                             </button>

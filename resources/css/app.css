@@ -340,3 +340,20 @@
     display: block;
   }
 }
+
+@keyframes pulse-yellow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.5;
+  }
+}
+
+.dot-pulse-yellow {
+  @apply h-2 w-2 rounded-full bg-yellow-400;
+  animation: pulse-yellow 2s infinite ease-in-out;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
+}
