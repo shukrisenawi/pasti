@@ -358,7 +358,7 @@ class ProgramParticipationApprovalTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('data-testid="program-card-pending-badge"', false)
-            ->assertSeeInOrder(['2', 'perlu kelulusan']);
+            ->assertSee('>2</span>', false);
     }
 
     public function test_absence_reason_submission_stays_pending_and_does_not_add_kpi_before_admin_review(): void
