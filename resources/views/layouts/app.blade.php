@@ -229,37 +229,72 @@
 
             @role('guru')
                 @if(!auth()->user()->hasAnyRole(['master_admin', 'admin']))
-                    @if(auth()->user()->guru)
-                        <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
-                    @endif
-                    <a href="{{ route('claims.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
-                        <span>{{ __('messages.claim') }}</span>
-                        @if($drawerPendingClaimsCount > 0)<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ $drawerPendingClaimsCount > 99 ? '99+' : $drawerPendingClaimsCount }}</span>@endif
-                    </a>
-                    <a href="{{ route('pemarkahan.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
-                    <a href="{{ route('pasti-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                        <span>{{ __('messages.maklumat_pasti') }}</span>
-                        @if($drawerPastiInfoPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerPastiInfoPendingCount > 99 ? '99+' : $drawerPastiInfoPendingCount }}</span>@endif
-                    </a>
-                    <a href="{{ route('guru-salary-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                        <span>{{ __('messages.guru_salary_information') }}</span>
-                        @if($drawerGuruSalaryPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerGuruSalaryPendingCount > 99 ? '99+' : $drawerGuruSalaryPendingCount }}</span>@endif
-                    </a>
-                    <a href="{{ route('kursus-guru.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
-                    <a href="{{ route('programs.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                        <span>{{ __('messages.programs') }}</span>
-                        @if($drawerUpcomingProgramCount > 0)<span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerUpcomingProgramCount > 99 ? '99+' : $drawerUpcomingProgramCount }}</span>@endif
-                    </a>
-                    <a href="{{ route('guru-directory.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('guru-directory.*') ? 'menu-link-active' : '' }}">Senarai Guru</a>
-                    <a href="{{ route('messages.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                        <span>{{ __('messages.inbox') }}</span>
-                        @if($drawerInboxCount > 0)<span class="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerInboxCount > 99 ? '99+' : $drawerInboxCount }}</span>@endif
-                    </a>
-                    <a href="{{ route('leave-notices.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
-                        <span>{{ __('messages.leave_notice') }}</span>
-                        @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
-                    </a>
-                    <a href="{{ route('directory-files.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Directory</a>
+                    <div x-data="{ open: {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'text-primary bg-primary/5' : '' }}">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
+                                <span>Prestasi & Tugasan</span>
+                            </div>
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
+                            @if(auth()->user()->guru)
+                                <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
+                            @endif
+                            <a href="{{ route('claims.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                <span>{{ __('messages.claim') }}</span>
+                                @if($drawerPendingClaimsCount > 0)<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ $drawerPendingClaimsCount > 99 ? '99+' : $drawerPendingClaimsCount }}</span>@endif
+                            </a>
+                            <a href="{{ route('pemarkahan.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
+                            <a href="{{ route('pasti-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                                <span>{{ __('messages.maklumat_pasti') }}</span>
+                                @if($drawerPastiInfoPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerPastiInfoPendingCount > 99 ? '99+' : $drawerPastiInfoPendingCount }}</span>@endif
+                            </a>
+                            <a href="{{ route('guru-salary-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                                <span>{{ __('messages.guru_salary_information') }}</span>
+                                @if($drawerGuruSalaryPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerGuruSalaryPendingCount > 99 ? '99+' : $drawerGuruSalaryPendingCount }}</span>@endif
+                            </a>
+                            <a href="{{ route('kursus-guru.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
+                            <a href="{{ route('programs.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                                <span>{{ __('messages.programs') }}</span>
+                                @if($drawerUpcomingProgramCount > 0)<span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerUpcomingProgramCount > 99 ? '99+' : $drawerUpcomingProgramCount }}</span>@endif
+                            </a>
+                        </div>
+                    </div>
+
+                    <div x-data="{ open: {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'text-primary bg-primary/5' : '' }}">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                                <span>Komunikasi & Fail</span>
+                            </div>
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
+                            <a href="{{ route('messages.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                                <span>{{ __('messages.inbox') }}</span>
+                                @if($drawerInboxCount > 0)<span class="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerInboxCount > 99 ? '99+' : $drawerInboxCount }}</span>@endif
+                            </a>
+                            <a href="{{ route('leave-notices.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                <span>{{ __('messages.leave_notice') }}</span>
+                                @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
+                            </a>
+                            <a href="{{ route('directory-files.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Directory</a>
+                        </div>
+                    </div>
+
+                    <div x-data="{ open: {{ request()->routeIs(['guru-directory.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['guru-directory.*']) ? 'text-primary bg-primary/5' : '' }}">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m12 0H7m10-11a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                <span>Direktori</span>
+                            </div>
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
+                            <a href="{{ route('guru-directory.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-directory.*') ? 'menu-link-active' : '' }}">Senarai Guru</a>
+                        </div>
+                    </div>
                 @endif
             @endrole
         </nav>
@@ -526,49 +561,84 @@
 
                 @role('guru')
                     @if(!auth()->user()->hasAnyRole(['master_admin', 'admin']))
-                        @if(auth()->user()->guru)
-                            <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
-                        @endif
-                        <a href="{{ route('claims.index') }}" wire:navigate class="menu-link {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
-                            <span>{{ __('messages.claim') }}</span>
-                            @if(($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) > 0)
-                                <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ ($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) > 99 ? '99+' : ($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('pemarkahan.index') }}" wire:navigate class="menu-link {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
-                        <a href="{{ route('pasti-information.index') }}" wire:navigate class="menu-link {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                            <span>{{ __('messages.maklumat_pasti') }}</span>
-                            @if(($menuPastiInfoPendingCount ?? 0) > 0)
-                                <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuPastiInfoPendingCount ?? 0) > 99 ? '99+' : ($menuPastiInfoPendingCount ?? 0) }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('guru-salary-information.index') }}" wire:navigate class="menu-link {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                            <span>{{ __('messages.guru_salary_information') }}</span>
-                            @if(($menuGuruSalaryPendingCount ?? 0) > 0)
-                                <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuGuruSalaryPendingCount ?? 0) > 99 ? '99+' : ($menuGuruSalaryPendingCount ?? 0) }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('kursus-guru.index') }}" wire:navigate class="menu-link {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
-                        <a href="{{ route('programs.index') }}" wire:navigate class="menu-link {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                            <span>{{ __('messages.programs') }}</span>
-                            @if(($menuUpcomingProgramCount ?? 0) > 0)
-                                <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuUpcomingProgramCount ?? 0) > 99 ? '99+' : ($menuUpcomingProgramCount ?? 0) }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('guru-directory.index') }}" wire:navigate class="menu-link {{ request()->routeIs('guru-directory.*') ? 'menu-link-active' : '' }}">Senarai Guru</a>
-                        <a href="{{ route('messages.index') }}" wire:navigate class="menu-link {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
-                            <span>{{ __('messages.inbox') }}</span>
-                            @if(($menuInboxCount ?? 0) > 0)
-                                <span class="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuInboxCount ?? 0) > 99 ? '99+' : ($menuInboxCount ?? 0) }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
-                            <span>{{ __('messages.leave_notice') }}</span>
-                            @if(($menuOnLeaveGuruCount ?? 0) > 0)
-                                <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuOnLeaveGuruCount ?? 0) > 99 ? '99+' : ($menuOnLeaveGuruCount ?? 0) }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('directory-files.index') }}" wire:navigate class="menu-link {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Directory</a>
+                        <div x-data="{ open: {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                            <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'text-primary bg-primary/5' : '' }}">
+                                <div class="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
+                                    <span>Prestasi & Tugasan</span>
+                                </div>
+                                <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </button>
+                            <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
+                                @if(auth()->user()->guru)
+                                    <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
+                                @endif
+                                <a href="{{ route('claims.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                    <span>{{ __('messages.claim') }}</span>
+                                    @if(($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) > 0)
+                                        <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ ($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) > 99 ? '99+' : ($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) }}</span>
+                                    @endif
+                                </a>
+                                <a href="{{ route('pemarkahan.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
+                                <a href="{{ route('pasti-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                                    <span>{{ __('messages.maklumat_pasti') }}</span>
+                                    @if(($menuPastiInfoPendingCount ?? 0) > 0)
+                                        <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuPastiInfoPendingCount ?? 0) > 99 ? '99+' : ($menuPastiInfoPendingCount ?? 0) }}</span>
+                                    @endif
+                                </a>
+                                <a href="{{ route('guru-salary-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                                    <span>{{ __('messages.guru_salary_information') }}</span>
+                                    @if(($menuGuruSalaryPendingCount ?? 0) > 0)
+                                        <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuGuruSalaryPendingCount ?? 0) > 99 ? '99+' : ($menuGuruSalaryPendingCount ?? 0) }}</span>
+                                    @endif
+                                </a>
+                                <a href="{{ route('kursus-guru.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
+                                <a href="{{ route('programs.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                                    <span>{{ __('messages.programs') }}</span>
+                                    @if(($menuUpcomingProgramCount ?? 0) > 0)
+                                        <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuUpcomingProgramCount ?? 0) > 99 ? '99+' : ($menuUpcomingProgramCount ?? 0) }}</span>
+                                    @endif
+                                </a>
+                            </div>
+                        </div>
+
+                        <div x-data="{ open: {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                            <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'text-primary bg-primary/5' : '' }}">
+                                <div class="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                                    <span>Komunikasi & Fail</span>
+                                </div>
+                                <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </button>
+                            <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
+                                <a href="{{ route('messages.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                                    <span>{{ __('messages.inbox') }}</span>
+                                    @if(($menuInboxCount ?? 0) > 0)
+                                        <span class="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuInboxCount ?? 0) > 99 ? '99+' : ($menuInboxCount ?? 0) }}</span>
+                                    @endif
+                                </a>
+                                <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                    <span>{{ __('messages.leave_notice') }}</span>
+                                    @if(($menuOnLeaveGuruCount ?? 0) > 0)
+                                        <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuOnLeaveGuruCount ?? 0) > 99 ? '99+' : ($menuOnLeaveGuruCount ?? 0) }}</span>
+                                    @endif
+                                </a>
+                                <a href="{{ route('directory-files.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Directory</a>
+                            </div>
+                        </div>
+
+                        <div x-data="{ open: {{ request()->routeIs(['guru-directory.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                            <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['guru-directory.*']) ? 'text-primary bg-primary/5' : '' }}">
+                                <div class="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m12 0H7m10-11a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                    <span>Direktori</span>
+                                </div>
+                                <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </button>
+                            <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
+                                <a href="{{ route('guru-directory.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-directory.*') ? 'menu-link-active' : '' }}">Senarai Guru</a>
+                            </div>
+                        </div>
                     @endif
                 @endrole
 
