@@ -157,6 +157,10 @@ class DashboardController extends Controller
                 fn ($query) => $query->where(function($q) use ($guruId) {
                     $q->whereHas('gurus', fn ($vg) => $vg->where('gurus.id', $guruId ?? 0))
                       ->orWhereNull('pasti_id'); // Show assigned OR global programs
+                })->whereDoesntHave('participations', function ($participationQuery) use ($guruId): void {
+                    $participationQuery
+                        ->where('guru_id', $guruId ?? 0)
+                        ->whereNotNull('program_status_id');
                 })
             );
 
