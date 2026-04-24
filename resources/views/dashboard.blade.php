@@ -202,7 +202,7 @@
         <section class="mb-8">
             <div class="flex items-center justify-between mb-4">
                <h3 class="text-sm font-black uppercase tracking-[0.24em] text-slate-400">{{ __('messages.upcoming_programs') }}</h3>
-               <a href="{{ route('programs.index') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua</a>
+               <a href="{{ route('programs.index') }}" wire:navigate class="text-xs font-bold text-primary hover:underline">Lihat Semua</a>
             </div>
             
             <div class="grid gap-6 xl:grid-cols-[1fr_auto]">
@@ -235,7 +235,7 @@
                                     </p>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <a href="{{ route('programs.show', $p) }}" class="rounded-xl bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                                    <a href="{{ route('programs.show', $p) }}" wire:navigate class="rounded-xl bg-slate-50 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors">
                                         {{ __('messages.view') }}
                                     </a>
                                 </div>
@@ -284,7 +284,7 @@
                             </div>
                         </div>
                         
-                        <a href="{{ route('programs.show', $latestProgram) }}" class="mt-8 flex w-full items-center justify-center rounded-2xl bg-primary py-3 text-sm font-bold text-white transition-all hover:bg-primary-dark">
+                        <a href="{{ route('programs.show', $latestProgram) }}" wire:navigate class="mt-8 flex w-full items-center justify-center rounded-2xl bg-primary py-3 text-sm font-bold text-white transition-all hover:bg-primary-dark">
                             Detail Program
                         </a>
                     </div>
@@ -347,7 +347,7 @@
                     <span class="text-xs font-semibold text-slate-400">Desktop & Mobile Friendly</span>
                 </div>
                 <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    <a href="{{ route('leave-notices.create') }}" class="rounded-2xl border border-orange-100 bg-orange-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
+                    <a href="{{ route('leave-notices.create') }}" wire:navigate class="rounded-2xl border border-orange-100 bg-orange-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
                         <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                         </div>
@@ -367,7 +367,7 @@
                         </div>
                         <p class="mt-2 text-xs font-bold text-slate-700">Facebook PASTI Kawasan</p>
                     </a>
-                    <a href="{{ route('pemarkahan.index') }}" class="rounded-2xl border border-purple-100 bg-purple-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
+                    <a href="{{ route('pemarkahan.index') }}" wire:navigate class="rounded-2xl border border-purple-100 bg-purple-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
                         <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                         </div>

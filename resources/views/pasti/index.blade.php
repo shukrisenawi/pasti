@@ -7,12 +7,12 @@
     </x-slot>
 
     <div class="mb-6 flex p-1 bg-slate-100 rounded-xl w-fit">
-        <a href="{{ route('pasti.index', ['tab' => 'jeneri']) }}"
+        <a href="{{ route('pasti.index', ['tab' => 'jeneri']) }}" wire:navigate
            class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'jeneri' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
             JENERI
             <span class="ml-1 opacity-60">({{ $jeneriCount }})</span>
         </a>
-        <a href="{{ route('pasti.index', ['tab' => 'belantek']) }}"
+        <a href="{{ route('pasti.index', ['tab' => 'belantek']) }}" wire:navigate
            class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'belantek' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
             BELANTEK
             <span class="ml-1 opacity-60">({{ $belantekCount }})</span>

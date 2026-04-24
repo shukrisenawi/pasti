@@ -8,17 +8,17 @@
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div class="flex p-1 bg-slate-100 rounded-xl w-fit">
-            <a href="{{ route('users.gurus.index', ['tab' => 'guru']) }}"
+            <a href="{{ route('users.gurus.index', ['tab' => 'guru']) }}" wire:navigate
                class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'guru' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
                 {{ __('messages.main_teacher') }}
                 <span class="ml-1 opacity-60">({{ $guruCount }})</span>
             </a>
-            <a href="{{ route('users.gurus.index', ['tab' => 'assistant']) }}"
+            <a href="{{ route('users.gurus.index', ['tab' => 'assistant']) }}" wire:navigate
                class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'assistant' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
                 {{ __('messages.assistant_teacher') }}
                 <span class="ml-1 opacity-60">({{ $assistantCount }})</span>
             </a>
-            <a href="{{ route('users.gurus.index', ['tab' => 'inactive']) }}"
+            <a href="{{ route('users.gurus.index', ['tab' => 'inactive']) }}" wire:navigate
                class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ $activeTab === 'inactive' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700' }}">
                 {{ __('messages.inactive_teacher') }}
                 <span class="ml-1 opacity-60">({{ $inactiveCount }})</span>
