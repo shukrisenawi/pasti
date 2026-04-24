@@ -356,8 +356,78 @@
                         </div>
                         <p class="mt-2 text-xs font-bold text-slate-700">Pemarkahan</p>
                     </a>
+                    <a
+                        href="https://www.pastimalaysia.com/epasti-online/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onclick="return openPastiMalaysiaExternal(event)"
+                        class="rounded-2xl border border-sky-100 bg-sky-50 px-3 py-4 text-center transition hover:-translate-y-0.5"
+                    >
+                        <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 015.657 5.656l-3 3a4 4 0 01-5.657-5.656m-1.414 1.414a4 4 0 01-5.657-5.656l3-3a4 4 0 115.657 5.656" />
+                            </svg>
+                        </div>
+                        <p class="mt-2 text-xs font-bold text-slate-700">ePASTI Online</p>
+                    </a>
                 </div>
             </div>
         </section>
     @endrole
+
+    @once
+        <script>
+            function openPastiMalaysiaExternal(event) {
+                const targetUrl = 'https://www.pastimalaysia.com/epasti-online/';
+                const isInApp = Boolean(
+                    window.ReactNativeWebView ||
+                    window.LRPastiAppBridge ||
+                    window.Android ||
+                    window.webkit?.messageHandlers?.lrPastiAuth
+                );
+
+                if (!isInApp) {
+                    return true;
+                }
+
+                event.preventDefault();
+
+                const payload = JSON.stringify({
+                    type: 'lr-pasti-open-external-url',
+                    url: targetUrl,
+                    browser: 'chrome',
+                });
+
+                if (window.ReactNativeWebView?.postMessage) {
+                    window.ReactNativeWebView.postMessage(payload);
+                }
+
+                if (window.webkit?.messageHandlers?.lrPastiOpenUrl?.postMessage) {
+                    window.webkit.messageHandlers.lrPastiOpenUrl.postMessage({
+                        url: targetUrl,
+                        browser: 'chrome',
+                    });
+                    return false;
+                }
+
+                if (window.LRPastiAppBridge?.openExternalUrl) {
+                    window.LRPastiAppBridge.openExternalUrl(targetUrl, 'chrome');
+                    return false;
+                }
+
+                if (window.Android?.openExternalUrl) {
+                    window.Android.openExternalUrl(targetUrl, 'chrome');
+                    return false;
+                }
+
+                if (window.Android?.openUrlInChrome) {
+                    window.Android.openUrlInChrome(targetUrl);
+                    return false;
+                }
+
+                window.location.href = 'intent://www.pastimalaysia.com/epasti-online/#Intent;scheme=https;package=com.android.chrome;end';
+                return false;
+            }
+        </script>
+    @endonce
 </x-app-layout>
