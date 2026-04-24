@@ -10,6 +10,9 @@ export default {
 
     theme: {
         extend: {
+            animation: {
+                shine: 'shine var(--duration,14s) infinite linear',
+            },
             colors: {
                 'base-100': '#fcfffc',
                 'base-200': '#edf6ef',
@@ -31,6 +34,19 @@ export default {
             },
             boxShadow: {
                 card: '0 18px 40px -26px rgba(22, 48, 34, 0.35)',
+            },
+            keyframes: {
+                shine: {
+                    '0%': {
+                        'background-position': '0% 0%',
+                    },
+                    '50%': {
+                        'background-position': '100% 100%',
+                    },
+                    to: {
+                        'background-position': '0% 0%',
+                    },
+                },
             },
         },
     },

@@ -156,9 +156,12 @@
 
                     <div class="mt-4 space-y-3">
                         @foreach($activeAnnouncements as $announcement)
-                            <div class="rounded-2xl border border-indigo-100 bg-white p-4">
+                            <div class="shine-border-panel rounded-2xl bg-white p-4 shadow-sm">
                                 <div class="flex flex-wrap items-start justify-between gap-2">
                                     <p class="text-sm font-bold text-slate-900">{{ $announcement->title }}</p>
+                                    <span class="inline-flex rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-indigo-600">
+                                        Pengumuman
+                                    </span>
                                 </div>
                                 <p class="mt-2 text-sm leading-6 text-slate-600 whitespace-pre-wrap">{{ $announcement->body }}</p>
                             </div>

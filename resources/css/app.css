@@ -265,6 +265,46 @@
   .admin-form-actions {
     @apply flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 pt-5;
   }
+
+  .shine-border-panel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .shine-border-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background-image: radial-gradient(
+      transparent,
+      transparent,
+      rgba(99, 102, 241, 0.95),
+      rgba(129, 140, 248, 0.9),
+      rgba(165, 180, 252, 0.95),
+      transparent,
+      transparent
+    );
+    background-size: 300% 300%;
+    background-position: 0% 0%;
+    animation: shine 14s linear infinite;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .shine-border-panel > * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .guru-bottom-nav {
