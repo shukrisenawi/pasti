@@ -214,6 +214,9 @@
 
             @role('guru')
                 @if(!auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                    @if(auth()->user()->guru)
+                        <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
+                    @endif
                     <a href="{{ route('claims.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                         <span>{{ __('messages.claim') }}</span>
                         @if($drawerPendingClaimsCount > 0)<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ $drawerPendingClaimsCount > 99 ? '99+' : $drawerPendingClaimsCount }}</span>@endif
@@ -241,9 +244,6 @@
                         <span>{{ __('messages.leave_notice') }}</span>
                         @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
                     </a>
-                    @if(auth()->user()->guru)
-                        <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
-                    @endif
                 @endif
             @endrole
         </nav>
@@ -496,6 +496,9 @@
 
                 @role('guru')
                     @if(!auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                        @if(auth()->user()->guru)
+                            <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
+                        @endif
                         <a href="{{ route('claims.index') }}" wire:navigate class="menu-link {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.claim') }}</span>
                             @if(($menuPendingClaimsCount ?? ($authUser->pending_claims_count ?? 0)) > 0)
@@ -535,9 +538,6 @@
                                 <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuOnLeaveGuruCount ?? 0) > 99 ? '99+' : ($menuOnLeaveGuruCount ?? 0) }}</span>
                             @endif
                         </a>
-                        @if(auth()->user()->guru)
-                            <a href="{{ route('kpi.guru.show', auth()->user()->guru) }}" wire:navigate class="menu-link {{ request()->routeIs('kpi.guru.show') ? 'menu-link-active' : '' }}">{{ __('messages.my_kpi') }}</a>
-                        @endif
                     @endif
                 @endrole
 
