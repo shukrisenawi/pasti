@@ -349,11 +349,19 @@
                         </div>
                         <p class="mt-2 text-xs font-bold text-slate-700">Minta Cuti</p>
                     </a>
-                    <a href="{{ route('pasti.self.edit') }}" class="rounded-2xl border border-primary/10 bg-primary/5 px-3 py-4 text-center transition hover:-translate-y-0.5">
+                    <a
+                        href="https://www.facebook.com/pastikawasansik"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onclick="return openExternalInChrome(event, 'https://www.facebook.com/pastikawasansik')"
+                        class="rounded-2xl border border-primary/10 bg-primary/5 px-3 py-4 text-center transition hover:-translate-y-0.5"
+                    >
                         <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22 12.07C22 6.51 17.52 2 12 2S2 6.51 2 12.07c0 5.02 3.66 9.18 8.44 9.93v-7.03H7.9v-2.9h2.54V9.84c0-2.52 1.49-3.91 3.78-3.91 1.09 0 2.24.2 2.24.2v2.48H15.2c-1.24 0-1.63.78-1.63 1.57v1.89h2.77l-.44 2.9h-2.33V22c4.78-.75 8.43-4.91 8.43-9.93Z"/>
+                            </svg>
                         </div>
-                        <p class="mt-2 text-xs font-bold text-slate-700">Pasti Saya</p>
+                        <p class="mt-2 text-xs font-bold text-slate-700">Facebook PASTI Kawasan</p>
                     </a>
                     <a href="{{ route('pemarkahan.index') }}" class="rounded-2xl border border-purple-100 bg-purple-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
                         <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
@@ -365,7 +373,7 @@
                         href="https://www.pastimalaysia.com/epasti-online/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        onclick="return openPastiMalaysiaExternal(event)"
+                        onclick="return openExternalInChrome(event, 'https://www.pastimalaysia.com/epasti-online/')"
                         class="rounded-2xl border border-sky-100 bg-sky-50 px-3 py-4 text-center transition hover:-translate-y-0.5"
                     >
                         <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
@@ -382,8 +390,7 @@
 
     @once
         <script>
-            function openPastiMalaysiaExternal(event) {
-                const targetUrl = 'https://www.pastimalaysia.com/epasti-online/';
+            function openExternalInChrome(event, targetUrl) {
                 const isInApp = Boolean(
                     window.ReactNativeWebView ||
                     window.LRPastiAppBridge ||
@@ -430,7 +437,8 @@
                     return false;
                 }
 
-                window.location.href = 'intent://www.pastimalaysia.com/epasti-online/#Intent;scheme=https;package=com.android.chrome;end';
+                const sanitizedUrl = String(targetUrl).replace(/^https?:\/\//, '');
+                window.location.href = `intent://${sanitizedUrl}#Intent;scheme=https;package=com.android.chrome;end`;
                 return false;
             }
         </script>
