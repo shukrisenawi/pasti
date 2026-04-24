@@ -40,7 +40,7 @@
                 fn ($status) => [(string) $status->id => $status->code]
             );
         @endphp
-        <div class="grid gap-4 lg:grid-cols-2">
+        <div class="grid gap-3 xl:grid-cols-2">
             @forelse($program->participations as $participation)
                 @php
                     $absenceReviewStatus = $participation->absence_reason_status;
@@ -57,45 +57,45 @@
                         default => 'bg-slate-100 text-slate-500',
                     };
                 @endphp
-                <article data-testid="program-participation-card" class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                <article data-testid="program-participation-card" class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                     <div class="flex items-start justify-between gap-3">
                         <div>
-                            <h3 class="text-lg font-black text-slate-900">{{ $participation->guru->display_name }}</h3>
-                            <p class="mt-1 text-sm text-slate-500">{{ $participation->guru->phone ?? '-' }}</p>
+                            <h3 class="text-base font-black leading-tight text-slate-900">{{ $participation->guru->display_name }}</h3>
+                            <p class="mt-0.5 text-xs text-slate-500">{{ $participation->guru->phone ?? '-' }}</p>
                         </div>
-                        <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                        <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700">
                             {{ $participation->status?->name ?? '-' }}
                         </span>
                     </div>
 
-                    <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                        <div class="rounded-2xl bg-slate-50 px-4 py-3">
-                            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.status') }}</p>
-                            <p class="mt-1 text-sm font-semibold text-slate-800">{{ $participation->status?->name ?? '-' }}</p>
+                    <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                        <div class="rounded-xl bg-slate-50 px-3 py-2">
+                            <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{{ __('messages.status') }}</p>
+                            <p class="mt-0.5 text-xs font-semibold text-slate-800">{{ $participation->status?->name ?? '-' }}</p>
                         </div>
                         @if($program->require_absence_reason)
-                            <div class="rounded-2xl bg-slate-50 px-4 py-3">
-                                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.absence_reason_review') }}</p>
-                                <div class="mt-1">
-                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold {{ $absenceReviewClass }}">
+                            <div class="rounded-xl bg-slate-50 px-3 py-2">
+                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{{ __('messages.absence_reason_review') }}</p>
+                                <div class="mt-0.5">
+                                    <span class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold {{ $absenceReviewClass }}">
                                         {{ $absenceReviewLabel }}
                                     </span>
                                 </div>
                             </div>
-                            <div class="rounded-2xl bg-slate-50 px-4 py-3 sm:col-span-2">
-                                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.absence_reason') }}</p>
-                                <p class="mt-1 text-sm font-semibold text-slate-800">{{ $participation->absence_reason ?? '-' }}</p>
+                            <div class="rounded-xl bg-slate-50 px-3 py-2 sm:col-span-2">
+                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{{ __('messages.absence_reason') }}</p>
+                                <p class="mt-0.5 text-xs font-semibold leading-5 text-slate-800">{{ $participation->absence_reason ?? '-' }}</p>
                             </div>
                         @endif
                     </div>
 
                     @if($canManage || ($canUpdateOwn && $currentGuruId === $participation->guru_id))
-                        <div class="mt-4 border-t border-slate-100 pt-4">
+                        <div class="mt-3 border-t border-slate-100 pt-3">
                             <div class="space-y-2">
                                 <form
                                     method="POST"
                                     action="{{ route('programs.teachers.status.update', [$program, $participation->guru_id]) }}"
-                                    class="grid gap-2 {{ $program->require_absence_reason ? 'md:grid-cols-[220px_1fr_auto]' : 'md:grid-cols-[220px_auto]' }} md:items-center"
+                                    class="grid gap-2 {{ $program->require_absence_reason ? 'md:grid-cols-[170px_1fr_auto]' : 'md:grid-cols-[170px_auto]' }} md:items-center"
                                     x-data="{
                                         selectedStatusId: @js((string) $participation->program_status_id),
                                         statusCodeById: @js($statusCodeById),
@@ -105,7 +105,7 @@
                                     }"
                                 >
                                     @csrf
-                                    <select name="program_status_id" class="input-base max-w-xs" x-model="selectedStatusId">
+                                    <select name="program_status_id" class="input-base max-w-xs text-xs" x-model="selectedStatusId">
                                         <option value="">-</option>
                                         @foreach($statuses as $status)
                                             <option value="{{ $status->id }}" @selected($participation->program_status_id === $status->id)>{{ $status->name }}</option>
@@ -116,13 +116,13 @@
                                             <input
                                                 type="text"
                                                 name="absence_reason"
-                                                class="input-base"
+                                                class="input-base text-xs"
                                                 placeholder="{{ __('messages.absence_reason_placeholder') }}"
                                                 value="{{ old('absence_reason', $participation->absence_reason) }}"
                                             >
                                         </div>
                                     @endif
-                                    <button class="btn btn-outline">{{ __('messages.save') }}</button>
+                                    <button class="btn btn-outline btn-sm">{{ __('messages.save') }}</button>
                                 </form>
 
                                 @if(
@@ -134,12 +134,12 @@
                                         <form method="POST" action="{{ route('programs.teachers.absence-review', [$program, $participation->guru_id]) }}">
                                             @csrf
                                             <input type="hidden" name="decision" value="approved">
-                                            <button class="btn btn-success btn-sm">{{ __('messages.approve_reason') }}</button>
+                                            <button class="btn btn-success btn-xs">{{ __('messages.approve_reason') }}</button>
                                         </form>
                                         <form method="POST" action="{{ route('programs.teachers.absence-review', [$program, $participation->guru_id]) }}">
                                             @csrf
                                             <input type="hidden" name="decision" value="rejected">
-                                            <button class="btn btn-error btn-sm">{{ __('messages.reject_reason') }}</button>
+                                            <button class="btn btn-error btn-xs">{{ __('messages.reject_reason') }}</button>
                                         </form>
                                     </div>
                                 @endif
