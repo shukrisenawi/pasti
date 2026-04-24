@@ -43,7 +43,6 @@
         <div class="mb-3 flex items-center justify-between gap-3">
             <div>
                 <h3 class="text-sm font-black text-slate-900">Guru Terlibat</h3>
-                <p class="text-xs text-slate-500">Lalai hanya guru yang sudah hantar status kedatangan.</p>
             </div>
             <label class="ml-auto inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
                 <input
