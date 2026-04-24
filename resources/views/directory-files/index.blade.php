@@ -30,35 +30,35 @@
                 @forelse($files as $file)
                     <div class="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
                         <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                            <div>
-                                <p class="text-sm font-bold text-slate-900">{{ $file->title }}</p>
-                                <p class="text-xs text-slate-500">Fail asal: {{ $file->original_name }}</p>
-                                <p class="text-xs text-slate-500">Muat naik oleh: {{ $file->uploader?->display_name ?? '-' }}</p>
-                                <p class="text-xs text-slate-500">Tarikh: {{ $file->created_at?->format('d/m/Y h:i A') }}</p>
-                                @if($file->target_type === 'all')
-                                    <p class="mt-2 inline-flex rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700">Semua Guru</p>
-                                @else
-                                    <p class="mt-2 inline-flex rounded-full bg-amber-100 px-2 py-1 text-[11px] font-bold text-amber-700">Guru Terpilih ({{ $file->recipients->count() }})</p>
-                                @endif
-                            </div>
-
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-start gap-3">
                                 @if($file->is_image_attachment && $file->file_url)
-                                    <a href="{{ $file->file_url }}" target="_blank" class="block">
+                                    <a href="{{ $file->file_url }}" target="_blank" class="block shrink-0">
                                         <img src="{{ $file->file_url }}" alt="thumbnail {{ $file->title }}" class="h-16 w-16 rounded-xl border border-slate-200 object-cover">
                                     </a>
                                 @endif
 
-                                <div class="flex items-center gap-2">
-                                    <a href="{{ route('directory-files.download', $file) }}" class="btn btn-outline btn-sm">Download</a>
-                                    @if($canUpload && (auth()->user()->hasRole('master_admin') || (int) $file->uploaded_by === (int) auth()->id()))
-                                        <form method="POST" action="{{ route('directory-files.destroy', $file) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-error btn-sm text-white" onclick="return confirm('Hapus fail ini?')">Hapus</button>
-                                        </form>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900">{{ $file->title }}</p>
+                                    <p class="text-xs text-slate-500">Fail asal: {{ $file->original_name }}</p>
+                                    <p class="text-xs text-slate-500">Muat naik oleh: {{ $file->uploader?->display_name ?? '-' }}</p>
+                                    <p class="text-xs text-slate-500">Tarikh: {{ $file->created_at?->format('d/m/Y h:i A') }}</p>
+                                    @if($file->target_type === 'all')
+                                        <p class="mt-2 inline-flex rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700">Semua Guru</p>
+                                    @else
+                                        <p class="mt-2 inline-flex rounded-full bg-amber-100 px-2 py-1 text-[11px] font-bold text-amber-700">Guru Terpilih ({{ $file->recipients->count() }})</p>
                                     @endif
                                 </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('directory-files.download', $file) }}" class="btn btn-outline btn-sm">Download</a>
+                                @if($canUpload && (auth()->user()->hasRole('master_admin') || (int) $file->uploaded_by === (int) auth()->id()))
+                                    <form method="POST" action="{{ route('directory-files.destroy', $file) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-error btn-sm text-white" onclick="return confirm('Hapus fail ini?')">Hapus</button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
 
