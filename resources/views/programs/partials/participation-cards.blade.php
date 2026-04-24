@@ -6,8 +6,10 @@
                 && session('program_status_success_actor') === 'admin'
                 && (int) session('program_status_updated_guru_id') === (int) $participation->guru_id;
             $shouldDisableAdminReviewButtons = $canManage
-                && session('program_status_success_actor') === 'admin'
-                && (int) session('program_status_updated_guru_id') === (int) $participation->guru_id;
+                && in_array($absenceReviewStatus, [
+                    \App\Services\ProgramParticipationService::ABSENCE_REASON_APPROVED,
+                    \App\Services\ProgramParticipationService::ABSENCE_REASON_REJECTED,
+                ], true);
             $absenceReviewLabel = match ($absenceReviewStatus) {
                 \App\Services\ProgramParticipationService::ABSENCE_REASON_APPROVED => __('messages.absence_reason_approved'),
                 \App\Services\ProgramParticipationService::ABSENCE_REASON_REJECTED => __('messages.absence_reason_rejected'),
