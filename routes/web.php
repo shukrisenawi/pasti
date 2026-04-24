@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminMessageController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AjkProgramController;
 use App\Http\Controllers\ClaimController;
@@ -135,6 +136,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/kursus-guru/offers', [GuruCourseController::class, 'sendOffer'])->name('kursus-guru.offers.send');
         Route::post('/directory-files', [DirectoryFileController::class, 'store'])->name('directory-files.store');
         Route::delete('/directory-files/{directoryFile}', [DirectoryFileController::class, 'destroy'])->name('directory-files.destroy');
+        Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+        Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

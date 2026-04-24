@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminMessage;
+use App\Models\Announcement;
 use App\Models\FinancialTransaction;
 use App\Models\Guru;
 use App\Models\Program;
@@ -20,6 +21,7 @@ class DashboardController extends Controller
         $currentYear = (int) now()->year;
         $topKpiGurus = collect();
         $latestInboxMessage = null;
+        $activeAnnouncements = collect();
         $guruId = null;
         $isGuruOnly = $this->isGuruOnly($user);
         $adminCashBalance = 0.0;
@@ -111,6 +113,13 @@ class DashboardController extends Controller
                 ->orderByRaw('COALESCE(replies_max_created_at, admin_messages.created_at) DESC')
                 ->latest('id')
                 ->first();
+
+            $activeAnnouncements = Announcement::query()
+                ->whereDate('expires_at', '>=', now()->toDateString())
+                ->whereHas('recipients', fn ($q) => $q->where('users.id', $user->id))
+                ->latest('id')
+                ->limit(5)
+                ->get();
         } elseif ($user->hasRole('master_admin')) {
             $latestInboxMessage = AdminMessage::query()
                 ->with(['sender', 'replies'])
@@ -210,6 +219,7 @@ class DashboardController extends Controller
             'adminCashBalance' => $adminCashBalance,
             'adminBankBalance' => $adminBankBalance,
             'birthdayUsers' => $birthdayUsers,
+            'activeAnnouncements' => $activeAnnouncements,
         ]);
     }
 

@@ -151,6 +151,35 @@
         </section>
     @endif
 
+    @role('guru')
+        @if(($activeAnnouncements ?? collect())->isNotEmpty())
+            <section class="mb-8">
+                <div class="rounded-3xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50 p-5 shadow-card sm:p-6">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">Pengumuman</p>
+                            <h3 class="mt-1 text-lg font-black text-slate-900">Makluman Untuk Guru</h3>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 space-y-3">
+                        @foreach($activeAnnouncements as $announcement)
+                            <div class="rounded-2xl border border-indigo-100 bg-white p-4">
+                                <div class="flex flex-wrap items-start justify-between gap-2">
+                                    <p class="text-sm font-bold text-slate-900">{{ $announcement->title }}</p>
+                                    <span class="rounded-full bg-indigo-100 px-2 py-1 text-[11px] font-bold text-indigo-700">
+                                        Tamat: {{ $announcement->expires_at?->format('d/m/Y') }}
+                                    </span>
+                                </div>
+                                <p class="mt-2 text-sm leading-6 text-slate-600 whitespace-pre-wrap">{{ $announcement->body }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+        @endif
+    @endrole
+
     @if($userAjkPositions->isNotEmpty())
         <section class="mb-8">
             <div class="rounded-3xl border border-primary/20 bg-gradient-to-br from-white to-primary/5 p-5 shadow-card sm:p-6">

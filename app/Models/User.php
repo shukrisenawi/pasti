@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use App\Models\AdminMessage;
 use App\Models\AdminMessageReply;
+use App\Models\Announcement;
 use App\Notifications\AdminMessageReceivedNotification;
 use App\Notifications\AdminMessageReplyNotification;
 use App\Models\FcmToken;
@@ -107,6 +108,12 @@ class User extends Authenticatable
     public function fcmTokens(): HasMany
     {
         return $this->hasMany(FcmToken::class);
+    }
+
+    public function announcements(): BelongsToMany
+    {
+        return $this->belongsToMany(Announcement::class, 'announcement_user')
+            ->withTimestamps();
     }
 
     public function getAvatarUrlAttribute(): ?string

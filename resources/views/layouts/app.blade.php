@@ -203,8 +203,8 @@
                 </div>
 
                 {{-- Komunikasi & Fail Dropdown --}}
-                <div x-data="{ open: {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'true' : 'false' }} }" class="space-y-1">
-                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'text-primary bg-primary/5' : '' }}">
+                <div x-data="{ open: {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*', 'announcements.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*', 'announcements.*']) ? 'text-primary bg-primary/5' : '' }}">
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                             <span>{{ __('Komunikasi & Fail') }}</span>
@@ -220,6 +220,7 @@
                             <span>{{ __('messages.leave_notice') }}</span>
                             @if($drawerOnLeaveGuruCount > 0)<span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerOnLeaveGuruCount > 99 ? '99+' : $drawerOnLeaveGuruCount }}</span>@endif
                         </a>
+                        <a href="{{ route('announcements.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('announcements.*') ? 'menu-link-active' : '' }}">Pengumuman</a>
                         <a href="{{ route('directory-files.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Directory</a>
                     </div>
                 </div>
@@ -494,8 +495,8 @@
                     </div>
 
                     <!-- Group: Komunikasi & Fail -->
-                    <div x-data="{ open: {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'true' : 'false' }} }" class="space-y-1">
-                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'text-primary bg-primary/5' : '' }}">
+                    <div x-data="{ open: {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*', 'announcements.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*', 'announcements.*']) ? 'text-primary bg-primary/5' : '' }}">
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                                 <span>{{ __('Komunikasi & Fail') }}</span>
@@ -515,6 +516,7 @@
                                     <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuOnLeaveGuruCount ?? 0) > 99 ? '99+' : ($menuOnLeaveGuruCount ?? 0) }}</span>
                                 @endif
                             </a>
+                            <a href="{{ route('announcements.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('announcements.*') ? 'menu-link-active' : '' }}">Pengumuman</a>
                             <a href="{{ route('directory-files.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Directory</a>
                         </div>
                     </div>
