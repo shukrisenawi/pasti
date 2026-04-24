@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AnnouncementController extends Controller
@@ -43,7 +44,6 @@ class AnnouncementController extends Controller
         abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
 
         $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string', 'max:3000'],
             'expires_at' => ['required', 'date', 'after_or_equal:today'],
         ]);
@@ -52,14 +52,17 @@ class AnnouncementController extends Controller
 
         if ($recipientUserIds === []) {
             return back()->withErrors([
-                'title' => 'Tiada guru aktif dijumpai untuk terima pengumuman ini.',
+                'body' => 'Tiada guru aktif dijumpai untuk terima pengumuman ini.',
             ])->withInput();
         }
 
         DB::transaction(function () use ($data, $user, $recipientUserIds): void {
+            $body = trim((string) $data['body']);
+            $title = Str::limit(Str::squish($body), 80, '...');
+
             $announcement = Announcement::query()->create([
-                'title' => trim((string) $data['title']),
-                'body' => trim((string) $data['body']),
+                'title' => $title,
+                'body' => $body,
                 'expires_at' => $data['expires_at'],
                 'sent_by' => $user->id,
             ]);
@@ -71,7 +74,7 @@ class AnnouncementController extends Controller
                 [
                     'nama_penghantar' => $user->display_name ?? $user->name,
                     'jumlah_guru' => count($recipientUserIds),
-                    'tajuk' => trim((string) $data['title']),
+                    'tajuk' => $title,
                     'tarikh_tamat' => $announcement->expires_at?->format('d/m/Y') ?? '-',
                 ],
                 $this->n8nWebhookService->toActionUrl(route('dashboard'))

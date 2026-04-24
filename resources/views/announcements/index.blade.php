@@ -33,9 +33,8 @@
                     <div class="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
                         <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                             <div>
-                                <p class="text-sm font-bold text-slate-900">{{ $announcement->title }}</p>
-                                <p class="mt-1 text-sm text-slate-600 whitespace-pre-wrap">{{ $announcement->body }}</p>
-                                <p class="mt-2 text-xs text-slate-500">Tarikh Tamat: {{ $announcement->expires_at?->format('d/m/Y') ?? '-' }}</p>
+                                <p class="text-sm text-slate-600 whitespace-pre-wrap">{{ $announcement->body }}</p>
+                                <p class="mt-2 text-xs font-semibold text-slate-500">Tarikh Tamat: {{ $announcement->expires_at?->format('d/m/Y') ?? '-' }}</p>
                                 <p class="text-xs text-slate-500">Penerima: {{ $announcement->recipients_count }} guru</p>
                                 <p class="text-xs text-slate-500">Dihantar oleh: {{ $announcement->sender?->display_name ?? '-' }}</p>
                                 <div class="mt-2">
@@ -70,12 +69,6 @@
             <h3 class="text-base font-bold text-slate-900">Hantar Pengumuman</h3>
             <form method="POST" action="{{ route('announcements.store') }}" class="mt-4 space-y-4">
                 @csrf
-
-                <div>
-                    <label for="title" class="label-base">Tajuk</label>
-                    <input id="title" name="title" type="text" class="input-base mt-1 block w-full" value="{{ old('title') }}" required>
-                    <x-input-error class="mt-2" :messages="$errors->get('title')" />
-                </div>
 
                 <div>
                     <label for="body" class="label-base">Mesej Pengumuman</label>
