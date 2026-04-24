@@ -341,15 +341,6 @@
                         </div>
                         <p class="mt-2 text-xs font-bold text-slate-700">Pasti Saya</p>
                     </a>
-                    <a href="{{ route('pasti-information.index') }}" class="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
-                        <div class="relative mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                            @if($pendingPastiInfoCount > 0)
-                                <span class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-700 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">{{ $pendingPastiInfoCount }}</span>
-                            @endif
-                        </div>
-                        <p class="mt-2 text-xs font-bold text-slate-700">Info Pasti</p>
-                    </a>
                     <a href="{{ route('pemarkahan.index') }}" class="rounded-2xl border border-purple-100 bg-purple-50 px-3 py-4 text-center transition hover:-translate-y-0.5">
                         <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
