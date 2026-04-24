@@ -149,7 +149,7 @@
                 <div class="rounded-3xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50 p-5 shadow-card sm:p-6">
                     <div class="flex items-center justify-between gap-3">
                         <div>
-                            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">Pengumuman</p>
+                            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Pengumuman</p>
                         </div>
                     </div>
 
