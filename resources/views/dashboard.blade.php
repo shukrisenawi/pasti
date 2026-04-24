@@ -167,9 +167,6 @@
                             <div class="rounded-2xl border border-indigo-100 bg-white p-4">
                                 <div class="flex flex-wrap items-start justify-between gap-2">
                                     <p class="text-sm font-bold text-slate-900">{{ $announcement->title }}</p>
-                                    <span class="rounded-full bg-indigo-100 px-2 py-1 text-[11px] font-bold text-indigo-700">
-                                        Tamat: {{ $announcement->expires_at?->format('d/m/Y') }}
-                                    </span>
                                 </div>
                                 <p class="mt-2 text-sm leading-6 text-slate-600 whitespace-pre-wrap">{{ $announcement->body }}</p>
                             </div>
