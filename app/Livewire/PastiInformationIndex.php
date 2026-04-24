@@ -14,11 +14,13 @@ class PastiInformationIndex extends Component
 {
     use WithPagination;
 
+    private const PAGE_NAME = 'pastiInfoPage';
+
     public string $search = '';
 
     public function updatingSearch(): void
     {
-        $this->resetPage();
+        $this->resetPage(self::PAGE_NAME);
     }
 
     public function render()
@@ -42,7 +44,7 @@ class PastiInformationIndex extends Component
                 fn (Builder $query) => $query->where('name', 'like', '%' . trim($this->search) . '%')
             )
             ->orderBy('name')
-            ->paginate(9);
+            ->paginate(9, pageName: self::PAGE_NAME);
 
         $pastiIds = collect($pastis->items())->pluck('id')->all();
 
