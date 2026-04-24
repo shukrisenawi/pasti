@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AjkProgramController;
 use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DirectoryFileController;
 use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\GuruCourseController;
@@ -116,6 +117,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/kpi/guru/{guru}', [KpiController::class, 'show'])->name('kpi.guru.show');
         Route::get('/leave-notices', [LeaveNoticeController::class, 'index'])->name('leave-notices.index');
         Route::delete('/leave-notices/{leaveNotice}', [LeaveNoticeController::class, 'destroy'])->name('leave-notices.destroy');
+        Route::get('/directory-files', [DirectoryFileController::class, 'index'])->name('directory-files.index');
+        Route::get('/directory-files/{directoryFile}/download', [DirectoryFileController::class, 'download'])->name('directory-files.download');
         Route::get('/messages', [AdminMessageController::class, 'index'])->name('messages.index');
         Route::get('/messages/create', [AdminMessageController::class, 'create'])->name('messages.create');
         Route::post('/messages', [AdminMessageController::class, 'store'])->name('messages.store');
@@ -130,6 +133,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:master_admin|admin')->group(function () {
         Route::post('/claims/{claim}/approve', [ClaimController::class, 'approve'])->name('claims.approve');
         Route::post('/kursus-guru/offers', [GuruCourseController::class, 'sendOffer'])->name('kursus-guru.offers.send');
+        Route::post('/directory-files', [DirectoryFileController::class, 'store'])->name('directory-files.store');
+        Route::delete('/directory-files/{directoryFile}', [DirectoryFileController::class, 'destroy'])->name('directory-files.destroy');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
