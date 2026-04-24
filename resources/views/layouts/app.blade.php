@@ -165,8 +165,8 @@
                 </div>
 
                 {{-- Laporan/Aktiviti Dropdown --}}
-                <div x-data="{ open: {{ request()->routeIs(['financial.*', 'claims.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*', 'directory-files.*']) ? 'true' : 'false' }} }" class="space-y-1">
-                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['financial.*', 'claims.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*', 'directory-files.*']) ? 'text-primary bg-primary/5' : '' }}">
+                <div x-data="{ open: {{ request()->routeIs(['financial.*', 'claims.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['financial.*', 'claims.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'text-primary bg-primary/5' : '' }}">
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                             <span>{{ __('Laporan/Aktiviti') }}</span>
@@ -199,6 +199,19 @@
                             <span>{{ __('messages.programs') }}</span>
                             @if($drawerUpcomingProgramCount > 0)<span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerUpcomingProgramCount > 99 ? '99+' : $drawerUpcomingProgramCount }}</span>@endif
                         </a>
+                    </div>
+                </div>
+
+                {{-- Komunikasi & Fail Dropdown --}}
+                <div x-data="{ open: {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'text-primary bg-primary/5' : '' }}">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                            <span>{{ __('Komunikasi & Fail') }}</span>
+                        </div>
+                        <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
                         <a href="{{ route('messages.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.inbox') }}</span>
                             @if($drawerInboxCount > 0)<span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerInboxCount > 99 ? '99+' : $drawerInboxCount }}</span>@endif
@@ -426,8 +439,8 @@
                     </div>
 
                     <!-- Group: Laporan/Aktiviti -->
-                    <div x-data="{ open: {{ request()->routeIs(['financial.*', 'claims.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*', 'directory-files.*']) ? 'true' : 'false' }} }" class="space-y-1">
-                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['financial.*', 'claims.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*', 'messages.*', 'leave-notices.*', 'directory-files.*']) ? 'text-primary bg-primary/5' : '' }}">
+                    <div x-data="{ open: {{ request()->routeIs(['financial.*', 'claims.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['financial.*', 'claims.*', 'kpi.gurus.*', 'users.expired-skim-pas', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'text-primary bg-primary/5' : '' }}">
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                 <span>{{ __('Laporan/Aktiviti') }}</span>
@@ -477,13 +490,25 @@
                                 @endif
                             </a>
                             
+                        </div>
+                    </div>
+
+                    <!-- Group: Komunikasi & Fail -->
+                    <div x-data="{ open: {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['messages.*', 'leave-notices.*', 'directory-files.*']) ? 'text-primary bg-primary/5' : '' }}">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                                <span>{{ __('Komunikasi & Fail') }}</span>
+                            </div>
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div x-show="open" x-cloak x-collapse class="pl-4 space-y-1 border-l-2 border-primary/10 ml-4">
                             <a href="{{ route('messages.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('messages.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.inbox') }}</span>
                                 @if(($menuInboxCount ?? 0) > 0)
                                     <span class="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuInboxCount ?? 0) > 99 ? '99+' : ($menuInboxCount ?? 0) }}</span>
                                 @endif
                             </a>
-                            
                             <a href="{{ route('leave-notices.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('leave-notices.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.leave_notice') }}</span>
                                 @if(($menuOnLeaveGuruCount ?? 0) > 0)
