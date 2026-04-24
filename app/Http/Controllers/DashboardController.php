@@ -6,6 +6,8 @@ use App\Models\AdminMessage;
 use App\Models\Announcement;
 use App\Models\FinancialTransaction;
 use App\Models\Guru;
+use App\Models\GuruSalaryRequest;
+use App\Models\PastiInformationRequest;
 use App\Models\Program;
 use App\Models\ProgramStatus;
 use App\Models\User;
@@ -26,6 +28,8 @@ class DashboardController extends Controller
         $isGuruOnly = $this->isGuruOnly($user);
         $adminCashBalance = 0.0;
         $adminBankBalance = 0.0;
+        $pendingPastiInfoRequest = null;
+        $pendingGuruSalaryRequest = null;
         $birthdayUsers = User::query()
             ->whereNotNull('tarikh_lahir')
             ->whereRaw("DATE_FORMAT(tarikh_lahir, '%m-%d') = ?", [now()->format('m-d')])
@@ -43,10 +47,19 @@ class DashboardController extends Controller
 
             // Fetch pending PASTI information requests for this guru
             if ($guruId) {
-                $pendingPastiInfoCount = \App\Models\PastiInformationRequest::query()
+                $pendingPastiInfoRequest = PastiInformationRequest::query()
                     ->whereHas('pasti', fn ($q) => $q->whereHas('gurus', fn ($vg) => $vg->where('gurus.id', $guruId)))
                     ->whereNull('completed_at')
-                    ->count();
+                    ->latest('id')
+                    ->first();
+
+                $pendingPastiInfoCount = $pendingPastiInfoRequest ? 1 : 0;
+
+                $pendingGuruSalaryRequest = GuruSalaryRequest::query()
+                    ->where('guru_id', $guruId)
+                    ->whereNull('completed_at')
+                    ->latest('id')
+                    ->first();
             }
         }
 
@@ -213,6 +226,8 @@ class DashboardController extends Controller
             'latestYear' => $currentYear,
             'latestInboxMessage' => $latestInboxMessage,
             'pendingPastiInfoCount' => $pendingPastiInfoCount ?? 0,
+            'pendingPastiInfoRequest' => $pendingPastiInfoRequest,
+            'pendingGuruSalaryRequest' => $pendingGuruSalaryRequest,
             'guruLeaveDays' => $user->guru ? \App\Models\Guru::where('id', $user->guru->id)->withLeaveDaysForYear($currentYear)->first()?->leave_notices_current_year_count : 0,
             'guruTeachingDuration' => $guruTeachingDuration,
             'userAjkPositions' => $user->ajkPositions->sortBy('name')->values(),

@@ -107,6 +107,49 @@
                 </div>
             </div>
         </section>
+
+        @if(($pendingPastiInfoRequest ?? null) || ($pendingGuruSalaryRequest ?? null))
+            <section class="mb-8">
+                <div class="rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-5 shadow-card sm:p-6">
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-200/80">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold uppercase tracking-[0.22em] text-amber-700">Perlu Tindakan</p>
+                            <h3 class="mt-1 text-xl font-black text-slate-900">Tindakan Diperlukan</h3>
+                            <p class="mt-1 text-sm text-slate-600">Admin telah menghantar permintaan yang masih menunggu maklum balas anda.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 grid gap-4 lg:grid-cols-2">
+                        @if($pendingPastiInfoRequest ?? null)
+                            <div class="rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">
+                                <p class="text-xs font-bold uppercase tracking-[0.16em] text-amber-700">Maklumat Semasa</p>
+                                <h4 class="mt-2 text-lg font-black text-slate-900">Isi maklumat semasa</h4>
+                                <p class="mt-2 text-sm leading-6 text-slate-600">Lengkapkan maklumat guru dan murid terkini untuk PASTI anda supaya admin boleh semak data semasa.</p>
+                                <a href="{{ route('pasti-information.edit', $pendingPastiInfoRequest) }}" class="btn btn-warning mt-4 rounded-2xl px-4 text-sm font-bold text-white">
+                                    Isi sekarang
+                                </a>
+                            </div>
+                        @endif
+
+                        @if($pendingGuruSalaryRequest ?? null)
+                            <div class="rounded-2xl border border-sky-200 bg-white p-4 shadow-sm">
+                                <p class="text-xs font-bold uppercase tracking-[0.16em] text-sky-700">Maklumat Elaun</p>
+                                <h4 class="mt-2 text-lg font-black text-slate-900">Isi maklumat elaun</h4>
+                                <p class="mt-2 text-sm leading-6 text-slate-600">Kemaskini maklumat gaji dan elaun semasa anda supaya rekod kewangan guru sentiasa terkini.</p>
+                                <a href="{{ route('guru-salary-information.edit', $pendingGuruSalaryRequest) }}" class="btn mt-4 rounded-2xl border-none bg-sky-600 px-4 text-sm font-bold text-white hover:bg-sky-700">
+                                    Isi sekarang
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </section>
+        @endif
     @endrole
 
     @if($user->hasAnyRole(['master_admin', 'admin']))

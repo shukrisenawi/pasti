@@ -815,6 +815,49 @@ class AdminMessageConversationTest extends TestCase
         $response->assertSee('Mesej untuk dashboard guru');
     }
 
+    public function test_dashboard_view_shows_pending_info_and_salary_actions_for_guru(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $guru = $this->createGuruUser($pasti, 'guru-tindakan@example.test', 'Cikgu Tindakan');
+
+        $infoRequest = \App\Models\PastiInformationRequest::query()->create([
+            'pasti_id' => $pasti->id,
+        ]);
+
+        $salaryRequest = \App\Models\GuruSalaryRequest::query()->create([
+            'guru_id' => $guru->guru->id,
+        ]);
+
+        view()->share('errors', new \Illuminate\Support\ViewErrorBag());
+
+        $response = $this->actingAs($guru)->view('dashboard', [
+            'latestPrograms' => collect(),
+            'latestProgram' => null,
+            'currentParticipation' => null,
+            'statuses' => collect(),
+            'canUpdateOwnStatus' => false,
+            'topKpiGurus' => collect(),
+            'latestYear' => now()->year,
+            'latestInboxMessage' => null,
+            'pendingPastiInfoCount' => 1,
+            'pendingPastiInfoRequest' => $infoRequest,
+            'pendingGuruSalaryRequest' => $salaryRequest,
+            'guruLeaveDays' => 0,
+            'guruTeachingDuration' => '-',
+            'userAjkPositions' => collect(),
+            'adminCashBalance' => 0,
+            'adminBankBalance' => 0,
+            'birthdayUsers' => collect(),
+            'activeAnnouncements' => collect(),
+        ]);
+
+        $response->assertSee('Tindakan Diperlukan');
+        $response->assertSee('Isi maklumat semasa');
+        $response->assertSee(route('pasti-information.edit', $infoRequest), false);
+        $response->assertSee('Isi maklumat elaun');
+        $response->assertSee(route('guru-salary-information.edit', $salaryRequest), false);
+    }
+
     public function test_deleting_notification_can_redirect_back_to_messages_index_without_layout_error(): void
     {
         [$pasti] = $this->createPastiFixtures();
