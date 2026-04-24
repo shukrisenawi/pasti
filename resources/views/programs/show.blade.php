@@ -34,28 +34,13 @@
         <p><strong>{{ __('messages.description') }}:</strong> {{ $program->description ?? '-' }}</p>
     </div>
 
-    <div class="table-wrap mt-4">
+    <div class="mt-4">
         @php
             $statusCodeById = $statuses->mapWithKeys(
                 fn ($status) => [(string) $status->id => $status->code]
             );
         @endphp
-        <table class="table-base">
-            <thead>
-            <tr>
-                <th>{{ __('messages.name') }}</th>
-                <th>{{ __('messages.phone') }}</th>
-                <th>{{ __('messages.status') }}</th>
-                @if($program->require_absence_reason)
-                    <th>{{ __('messages.absence_reason') }}</th>
-                    <th>{{ __('messages.absence_reason_review') }}</th>
-                @endif
-                @if($canManage || $canUpdateOwn)
-                    <th>{{ __('messages.actions') }}</th>
-                @endif
-            </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
+        <div class="grid gap-4 lg:grid-cols-2">
             @forelse($program->participations as $participation)
                 @php
                     $absenceReviewStatus = $participation->absence_reason_status;
@@ -72,20 +57,40 @@
                         default => 'bg-slate-100 text-slate-500',
                     };
                 @endphp
-                <tr>
-                    <td>{{ $participation->guru->display_name }}</td>
-                    <td>{{ $participation->guru->phone ?? '-' }}</td>
-                    <td>{{ $participation->status?->name ?? '-' }}</td>
-                    @if($program->require_absence_reason)
-                        <td>{{ $participation->absence_reason ?? '-' }}</td>
-                        <td>
-                            <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold {{ $absenceReviewClass }}">
-                                {{ $absenceReviewLabel }}
-                            </span>
-                        </td>
-                    @endif
+                <article data-testid="program-participation-card" class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-900">{{ $participation->guru->display_name }}</h3>
+                            <p class="mt-1 text-sm text-slate-500">{{ $participation->guru->phone ?? '-' }}</p>
+                        </div>
+                        <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                            {{ $participation->status?->name ?? '-' }}
+                        </span>
+                    </div>
+
+                    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.status') }}</p>
+                            <p class="mt-1 text-sm font-semibold text-slate-800">{{ $participation->status?->name ?? '-' }}</p>
+                        </div>
+                        @if($program->require_absence_reason)
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.absence_reason_review') }}</p>
+                                <div class="mt-1">
+                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold {{ $absenceReviewClass }}">
+                                        {{ $absenceReviewLabel }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3 sm:col-span-2">
+                                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{{ __('messages.absence_reason') }}</p>
+                                <p class="mt-1 text-sm font-semibold text-slate-800">{{ $participation->absence_reason ?? '-' }}</p>
+                            </div>
+                        @endif
+                    </div>
+
                     @if($canManage || ($canUpdateOwn && $currentGuruId === $participation->guru_id))
-                        <td>
+                        <div class="mt-4 border-t border-slate-100 pt-4">
                             <div class="space-y-2">
                                 <form
                                     method="POST"
@@ -139,15 +144,14 @@
                                     </div>
                                 @endif
                             </div>
-                        </td>
+                        </div>
                     @endif
-                </tr>
+                </article>
             @empty
-                <tr>
-                    <td colspan="{{ (($canManage || $canUpdateOwn) ? 4 : 3) + ($program->require_absence_reason ? 2 : 0) }}" class="text-center">-</td>
-                </tr>
+                <div class="rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                    -
+                </div>
             @endforelse
-            </tbody>
-        </table>
+        </div>
     </div>
 </x-app-layout>

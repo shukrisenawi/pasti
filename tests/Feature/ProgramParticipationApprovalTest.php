@@ -248,7 +248,9 @@ class ProgramParticipationApprovalTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Program Ujian');
+            ->assertSee('Program Ujian')
+            ->assertSee('data-testid="program-participation-card"', false)
+            ->assertDontSee('<table class="table-base">', false);
     }
 
     public function test_absence_reason_submission_stays_pending_and_does_not_add_kpi_before_admin_review(): void
