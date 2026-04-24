@@ -114,11 +114,19 @@ class ProgramController extends Controller
             abort_unless($guruId && $program->gurus()->where('gurus.id', $guruId)->exists(), 403);
         }
 
+        $program->load([
+            'participations.guru.user',
+            'participations.status',
+        ]);
+        $program->setRelation(
+            'participations',
+            $program->participations->sortByDesc(
+                fn ($participation) => optional($participation->updated_at)->getTimestamp() ?? 0
+            )->values()
+        );
+
         return view('programs.show', [
-            'program' => $program->load([
-                'participations.guru.user',
-                'participations.status',
-            ]),
+            'program' => $program,
             'statuses' => ProgramStatus::query()
                 ->whereIn('code', ['HADIR', 'TIDAK_HADIR'])
                 ->orderBy('is_hadir', 'desc')

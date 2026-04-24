@@ -59,9 +59,14 @@
                 @endphp
                 <article data-testid="program-participation-card" class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                     <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <h3 class="text-base font-black leading-tight text-slate-900">{{ $participation->guru->display_name }}</h3>
-                            <p class="mt-0.5 text-xs text-slate-500">{{ $participation->guru->phone ?? '-' }}</p>
+                        <div class="flex items-start gap-2.5 min-w-0">
+                            <div data-testid="program-participation-avatar" class="shrink-0">
+                                <x-avatar :guru="$participation->guru" size="h-9 w-9" rounded="rounded-xl" border="border border-slate-200" />
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="truncate text-base font-black leading-tight text-slate-900">{{ $participation->guru->display_name }}</h3>
+                                <p class="mt-0.5 text-xs text-slate-500">{{ $participation->guru->phone ?? '-' }}</p>
+                            </div>
                         </div>
                         <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700">
                             {{ $participation->status?->name ?? '-' }}

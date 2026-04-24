@@ -253,6 +253,24 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertDontSee('<table class="table-base">', false);
     }
 
+    public function test_program_show_page_displays_avatar_and_latest_updated_participation_first(): void
+    {
+        Notification::fake();
+
+        [$program, , , $admin, $latestGuruUser] = $this->createProgramFixtures(withSecondGuru: true);
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('data-testid="program-participation-avatar"', false)
+            ->assertSeeInOrder([
+                $latestGuruUser->display_name,
+                'Cikgu Program',
+            ]);
+    }
+
     public function test_absence_reason_submission_stays_pending_and_does_not_add_kpi_before_admin_review(): void
     {
         Notification::fake();
@@ -343,9 +361,9 @@ class ProgramParticipationApprovalTest extends TestCase
     }
 
     /**
-     * @return array{0: Program, 1: User, 2: ProgramStatus, 3: User}
+     * @return array{0: Program, 1: User, 2: ProgramStatus, 3: User, 4: ?User}
      */
-    private function createProgramFixtures(): array
+    private function createProgramFixtures(bool $withSecondGuru = false): array
     {
         $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
         $pasti = Pasti::query()->create([
@@ -365,6 +383,7 @@ class ProgramParticipationApprovalTest extends TestCase
             'name' => 'Cikgu Program',
             'nama_samaran' => 'Cikgu Program',
             'email' => 'guru-program@example.test',
+            'avatar_path' => 'avatars/cikgu-program.jpg',
         ]);
         $this->attachRole($guruUser, 'guru');
 
@@ -401,11 +420,39 @@ class ProgramParticipationApprovalTest extends TestCase
             'guru_id' => $guru->id,
             'program_status_id' => $hadirStatus->id,
             'updated_by' => $admin->id,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'created_at' => now()->subMinutes(10),
+            'updated_at' => now()->subMinutes(10),
         ]);
 
-        return [$program, $guruUser, $absentStatus, $admin];
+        $latestGuruUser = null;
+
+        if ($withSecondGuru) {
+            $latestGuruUser = User::query()->create([
+                'name' => 'Cikgu Kedua',
+                'nama_samaran' => 'Cikgu Kedua',
+                'email' => 'guru-kedua@example.test',
+                'avatar_path' => 'avatars/cikgu-kedua.jpg',
+            ]);
+            $this->attachRole($latestGuruUser, 'guru');
+
+            $latestGuru = Guru::query()->create([
+                'user_id' => $latestGuruUser->id,
+                'pasti_id' => $pasti->id,
+                'active' => true,
+            ]);
+            $latestGuruUser->setRelation('guru', $latestGuru);
+
+            \DB::table('program_teacher')->insert([
+                'program_id' => $program->id,
+                'guru_id' => $latestGuru->id,
+                'program_status_id' => $absentStatus->id,
+                'updated_by' => $admin->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return [$program, $guruUser, $absentStatus, $admin, $latestGuruUser];
     }
 
     private function attachRole(User $user, string $roleName): void
