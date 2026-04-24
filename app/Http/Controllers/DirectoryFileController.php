@@ -6,6 +6,7 @@ use App\Models\DirectoryFile;
 use App\Models\Guru;
 use App\Models\User;
 use App\Notifications\DirectoryFileAssignedNotification;
+use App\Services\N8nWebhookService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,11 @@ use Illuminate\View\View;
 
 class DirectoryFileController extends Controller
 {
+    public function __construct(
+        private readonly N8nWebhookService $n8nWebhookService,
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -122,6 +128,17 @@ class DirectoryFileController extends Controller
 
         if ($recipientUsers->isNotEmpty()) {
             Notification::send($recipientUsers, new DirectoryFileAssignedNotification($directoryFile, $user));
+        }
+
+        if ($directoryFile->target_type === 'all') {
+            $this->n8nWebhookService->send(
+                sprintf(
+                    '%s muat naik fail directory untuk semua guru: %s',
+                    $user->display_name,
+                    $directoryFile->title
+                ),
+                $this->n8nWebhookService->toActionUrl(route('directory-files.index'))
+            );
         }
 
         return redirect()->route('directory-files.index')->with('status', __('messages.saved'));
