@@ -11,9 +11,11 @@ use App\Models\Pasti;
 use App\Models\User;
 use App\Notifications\AdminMessageReceivedNotification;
 use App\Notifications\AdminMessageReplyNotification;
+use App\Services\FcmNotificationService;
 use App\Services\N8nWebhookService;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -811,6 +813,43 @@ class AdminMessageConversationTest extends TestCase
 
         $response->assertSee('Hebahan Dashboard');
         $response->assertSee('Mesej untuk dashboard guru');
+    }
+
+    public function test_deleting_notification_can_redirect_back_to_messages_index_without_layout_error(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+
+        $notification = DatabaseNotification::query()->create([
+            'id' => 'notif-layout-safe-1',
+            'type' => AdminMessageReceivedNotification::class,
+            'notifiable_type' => User::class,
+            'notifiable_id' => $admin->id,
+            'data' => [
+                'notification_title' => 'Notifikasi ujian',
+                'notification_message' => 'Padam notifikasi tidak patut pecahkan layout.',
+                'url' => route('messages.index'),
+            ],
+        ]);
+
+        $service = \Mockery::mock(FcmNotificationService::class);
+        $service->shouldReceive('sendSyncActionToNotifiable')
+            ->once()
+            ->withArgs(
+                fn (User $user, string $action, string $notificationId): bool => $user->is($admin)
+                    && $action === 'remove'
+                    && $notificationId === $notification->id
+            );
+        $this->app->instance(FcmNotificationService::class, $service);
+
+        $response = $this->actingAs($admin)
+            ->followingRedirects()
+            ->from(route('messages.index'))
+            ->delete(route('notifications.destroy', $notification));
+
+        $response->assertOk();
+        $response->assertSee(__('messages.inbox'));
+        $this->assertDatabaseMissing('notifications', ['id' => $notification->id]);
     }
 
     public function test_message_show_displays_delete_icon_for_entry_owner_and_admin(): void

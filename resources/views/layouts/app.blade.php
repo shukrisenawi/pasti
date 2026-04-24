@@ -113,6 +113,14 @@
         {{-- Drawer Navigation --}}
         <nav class="space-y-1 px-3 py-2 text-sm">
             @php
+                $drawerInboxCount = 0;
+                $drawerUpcomingProgramCount = 0;
+                $drawerPastiInfoPendingCount = 0;
+                $drawerGuruSalaryPendingCount = 0;
+                $drawerOnLeaveGuruCount = 0;
+                $drawerPendingClaimsCount = 0;
+                $expiredSkimPasCount = 0;
+
                 $drawerInboxCount = $authUser->unreadInboxMessagesCount();
                 $drawerUpcomingProgramCount = \App\Models\Program::query()
                     ->when($isGuruOnly, fn ($q) => $q->whereHas('gurus', fn ($q2) => $q2->where('gurus.id', $authUser->guru?->id ?? 0)))
@@ -171,7 +179,7 @@
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                             <span>{{ __('Laporan/Aktiviti') }}</span>
-                            @if(($drawerPendingClaimsCount > 0 || $expiredSkimPasCount > 0 || $drawerPastiInfoPendingCount > 0 || $drawerGuruSalaryPendingCount > 0 || $drawerUpcomingProgramCount > 0))
+                            @if((($drawerPendingClaimsCount ?? 0) > 0 || ($expiredSkimPasCount ?? 0) > 0 || ($drawerPastiInfoPendingCount ?? 0) > 0 || ($drawerGuruSalaryPendingCount ?? 0) > 0 || ($drawerUpcomingProgramCount ?? 0) > 0))
                                 <div class="dot-pulse-yellow ml-2"></div>
                             @endif
                         </div>
@@ -181,7 +189,7 @@
                         <a href="{{ route('financial.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('financial.*') ? 'menu-link-active' : '' }}">{{ __('messages.kewangan') }}</a>
                         <a href="{{ route('claims.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.claim') }}</span>
-                            @if($drawerPendingClaimsCount > 0)<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ $drawerPendingClaimsCount > 99 ? '99+' : $drawerPendingClaimsCount }}</span>@endif
+                            @if(($drawerPendingClaimsCount ?? 0) > 0)<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ ($drawerPendingClaimsCount ?? 0) > 99 ? '99+' : ($drawerPendingClaimsCount ?? 0) }}</span>@endif
                         </a>
                         <a href="{{ route('kpi.gurus.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kpi.gurus.*') ? 'menu-link-active' : '' }}">{{ __('messages.kpi_guru') }}</a>
                         <a href="{{ route('users.expired-skim-pas') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('users.expired-skim-pas') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
@@ -240,7 +248,7 @@
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                 <span>Prestasi & Tugasan</span>
-                                @if(($drawerPendingClaimsCount > 0 || $drawerPastiInfoPendingCount > 0 || $drawerGuruSalaryPendingCount > 0 || $drawerUpcomingProgramCount > 0))
+                                @if((($drawerPendingClaimsCount ?? 0) > 0 || ($drawerPastiInfoPendingCount ?? 0) > 0 || ($drawerGuruSalaryPendingCount ?? 0) > 0 || ($drawerUpcomingProgramCount ?? 0) > 0))
                                     <div class="dot-pulse-yellow ml-2"></div>
                                 @endif
                             </div>
@@ -252,7 +260,7 @@
                             @endif
                             <a href="{{ route('claims.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('claims.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.claim') }}</span>
-                                @if($drawerPendingClaimsCount > 0)<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ $drawerPendingClaimsCount > 99 ? '99+' : $drawerPendingClaimsCount }}</span>@endif
+                                @if(($drawerPendingClaimsCount ?? 0) > 0)<span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shrink-0" style="background-color: #059669 !important;">{{ ($drawerPendingClaimsCount ?? 0) > 99 ? '99+' : ($drawerPendingClaimsCount ?? 0) }}</span>@endif
                             </a>
                             <a href="{{ route('pemarkahan.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
                             <a href="{{ route('pasti-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
