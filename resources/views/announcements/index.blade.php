@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <div class="card border-primary/10 bg-white/95" x-show="activeTab === 'senarai'" x-cloak>
+        <div class="card border-primary/10 bg-white/95" x-show="activeTab === 'senarai'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-cloak>
             <h3 class="text-base font-bold text-slate-900">Senarai Pengumuman</h3>
 
             <div class="mt-4 space-y-3">
@@ -65,7 +65,7 @@
             </div>
         </div>
 
-        <div class="card border-primary/10 bg-white/95" x-show="activeTab === 'hantar'" x-cloak>
+        <div class="card border-primary/10 bg-white/95" x-show="activeTab === 'hantar'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-cloak>
             <h3 class="text-base font-bold text-slate-900">Hantar Pengumuman</h3>
             <form method="POST" action="{{ route('announcements.store') }}" class="mt-4 space-y-4">
                 @csrf

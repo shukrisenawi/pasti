@@ -696,7 +696,9 @@
                 </div>
             @endif
 
-            <div>{{ $slot }}</div>
+            <div x-data x-init="$nextTick(() => { $el.classList.remove('opacity-0', 'translate-y-4'); $el.classList.add('opacity-100', 'translate-y-0') })" class="transition-all duration-500 ease-out opacity-0 translate-y-4 transform">
+                {{ $slot }}
+            </div>
         </main>
     </div>
 
