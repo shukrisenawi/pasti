@@ -42,15 +42,23 @@
                                 @endif
                             </div>
 
-                            <div class="flex items-center gap-2">
-                                <a href="{{ route('directory-files.download', $file) }}" class="btn btn-outline btn-sm">Download</a>
-                                @if($canUpload && (auth()->user()->hasRole('master_admin') || (int) $file->uploaded_by === (int) auth()->id()))
-                                    <form method="POST" action="{{ route('directory-files.destroy', $file) }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-error btn-sm text-white" onclick="return confirm('Hapus fail ini?')">Hapus</button>
-                                    </form>
+                            <div class="flex items-center gap-3">
+                                @if($file->is_image_attachment && $file->file_url)
+                                    <a href="{{ $file->file_url }}" target="_blank" class="block">
+                                        <img src="{{ $file->file_url }}" alt="thumbnail {{ $file->title }}" class="h-16 w-16 rounded-xl border border-slate-200 object-cover">
+                                    </a>
                                 @endif
+
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('directory-files.download', $file) }}" class="btn btn-outline btn-sm">Download</a>
+                                    @if($canUpload && (auth()->user()->hasRole('master_admin') || (int) $file->uploaded_by === (int) auth()->id()))
+                                        <form method="POST" action="{{ route('directory-files.destroy', $file) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-error btn-sm text-white" onclick="return confirm('Hapus fail ini?')">Hapus</button>
+                                        </form>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
