@@ -24,6 +24,7 @@
         $pastiMenuRoute = $authUser->hasRole('guru') ? route('pasti.self.edit') : null;
         $assistantMenuRoute = $authUser->hasRole('guru') ? route('guru-assistants.index') : null;
         $isImpersonatingGuru = session()->has('impersonator_user_id') || request()->hasCookie('impersonator_user_id');
+        $assignedPastiIds = $authUser->assignedPastis()->pluck('pastis.id');
         $sidebarKpi = number_format((float) ($authUser->guru?->kpiSnapshot?->score ?? 0), 1) . '%';
         $sidebarLastLoginDate = $authUser->last_login_at
             ? $authUser->last_login_at->timezone(config('app.timezone'))->format('d/m/Y')
@@ -114,7 +115,7 @@
         <nav class="space-y-1 px-3 py-2 text-sm">
             @php
                 $drawerInboxCount = 0;
-                $drawerUpcomingProgramCount = 0;
+                $drawerProgramApprovalCount = 0;
                 $drawerPastiInfoPendingCount = 0;
                 $drawerGuruSalaryPendingCount = 0;
                 $drawerOnLeaveGuruCount = 0;
@@ -122,9 +123,13 @@
                 $expiredSkimPasCount = 0;
 
                 $drawerInboxCount = $authUser->unreadInboxMessagesCount();
-                $drawerUpcomingProgramCount = \App\Models\Program::query()
-                    ->when($isGuruOnly, fn ($q) => $q->whereHas('gurus', fn ($q2) => $q2->where('gurus.id', $authUser->guru?->id ?? 0)))
-                    ->whereDate('program_date', '>=', now()->toDateString())
+                $drawerProgramApprovalCount = \App\Models\ProgramParticipation::query()
+                    ->where('absence_reason_status', \App\Services\ProgramParticipationService::ABSENCE_REASON_PENDING)
+                    ->when(
+                        $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
+                        fn ($q) => $q->whereHas('program', fn ($q2) => $q2->whereIn('pasti_id', $assignedPastiIds))
+                    )
+                    ->when($isGuruOnly, fn ($q) => $q->whereRaw('1 = 0'))
                     ->count();
                 $drawerPastiInfoPendingCount = \App\Models\PastiInformationRequest::query()
                     ->when($authUser->hasRole('guru'), fn ($q) => $q->where('pasti_id', $authUser->guru?->pasti_id ?? 0))
@@ -179,7 +184,7 @@
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                             <span>{{ __('Laporan/Aktiviti') }}</span>
-                            @if((($drawerPendingClaimsCount ?? 0) > 0 || ($expiredSkimPasCount ?? 0) > 0 || ($drawerPastiInfoPendingCount ?? 0) > 0 || ($drawerGuruSalaryPendingCount ?? 0) > 0 || ($drawerUpcomingProgramCount ?? 0) > 0))
+                            @if((($drawerPendingClaimsCount ?? 0) > 0 || ($expiredSkimPasCount ?? 0) > 0 || ($drawerPastiInfoPendingCount ?? 0) > 0 || ($drawerGuruSalaryPendingCount ?? 0) > 0 || ($drawerProgramApprovalCount ?? 0) > 0))
                                 <div class="dot-pulse-yellow ml-2"></div>
                             @endif
                         </div>
@@ -208,7 +213,7 @@
                         <a href="{{ route('kursus-guru.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                         <a href="{{ route('programs.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.programs') }}</span>
-                            @if($drawerUpcomingProgramCount > 0)<span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerUpcomingProgramCount > 99 ? '99+' : $drawerUpcomingProgramCount }}</span>@endif
+                            @if($drawerProgramApprovalCount > 0)<span data-testid="menu-program-badge" class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerProgramApprovalCount > 99 ? '99+' : $drawerProgramApprovalCount }}</span>@endif
                         </a>
                     </div>
                 </div>
@@ -248,7 +253,7 @@
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                 <span>Prestasi & Tugasan</span>
-                                @if((($drawerPendingClaimsCount ?? 0) > 0 || ($drawerPastiInfoPendingCount ?? 0) > 0 || ($drawerGuruSalaryPendingCount ?? 0) > 0 || ($drawerUpcomingProgramCount ?? 0) > 0))
+                                @if((($drawerPendingClaimsCount ?? 0) > 0 || ($drawerPastiInfoPendingCount ?? 0) > 0 || ($drawerGuruSalaryPendingCount ?? 0) > 0 || ($drawerProgramApprovalCount ?? 0) > 0))
                                     <div class="dot-pulse-yellow ml-2"></div>
                                 @endif
                             </div>
@@ -274,7 +279,7 @@
                             <a href="{{ route('kursus-guru.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                             <a href="{{ route('programs.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                                 <span>{{ __('messages.programs') }}</span>
-                                @if($drawerUpcomingProgramCount > 0)<span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerUpcomingProgramCount > 99 ? '99+' : $drawerUpcomingProgramCount }}</span>@endif
+                                @if($drawerProgramApprovalCount > 0)<span data-testid="menu-program-badge" class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerProgramApprovalCount > 99 ? '99+' : $drawerProgramApprovalCount }}</span>@endif
                             </a>
                         </div>
                     </div>
@@ -424,12 +429,13 @@
                 @php
                     $menuInboxCount = $authUser->unreadInboxMessagesCount();
 
-                    $menuUpcomingProgramCount = \App\Models\Program::query()
+                    $menuProgramApprovalCount = \App\Models\ProgramParticipation::query()
+                        ->where('absence_reason_status', \App\Services\ProgramParticipationService::ABSENCE_REASON_PENDING)
                         ->when(
-                            $isGuruOnly,
-                            fn ($query) => $query->whereHas('gurus', fn ($q) => $q->where('gurus.id', $authUser->guru?->id ?? 0))
+                            $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
+                            fn ($query) => $query->whereHas('program', fn ($q) => $q->whereIn('pasti_id', $assignedPastiIds))
                         )
-                        ->whereDate('program_date', '>=', now()->toDateString())
+                        ->when($isGuruOnly, fn ($query) => $query->whereRaw('1 = 0'))
                         ->count();
 
                     $menuPastiInfoPendingCount = \App\Models\PastiInformationRequest::query()
@@ -500,7 +506,7 @@
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                 <span>{{ __('Laporan/Aktiviti') }}</span>
-                                @if(($menuPendingClaimsCount > 0 || $expiredSkimPasCount > 0 || $menuPastiInfoPendingCount > 0 || $menuGuruSalaryPendingCount > 0 || $menuUpcomingProgramCount > 0))
+                                @if(($menuPendingClaimsCount > 0 || $expiredSkimPasCount > 0 || $menuPastiInfoPendingCount > 0 || $menuGuruSalaryPendingCount > 0 || $menuProgramApprovalCount > 0))
                                     <div class="dot-pulse-yellow ml-2"></div>
                                 @endif
                             </div>
@@ -544,8 +550,8 @@
                             
                             <a href="{{ route('programs.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.programs') }}</span>
-                                @if(($menuUpcomingProgramCount ?? 0) > 0)
-                                    <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuUpcomingProgramCount ?? 0) > 99 ? '99+' : ($menuUpcomingProgramCount ?? 0) }}</span>
+                                @if(($menuProgramApprovalCount ?? 0) > 0)
+                                    <span data-testid="menu-program-badge" class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuProgramApprovalCount ?? 0) > 99 ? '99+' : ($menuProgramApprovalCount ?? 0) }}</span>
                                 @endif
                             </a>
                             
@@ -592,7 +598,7 @@
                                 <div class="flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                     <span>Prestasi & Tugasan</span>
-                                    @if(($menuPendingClaimsCount > 0 || $menuPastiInfoPendingCount > 0 || $menuGuruSalaryPendingCount > 0 || $menuUpcomingProgramCount > 0))
+                                    @if(($menuPendingClaimsCount > 0 || $menuPastiInfoPendingCount > 0 || $menuGuruSalaryPendingCount > 0 || $menuProgramApprovalCount > 0))
                                         <div class="dot-pulse-yellow ml-2"></div>
                                     @endif
                                 </div>
@@ -624,8 +630,8 @@
                                 <a href="{{ route('kursus-guru.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                                 <a href="{{ route('programs.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                                     <span>{{ __('messages.programs') }}</span>
-                                    @if(($menuUpcomingProgramCount ?? 0) > 0)
-                                        <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuUpcomingProgramCount ?? 0) > 99 ? '99+' : ($menuUpcomingProgramCount ?? 0) }}</span>
+                                    @if(($menuProgramApprovalCount ?? 0) > 0)
+                                        <span data-testid="menu-program-badge" class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuProgramApprovalCount ?? 0) > 99 ? '99+' : ($menuProgramApprovalCount ?? 0) }}</span>
                                     @endif
                                 </a>
                             </div>

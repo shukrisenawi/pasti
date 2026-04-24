@@ -297,6 +297,38 @@ class ProgramParticipationApprovalTest extends TestCase
             });
     }
 
+    public function test_program_menu_badge_uses_pending_absence_reason_approval_count(): void
+    {
+        Notification::fake();
+
+        [$program, $guruUser, $absentStatus, $admin, $latestGuruUser] = $this->createProgramFixtures(withSecondGuru: true);
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $guruUser->guru->id)
+            ->update([
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Anak kurang sihat.',
+                'absence_reason_status' => 'pending',
+            ]);
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $latestGuruUser->guru->id)
+            ->update([
+                'absence_reason' => 'Ada urusan keluarga.',
+                'absence_reason_status' => 'pending',
+            ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('data-testid="menu-program-badge"', false)
+            ->assertSee('>2</span>', false);
+    }
+
     public function test_absence_reason_submission_stays_pending_and_does_not_add_kpi_before_admin_review(): void
     {
         Notification::fake();
