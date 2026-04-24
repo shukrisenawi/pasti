@@ -329,6 +329,38 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertSee('>2</span>', false);
     }
 
+    public function test_program_index_card_displays_pending_absence_reason_approval_badge(): void
+    {
+        Notification::fake();
+
+        [$program, $guruUser, $absentStatus, $admin, $latestGuruUser] = $this->createProgramFixtures(withSecondGuru: true);
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $guruUser->guru->id)
+            ->update([
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Anak kurang sihat.',
+                'absence_reason_status' => 'pending',
+            ]);
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $latestGuruUser->guru->id)
+            ->update([
+                'absence_reason' => 'Ada urusan keluarga.',
+                'absence_reason_status' => 'pending',
+            ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.index'));
+
+        $response
+            ->assertOk()
+            ->assertSee('data-testid="program-card-pending-badge"', false)
+            ->assertSeeInOrder(['2', 'perlu kelulusan']);
+    }
+
     public function test_absence_reason_submission_stays_pending_and_does_not_add_kpi_before_admin_review(): void
     {
         Notification::fake();
