@@ -64,6 +64,35 @@ class ProgramParticipationApprovalTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('admin_messages', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('sender_id')->nullable();
+            $table->string('title')->nullable();
+            $table->text('body')->nullable();
+            $table->string('image_path')->nullable();
+            $table->boolean('sent_to_all')->default(false);
+            $table->unsignedBigInteger('deleted_by_id')->nullable();
+            $table->timestamp('deleted_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('admin_message_recipients', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('admin_message_id');
+            $table->unsignedBigInteger('user_id');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('notifications', function (Blueprint $table): void {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('gurus', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('user_id')->unique();
@@ -72,6 +101,44 @@ class ProgramParticipationApprovalTest extends TestCase
             $table->string('email')->nullable();
             $table->boolean('is_assistant')->default(false);
             $table->boolean('active')->default(true);
+            $table->timestamps();
+        });
+
+        Schema::create('pasti_information_requests', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('pasti_id');
+            $table->unsignedBigInteger('requested_by')->nullable();
+            $table->timestamp('requested_at')->nullable();
+            $table->unsignedBigInteger('completed_by')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('guru_salary_requests', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id');
+            $table->unsignedBigInteger('requested_by')->nullable();
+            $table->timestamp('requested_at')->nullable();
+            $table->unsignedBigInteger('completed_by')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->decimal('gaji', 10, 2)->nullable();
+            $table->decimal('elaun', 10, 2)->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('leave_notices', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id');
+            $table->date('leave_date');
+            $table->date('leave_until')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('claims', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('pasti_id')->nullable();
+            $table->string('status')->default('pending');
             $table->timestamps();
         });
 
@@ -132,10 +199,17 @@ class ProgramParticipationApprovalTest extends TestCase
     protected function tearDown(): void
     {
         Schema::dropIfExists('kpi_snapshots');
+        Schema::dropIfExists('claims');
+        Schema::dropIfExists('leave_notices');
+        Schema::dropIfExists('guru_salary_requests');
+        Schema::dropIfExists('pasti_information_requests');
         Schema::dropIfExists('program_teacher');
         Schema::dropIfExists('programs');
         Schema::dropIfExists('program_statuses');
         Schema::dropIfExists('gurus');
+        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('admin_message_recipients');
+        Schema::dropIfExists('admin_messages');
         Schema::dropIfExists('admin_pasti');
         Schema::dropIfExists('pastis');
         Schema::dropIfExists('kawasans');
@@ -161,6 +235,20 @@ class ProgramParticipationApprovalTest extends TestCase
 
         $response->assertRedirect(route('programs.show', $program));
         $response->assertSessionHasErrors('absence_reason');
+    }
+
+    public function test_program_show_page_can_be_rendered(): void
+    {
+        Notification::fake();
+
+        [$program, , , $admin] = $this->createProgramFixtures();
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('Program Ujian');
     }
 
     public function test_absence_reason_submission_stays_pending_and_does_not_add_kpi_before_admin_review(): void

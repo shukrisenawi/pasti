@@ -35,7 +35,11 @@
     </div>
 
     <div class="table-wrap mt-4">
-        @php($statusCodeById = $statuses->mapWithKeys(fn ($status) => [(string) $status->id => $status->code]))
+        @php
+            $statusCodeById = $statuses->mapWithKeys(
+                fn ($status) => [(string) $status->id => $status->code]
+            );
+        @endphp
         <table class="table-base">
             <thead>
             <tr>
