@@ -7,6 +7,7 @@
 
     @php
         $defaultTab = $errors->any() ? 'hantar' : 'senarai';
+        $today = now()->toDateString();
     @endphp
 
     <div x-data="{ activeTab: '{{ $defaultTab }}' }" class="space-y-4">
@@ -84,7 +85,7 @@
 
                 <div>
                     <label for="expires_at" class="label-base">Tarikh Tamat</label>
-                    <input id="expires_at" name="expires_at" type="date" class="input-base mt-1 block w-full" value="{{ old('expires_at') }}" required>
+                    <input id="expires_at" name="expires_at" type="date" min="{{ $today }}" class="input-base mt-1 block w-full" value="{{ old('expires_at') }}" required>
                     <x-input-error class="mt-2" :messages="$errors->get('expires_at')" />
                 </div>
 
