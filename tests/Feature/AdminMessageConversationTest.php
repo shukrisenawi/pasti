@@ -895,6 +895,31 @@ class AdminMessageConversationTest extends TestCase
         $this->assertDatabaseMissing('notifications', ['id' => $notification->id]);
     }
 
+    public function test_deleting_notification_still_succeeds_when_fcm_tokens_table_is_unavailable(): void
+    {
+        [$pasti] = $this->createPastiFixtures();
+        $admin = $this->createAdminWithAssignment($pasti);
+
+        $notification = DatabaseNotification::query()->create([
+            'id' => 'notif-no-fcm-table-1',
+            'type' => AdminMessageReceivedNotification::class,
+            'notifiable_type' => User::class,
+            'notifiable_id' => $admin->id,
+            'data' => [
+                'notification_title' => 'Notifikasi ujian',
+                'notification_message' => 'Padam notifikasi tetap perlu berjaya walaupun jadual FCM belum ada.',
+                'url' => route('messages.index'),
+            ],
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->from(route('dashboard'))
+            ->delete(route('notifications.destroy', $notification));
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertDatabaseMissing('notifications', ['id' => $notification->id]);
+    }
+
     public function test_message_show_displays_delete_icon_for_entry_owner_and_admin(): void
     {
         [$pasti] = $this->createPastiFixtures();

@@ -6,6 +6,7 @@ use App\Models\FcmToken;
 use App\Notifications\FcmMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class FcmNotificationService
@@ -16,7 +17,7 @@ class FcmNotificationService
 
     public function sendToNotifiable(object $notifiable, FcmMessage $message, Notification $notification): void
     {
-        if (! method_exists($notifiable, 'routeNotificationForFcm')) {
+        if (! $this->supportsFcmRouting($notifiable)) {
             return;
         }
 
@@ -50,7 +51,7 @@ class FcmNotificationService
 
     public function sendSyncActionToNotifiable(object $notifiable, string $action, string $notificationId): void
     {
-        if (! method_exists($notifiable, 'routeNotificationForFcm')) {
+        if (! $this->supportsFcmRouting($notifiable)) {
             return;
         }
 
@@ -177,5 +178,11 @@ class FcmNotificationService
         }
 
         return false;
+    }
+
+    private function supportsFcmRouting(object $notifiable): bool
+    {
+        return method_exists($notifiable, 'routeNotificationForFcm')
+            && Schema::hasTable((new FcmToken())->getTable());
     }
 }
