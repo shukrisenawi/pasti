@@ -174,7 +174,7 @@
 
             <a href="{{ route('dashboard') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link {{ request()->routeIs('dashboard') ? 'menu-link-active' : '' }}">{{ __('messages.dashboard') }}</a>
 
-            @role('master_admin|admin')
+            @if($isAdminCardUser)
                 {{-- Pengurusan Dropdown --}}
                 <div x-data="{ open: {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*', 'n8n-settings.*']) ? 'true' : 'false' }} }" class="space-y-1">
                     <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*', 'n8n-settings.*']) ? 'text-primary bg-primary/5' : '' }}">
@@ -260,11 +260,10 @@
                         <a href="{{ route('directory-files.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Fail Rujukan</a>
                     </div>
                 </div>
-            @endrole
+            @endif
 
 
-            @role('guru')
-                @if($isGuruOnly)
+            @if($isGuruOnly)
                     <div x-data="{ open: {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'true' : 'false' }} }" class="space-y-1">
                         <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'text-primary bg-primary/5' : '' }}">
                             <div class="flex items-center gap-2">
@@ -337,8 +336,7 @@
                             <a href="{{ route('guru-directory.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-directory.*') ? 'menu-link-active' : '' }}">Senarai Guru</a>
                         </div>
                     </div>
-                @endif
-            @endrole
+            @endif
         </nav>
 
         {{-- Drawer Footer --}}
@@ -515,7 +513,7 @@
                 @endphp
                 <a href="{{ route('dashboard') }}" wire:navigate class="menu-link {{ request()->routeIs('dashboard') ? 'menu-link-active' : '' }}">{{ __('messages.dashboard') }}</a>
                 
-                @role('master_admin|admin')
+                @if($isAdminCardUser)
                     <!-- Group: Pengurusan -->
                     <div x-data="{ open: {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*', 'n8n-settings.*']) ? 'true' : 'false' }} }" class="space-y-1">
                         <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['pasti.*', 'users.gurus.*', 'users.admins.*', 'ajk-program.*', 'n8n-settings.*']) ? 'text-primary bg-primary/5' : '' }}">
@@ -623,12 +621,11 @@
                             <a href="{{ route('directory-files.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('directory-files.*') ? 'menu-link-active' : '' }}">Fail Rujukan</a>
                         </div>
                     </div>
-                @endrole
+                @endif
 
 
 
-                @role('guru')
-                    @if($isGuruOnly)
+                @if($isGuruOnly)
                         <div x-data="{ open: {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'true' : 'false' }} }" class="space-y-1">
                             <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'text-primary bg-primary/5' : '' }}">
                                 <div class="flex items-center gap-2">
@@ -713,8 +710,7 @@
                                 <a href="{{ route('guru-directory.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-directory.*') ? 'menu-link-active' : '' }}">Senarai Guru</a>
                             </div>
                         </div>
-                    @endif
-                @endrole
+                @endif
 
             </nav>
         </aside>
