@@ -72,7 +72,7 @@ class ProgramParticipationController extends Controller
             null
         );
 
-        $shouldNotifyAbsenceReason = $user->hasRole('guru')
+        $shouldNotifyAbsenceReason = $user->isOperatingAsGuru()
             && $selectedStatus?->code === 'TIDAK_HADIR'
             && filled($newAbsenceReason)
             && (
@@ -106,14 +106,14 @@ class ProgramParticipationController extends Controller
         return back()
             ->with('status', __('messages.saved'))
             ->with('program_status_success_message', 'Dah berjaya update')
-            ->with('program_status_success_actor', $user->hasAnyRole(['master_admin', 'admin']) ? 'admin' : 'guru')
+            ->with('program_status_success_actor', $user->isOperatingAsAdmin() ? 'admin' : 'guru')
             ->with('program_status_updated_guru_id', $guruId);
     }
 
     public function reviewAbsenceReason(Request $request, Program $program, int $guruId): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+        abort_unless($user->isOperatingAsAdmin(), 403);
 
         $data = $request->validate([
             'decision' => ['required', 'in:approved,rejected'],
@@ -159,6 +159,6 @@ class ProgramParticipationController extends Controller
 
     private function isGuruOnly($user): bool
     {
-        return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
+        return $user->isOperatingAsGuru();
     }
 }

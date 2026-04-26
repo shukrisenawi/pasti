@@ -26,7 +26,7 @@ class GuruController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort(403);
         }
 
@@ -95,7 +95,7 @@ class GuruController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort(403);
         }
 
@@ -112,7 +112,7 @@ class GuruController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort(403);
         }
 
@@ -202,7 +202,7 @@ class GuruController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort(403);
         }
 
@@ -219,7 +219,7 @@ class GuruController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort(403);
         }
 
@@ -357,7 +357,7 @@ class GuruController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort(403);
         }
 
@@ -383,7 +383,7 @@ class GuruController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort(403);
         }
 
@@ -406,7 +406,7 @@ class GuruController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort(403);
         }
 
@@ -487,7 +487,7 @@ class GuruController extends Controller
     public function assistantsMine(Request $request): View
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
 
         $guru = $user->guru;
         abort_unless($guru, 403);
@@ -515,7 +515,7 @@ class GuruController extends Controller
     public function storeAssistantMine(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
 
         $guru = $user->guru;
         abort_unless($guru, 403);
@@ -560,7 +560,7 @@ class GuruController extends Controller
     public function editAssistantMine(Request $request, Guru $assistant): View
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
         $this->ensureOwnedAssistant($user, $assistant);
 
         return view('gurus.assistant-form', [
@@ -571,7 +571,7 @@ class GuruController extends Controller
     public function updateAssistantMine(Request $request, Guru $assistant): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
         $this->ensureOwnedAssistant($user, $assistant);
 
         $data = $request->validate([
@@ -615,7 +615,7 @@ class GuruController extends Controller
     public function destroyAssistantMine(Request $request, Guru $assistant): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
         $this->ensureOwnedAssistant($user, $assistant);
 
         if ($assistant->avatar_path) {
@@ -639,7 +639,7 @@ class GuruController extends Controller
             ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
             ->leftJoin('users', 'users.id', '=', 'gurus.user_id')
             ->select('gurus.*')
-            ->when($user->hasRole('guru'), function ($query): void {
+            ->when($user->isOperatingAsGuru(), function ($query): void {
                 $query->whereRaw(
                     "COALESCE(users.email, gurus.email, '') <> ?",
                     [self::TEST_GURU_EMAIL]
@@ -690,4 +690,3 @@ class GuruController extends Controller
         abort_unless($userPastiId > 0 && $userPastiId === (int) $assistant->pasti_id, 403);
     }
 }
-

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-    @if(auth()->user()->hasRole('guru') && ! auth()->user()->hasAnyRole(['master_admin', 'admin']))
+    @if(auth()->user()->isOperatingAsGuru())
         <div class="hidden items-center justify-between gap-3 min-[360px]:flex">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.24em] text-primary">Dashboard Guru</p>
@@ -152,7 +152,7 @@
         @endif
     @endrole
 
-    @if($user->hasAnyRole(['master_admin', 'admin']))
+    @if($user->isOperatingAsAdmin())
         <section class="mb-8">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div class="relative overflow-hidden rounded-2xl border border-emerald-100 bg-white p-5 shadow-card">

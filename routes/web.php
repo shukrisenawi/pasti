@@ -40,7 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
-    Route::middleware('role:master_admin')->group(function () {
+    Route::middleware(['role:master_admin', 'admin.mode'])->group(function () {
         Route::resource('/users/admins', AdminUserController::class)
             ->except(['show'])
             ->names('users.admins')
@@ -58,7 +58,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/settings/n8n', [N8nSettingController::class, 'update'])->name('n8n-settings.update');
     });
 
-    Route::middleware('role:master_admin|admin')->group(function () {
+    Route::middleware(['role:master_admin|admin', 'admin.mode'])->group(function () {
         Route::resource('/users/gurus', GuruController::class)
             ->except(['show'])
             ->names('users.gurus')
@@ -133,7 +133,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/senarai-guru', [GuruController::class, 'directory'])->name('guru-directory.index');
     });
 
-    Route::middleware('role:master_admin|admin')->group(function () {
+    Route::middleware(['role:master_admin|admin', 'admin.mode'])->group(function () {
         Route::post('/claims/{claim}/approve', [ClaimController::class, 'approve'])->name('claims.approve');
         Route::post('/kursus-guru/offers', [GuruCourseController::class, 'sendOffer'])->name('kursus-guru.offers.send');
         Route::post('/directory-files', [DirectoryFileController::class, 'store'])->name('directory-files.store');
@@ -150,6 +150,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::delete('/notifications', [NotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
     Route::post('/mobile/fcm-token', [WebViewFcmTokenController::class, 'store'])->name('mobile.fcm-token.store');
+    Route::post('/impersonation/switch-to-guru-mode', [ImpersonationController::class, 'switchToGuruMode'])->name('impersonation.switch-to-guru-mode');
+    Route::post('/impersonation/switch-to-admin-mode', [ImpersonationController::class, 'switchToAdminMode'])->name('impersonation.switch-to-admin-mode');
     Route::match(['get', 'post'], '/impersonation/leave', [ImpersonationController::class, 'stop'])->name('impersonation.stop');
 });
 

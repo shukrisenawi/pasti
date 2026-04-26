@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureGuruProfileCompleted;
 use App\Http\Middleware\EnsureGuruWebOnboardingCompleted;
+use App\Http\Middleware\EnsureAdminMode;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -33,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'n8n.token' => \App\Http\Middleware\EnsureN8nToken::class,
             'guru.profile.completed' => EnsureGuruProfileCompleted::class,
+            'admin.mode' => EnsureAdminMode::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

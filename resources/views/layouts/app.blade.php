@@ -19,10 +19,16 @@
     @php
         $authUser = auth()->user();
         $webViewAuthPayload = \App\Support\WebViewAuthPayload::fromUser($authUser);
-        $isGuruOnly = $authUser->hasRole('guru') && ! $authUser->hasAnyRole(['master_admin', 'admin']);
-        $isAdminCardUser = $authUser->hasAnyRole(['master_admin', 'admin']);
-        $pastiMenuRoute = $authUser->hasRole('guru') ? route('pasti.self.edit') : null;
-        $assistantMenuRoute = $authUser->hasRole('guru') ? route('guru-assistants.index') : null;
+        $isGuruOnly = $authUser->isOperatingAsGuru();
+        $isAdminCardUser = $authUser->isOperatingAsAdmin();
+        $canSwitchAdminGuruMode = $authUser->canSwitchToGuruMode() && session('login_using_admin_role');
+        $isSwitchedToGuruMode = $authUser->isInGuruMode();
+        $switchModeLabel = $isSwitchedToGuruMode ? 'Tukar ke Admin' : 'Tukar ke Guru';
+        $switchModeRoute = $isSwitchedToGuruMode
+            ? route('impersonation.switch-to-admin-mode')
+            : route('impersonation.switch-to-guru-mode');
+        $pastiMenuRoute = $authUser->isOperatingAsGuru() ? route('pasti.self.edit') : null;
+        $assistantMenuRoute = $authUser->isOperatingAsGuru() ? route('guru-assistants.index') : null;
         $isImpersonatingGuru = session()->has('impersonator_user_id') || request()->hasCookie('impersonator_user_id');
         $assignedPastiIds = $authUser->assignedPastis()->pluck('pastis.id');
         $sidebarKpi = number_format((float) ($authUser->guru?->kpiSnapshot?->score ?? 0), 1) . '%';
@@ -109,6 +115,17 @@
                     @endif
                 </div>
             </div>
+            @if($canSwitchAdminGuruMode)
+                <form method="POST" action="{{ $switchModeRoute }}" class="mt-3">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/20" data-testid="role-mode-switch-mobile">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h11m0 0-3-3m3 3-3 3M20 17H9m0 0 3-3m-3 3 3 3" />
+                        </svg>
+                        {{ $switchModeLabel }}
+                    </button>
+                </form>
+            @endif
         </div>
 
         {{-- Drawer Navigation --}}
@@ -132,12 +149,12 @@
                     ->when($isGuruOnly, fn ($q) => $q->whereRaw('1 = 0'))
                     ->count();
                 $drawerPastiInfoPendingCount = \App\Models\PastiInformationRequest::query()
-                    ->when($authUser->hasRole('guru'), fn ($q) => $q->where('pasti_id', $authUser->guru?->pasti_id ?? 0))
+                    ->when($authUser->isOperatingAsGuru(), fn ($q) => $q->where('pasti_id', $authUser->guru?->pasti_id ?? 0))
                     ->when($authUser->hasRole('admin') && !$authUser->hasRole('master_admin'), fn ($q) => $q->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
                     ->whereNull('completed_at')
                     ->count();
                 $drawerGuruSalaryPendingCount = \App\Models\GuruSalaryRequest::query()
-                    ->when($authUser->hasRole('guru'), fn ($q) => $q->where('guru_id', $authUser->guru?->id ?? 0))
+                    ->when($authUser->isOperatingAsGuru(), fn ($q) => $q->where('guru_id', $authUser->guru?->id ?? 0))
                     ->when(
                         $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
                         fn ($q) => $q->whereHas('guru', fn ($q2) => $q2->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
@@ -145,7 +162,7 @@
                     ->whereNull('completed_at')
                     ->count();
                 $drawerOnLeaveGuruCount = \App\Models\LeaveNotice::query()
-                    ->when($authUser->hasRole('guru'), fn ($q) => $q->where('guru_id', $authUser->guru?->id ?? 0))
+                    ->when($authUser->isOperatingAsGuru(), fn ($q) => $q->where('guru_id', $authUser->guru?->id ?? 0))
                     ->when($authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'), fn ($q) => $q->whereHas('guru', fn ($q2) => $q2->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id'))))
                     ->whereDate('leave_date', '<=', now()->toDateString())
                     ->whereDate('leave_until', '>=', now()->toDateString())
@@ -247,7 +264,7 @@
 
 
             @role('guru')
-                @if(!auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                @if($isGuruOnly)
                     <div x-data="{ open: {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'true' : 'false' }} }" class="space-y-1">
                         <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'text-primary bg-primary/5' : '' }}">
                             <div class="flex items-center gap-2">
@@ -393,6 +410,14 @@
                                     Pembantu Guru
                                 </a>
                             @endif
+                            @if($canSwitchAdminGuruMode)
+                                <form method="POST" action="{{ $switchModeRoute }}" class="mt-1">
+                                    @csrf
+                                    <button type="submit" class="block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-sky-700 transition hover:bg-sky-50" data-testid="role-mode-switch-dropdown">
+                                        {{ $switchModeLabel }}
+                                    </button>
+                                </form>
+                            @endif
                             <form method="POST" action="{{ route('logout') }}" class="mt-1">
                                 @csrf
                                 <button type="submit" class="block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-rose-600 transition hover:bg-rose-50">
@@ -423,6 +448,17 @@
                         @endif
                     </div>
                 </div>
+                @if($canSwitchAdminGuruMode)
+                    <form method="POST" action="{{ $switchModeRoute }}" class="mt-4">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/20" data-testid="role-mode-switch-desktop">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h11m0 0-3-3m3 3-3 3M20 17H9m0 0 3-3m-3 3 3 3" />
+                            </svg>
+                            {{ $switchModeLabel }}
+                        </button>
+                    </form>
+                @endif
             </div>
 
             <nav class="mt-5 space-y-1.5 text-sm">
@@ -440,7 +476,7 @@
 
                     $menuPastiInfoPendingCount = \App\Models\PastiInformationRequest::query()
                         ->when(
-                            $authUser->hasRole('guru'),
+                            $authUser->isOperatingAsGuru(),
                             fn ($query) => $query->where('pasti_id', $authUser->guru?->pasti_id ?? 0)
                         )
                         ->when(
@@ -451,7 +487,7 @@
                         ->count();
                     $menuGuruSalaryPendingCount = \App\Models\GuruSalaryRequest::query()
                         ->when(
-                            $authUser->hasRole('guru'),
+                            $authUser->isOperatingAsGuru(),
                             fn ($query) => $query->where('guru_id', $authUser->guru?->id ?? 0)
                         )
                         ->when(
@@ -463,7 +499,7 @@
 
                     $menuOnLeaveGuruCount = \App\Models\LeaveNotice::query()
                         ->when(
-                            $authUser->hasRole('guru'),
+                            $authUser->isOperatingAsGuru(),
                             fn ($query) => $query->where('guru_id', $authUser->guru?->id ?? 0)
                         )
                         ->when(
@@ -592,7 +628,7 @@
 
 
                 @role('guru')
-                    @if(!auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                    @if($isGuruOnly)
                         <div x-data="{ open: {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'true' : 'false' }} }" class="space-y-1">
                             <button @click="open = !open" class="menu-link w-full flex items-center justify-between {{ request()->routeIs(['kpi.guru.show', 'claims.*', 'pemarkahan.*', 'pasti-information.*', 'guru-salary-information.*', 'kursus-guru.*', 'programs.*']) ? 'text-primary bg-primary/5' : '' }}">
                                 <div class="flex items-center gap-2">

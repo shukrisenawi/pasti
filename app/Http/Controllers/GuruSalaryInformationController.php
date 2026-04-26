@@ -67,9 +67,9 @@ class GuruSalaryInformationController extends Controller
             'gurus' => $gurus,
             'latestRequests' => $requestGroups->map(fn ($items) => $items->first()),
             'latestCompletedRequests' => $requestGroups->map(fn ($items) => $items->firstWhere(fn (GuruSalaryRequest $item) => $item->completed_at !== null)),
-            'canRequest' => $user->hasAnyRole(['master_admin', 'admin']),
-            'canRequestAll' => $user->hasAnyRole(['master_admin', 'admin']) && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
-            'isGuru' => $user->hasRole('guru'),
+            'canRequest' => $user->isOperatingAsAdmin(),
+            'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
+            'isGuru' => $user->isOperatingAsGuru(),
             'guruId' => $user->guru?->id,
             'search' => $search,
         ]);
@@ -78,7 +78,7 @@ class GuruSalaryInformationController extends Controller
     public function requestAllUpdates(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+        abort_unless($user->isOperatingAsAdmin(), 403);
 
         $gurus = $this->accessibleGurusQueryForUser($user)->get(['gurus.id', 'gurus.user_id']);
         if ($gurus->isEmpty()) {
@@ -124,7 +124,7 @@ class GuruSalaryInformationController extends Controller
     public function edit(Request $request, GuruSalaryRequest $guruSalaryRequest): View|RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
         $this->ensureGuruCanFill($user, $guruSalaryRequest);
 
         if ($guruSalaryRequest->completed_at !== null) {
@@ -141,7 +141,7 @@ class GuruSalaryInformationController extends Controller
     public function update(Request $request, GuruSalaryRequest $guruSalaryRequest): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
         $this->ensureGuruCanFill($user, $guruSalaryRequest);
 
         $data = $request->validate([
@@ -198,7 +198,7 @@ class GuruSalaryInformationController extends Controller
             ->where('active', true)
             ->whereNotNull('user_id');
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             $query->whereKey($user->guru?->id ?: 0);
         } elseif ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
             $query->whereIn('pasti_id', $this->assignedPastiIds($user));

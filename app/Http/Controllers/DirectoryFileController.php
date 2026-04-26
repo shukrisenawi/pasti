@@ -32,7 +32,7 @@ class DirectoryFileController extends Controller
             ->orderByDesc('created_at')
             ->orderByDesc('id');
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             $guruId = (int) ($user->guru?->id ?? 0);
             abort_unless($guruId > 0, 403);
 
@@ -53,20 +53,20 @@ class DirectoryFileController extends Controller
             });
         }
 
-        $canUpload = $user->hasAnyRole(['master_admin', 'admin']);
+        $canUpload = $user->isOperatingAsAdmin();
 
         return view('directory-files.index', [
             'files' => $filesQuery->paginate(10),
             'canUpload' => $canUpload,
             'availableGurus' => $canUpload ? $this->availableGurusForUploader($user) : collect(),
-            'isGuruOnly' => $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']),
+            'isGuruOnly' => $user->isOperatingAsGuru(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+        abort_unless($user->isOperatingAsAdmin(), 403);
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -162,7 +162,7 @@ class DirectoryFileController extends Controller
     public function destroy(Request $request, DirectoryFile $directoryFile): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+        abort_unless($user->isOperatingAsAdmin(), 403);
 
         if (! $user->hasRole('master_admin') && (int) $directoryFile->uploaded_by !== (int) $user->id) {
             abort(403);

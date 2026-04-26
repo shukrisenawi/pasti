@@ -33,7 +33,7 @@ class DashboardController extends Controller
         $birthdayUsers = User::query()
             ->whereNotNull('tarikh_lahir')
             ->whereRaw("DATE_FORMAT(tarikh_lahir, '%m-%d') = ?", [now()->format('m-d')])
-            ->when($user->hasRole('guru'), function ($query): void {
+            ->when($user->isOperatingAsGuru(), function ($query): void {
                 $query->where('email', '<>', self::TEST_GURU_EMAIL);
             })
             ->orderByRaw("CASE WHEN avatar_path IS NULL OR avatar_path = '' THEN 1 ELSE 0 END")
@@ -63,7 +63,7 @@ class DashboardController extends Controller
             }
         }
 
-        if ($user->hasAnyRole(['master_admin', 'admin'])) {
+        if ($user->isOperatingAsAdmin()) {
             $topGuruQuery = Guru::query()
                 ->with(['user', 'pasti', 'kpiSnapshot'])
                 ->withLeaveDaysForYear($currentYear)
@@ -118,7 +118,7 @@ class DashboardController extends Controller
                 ->value('balance') ?? 0);
         }
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             $latestInboxMessage = AdminMessage::query()
                 ->with(['sender', 'replies'])
                 ->withMax('replies', 'created_at')
@@ -192,7 +192,7 @@ class DashboardController extends Controller
         $currentParticipation = null;
         $statuses = collect();
 
-        if ($user->hasRole('guru') && $latestProgram && $currentGuruId) {
+        if ($user->isOperatingAsGuru() && $latestProgram && $currentGuruId) {
             $currentParticipation = $latestProgram->participations->firstWhere('guru_id', $currentGuruId);
             $statuses = ProgramStatus::query()
                 ->whereIn('code', ['HADIR', 'TIDAK_HADIR'])
@@ -225,7 +225,7 @@ class DashboardController extends Controller
             'latestProgram' => $latestProgram,
             'currentParticipation' => $currentParticipation,
             'statuses' => $statuses,
-            'canUpdateOwnStatus' => $user->hasRole('guru') && (bool) $currentParticipation,
+            'canUpdateOwnStatus' => $user->isOperatingAsGuru() && (bool) $currentParticipation,
             'topKpiGurus' => $topKpiGurus,
             'latestYear' => $currentYear,
             'latestInboxMessage' => $latestInboxMessage,
@@ -244,6 +244,6 @@ class DashboardController extends Controller
 
     private function isGuruOnly($user): bool
     {
-        return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
+        return $user->isOperatingAsGuru();
     }
 }

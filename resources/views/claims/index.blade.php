@@ -7,7 +7,7 @@
         <a href="{{ route('claims.index', ['tab' => 'list']) }}" class="btn {{ $activeTab === 'list' ? 'btn-primary' : 'btn-outline' }}">
             {{ __('messages.list') }}
         </a>
-        @if(auth()->user()->hasRole('guru'))
+        @if(auth()->user()->isOperatingAsGuru())
             <a href="{{ route('claims.index', ['tab' => 'submit']) }}" class="btn {{ $activeTab === 'submit' ? 'btn-primary' : 'btn-outline' }}">
                 {{ __('messages.submit_claim') }}
             </a>
@@ -104,7 +104,7 @@
                         <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                             <div class="space-y-1 text-sm text-slate-600">
                                 <p><span class="font-semibold text-slate-700">{{ __('messages.date') }}:</span> {{ $claim->claim_date?->format('d/m/Y') }}</p>
-                                @unless(auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                                @unless(auth()->user()->isOperatingAsGuru())
                                     <p><span class="font-semibold text-slate-700">{{ __('messages.name') }}:</span> {{ $claim->user?->display_name ?? '-' }}</p>
                                     <p><span class="font-semibold text-slate-700">{{ __('messages.pasti') }}:</span> {{ $claim->pasti?->name ?? '-' }}</p>
                                 @endunless
@@ -150,7 +150,7 @@
                                             } elseif ((int) $claim->user_id === (int) $user->id) {
                                                 $canDelete = true;
                                             }
-                                        } elseif ($user->hasRole('guru')) {
+                                        } elseif ($user->isOperatingAsGuru()) {
                                             if ((int) $claim->user_id === (int) $user->id) {
                                                 $canDelete = true;
                                             }

@@ -32,7 +32,7 @@ class PastiInformationController extends Controller
     public function requestAllUpdates(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+        abort_unless($user->isOperatingAsAdmin(), 403);
 
         $pastis = $this->accessiblePastisQueryForUser($user)->get(['pastis.id', 'pastis.name']);
         if ($pastis->isEmpty()) {
@@ -78,7 +78,7 @@ class PastiInformationController extends Controller
     public function edit(Request $request, PastiInformationRequest $pastiInformationRequest): View|RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
         $this->ensureGuruCanFill($user, $pastiInformationRequest);
 
         if ($pastiInformationRequest->completed_at !== null) {
@@ -95,7 +95,7 @@ class PastiInformationController extends Controller
     public function update(Request $request, PastiInformationRequest $pastiInformationRequest): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
         $this->ensureGuruCanFill($user, $pastiInformationRequest);
 
         $data = $request->validate([
@@ -154,7 +154,7 @@ class PastiInformationController extends Controller
     {
         $query = Pasti::query();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             $query->whereKey($user->guru?->pasti_id ?: 0);
         } elseif ($user->hasRole('admin')) {
             $query->whereIn('id', $this->assignedPastiIds($user));

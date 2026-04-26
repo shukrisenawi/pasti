@@ -13,6 +13,8 @@ use Illuminate\Support\Str;
 
 class ImpersonationController extends Controller
 {
+    private const ACTIVE_ROLE_MODE_SESSION = 'active_role_mode';
+    private const LOGIN_USING_ADMIN_ROLE_SESSION = 'login_using_admin_role';
     private const IMPERSONATOR_COOKIE = 'impersonator_user_id';
     private const RETURN_URL_COOKIE = 'impersonator_return_url';
     private const TOKEN_COOKIE = 'impersonation_token';
@@ -84,6 +86,38 @@ class ImpersonationController extends Controller
         Cookie::queue(Cookie::forget(self::TOKEN_COOKIE));
 
         return redirect()->to($returnUrl)->with('status', 'Kembali semula ke akaun admin.');
+    }
+
+    public function switchToGuruMode(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        abort_unless(
+            $user
+            && $user->canSwitchToGuruMode()
+            && $request->session()->get(self::LOGIN_USING_ADMIN_ROLE_SESSION, false),
+            403
+        );
+
+        $request->session()->put(self::ACTIVE_ROLE_MODE_SESSION, 'guru');
+
+        return redirect()->route('dashboard')->with('status', 'Anda kini melihat sistem sebagai guru.');
+    }
+
+    public function switchToAdminMode(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        abort_unless(
+            $user
+            && $user->canSwitchToGuruMode()
+            && $request->session()->get(self::LOGIN_USING_ADMIN_ROLE_SESSION, false),
+            403
+        );
+
+        $request->session()->forget(self::ACTIVE_ROLE_MODE_SESSION);
+
+        return redirect()->route('dashboard')->with('status', 'Kembali semula ke mod admin.');
     }
 
     private function beginImpersonation(Request $request, User $targetUser, string $defaultReturnUrl, string $statusMessage): RedirectResponse

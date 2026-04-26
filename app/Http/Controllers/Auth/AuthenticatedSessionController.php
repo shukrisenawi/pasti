@@ -55,6 +55,8 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        $request->session()->forget('active_role_mode');
+        $request->session()->put('login_using_admin_role', Auth::user()?->hasAnyRole(['master_admin', 'admin']) ?? false);
 
         User::query()
             ->whereKey(Auth::id())
@@ -67,6 +69,20 @@ class AuthenticatedSessionController extends Controller
             (string) Auth::id(),
             60 * 24 * 30
         );
+
+        $user = Auth::user();
+        if ($user && $user->hasAnyRole(['master_admin', 'admin'])) {
+            $guruExists = \App\Models\Guru::query()->where('email', $user->email)->exists();
+            if ($guruExists) {
+                if (! $user->hasRole('guru')) {
+                    $user->assignRole('guru');
+                }
+                \App\Models\Guru::query()
+                    ->where('email', $user->email)
+                    ->where(fn ($q) => $q->whereNull('user_id')->orWhere('user_id', '<>', $user->id))
+                    ->update(['user_id' => $user->id]);
+            }
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -81,6 +97,8 @@ class AuthenticatedSessionController extends Controller
             (string) Auth::id(),
             60 * 24 * 30
         );
+
+        $request->session()->forget(['active_role_mode', 'login_using_admin_role']);
 
         Auth::guard('web')->logout();
 

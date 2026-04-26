@@ -11,6 +11,7 @@ use App\Notifications\AdminMessageReceivedNotification;
 use App\Notifications\AdminMessageReplyNotification;
 use App\Models\FcmToken;
 use App\Support\NameFormatter;
+use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -203,5 +204,47 @@ class User extends Authenticatable
             ->filter(fn ($token) => is_string($token) && $token !== '')
             ->values()
             ->all();
+    }
+
+    public function hasAdminRole(): bool
+    {
+        return $this->hasAnyRole(['master_admin', 'admin']);
+    }
+
+    public function canSwitchToGuruMode(): bool
+    {
+        if (! $this->hasAdminRole()) {
+            return false;
+        }
+
+        if ($this->hasRole('guru') && ($this->relationLoaded('guru') ? (bool) $this->guru : $this->guru()->exists())) {
+            return true;
+        }
+
+        return Guru::query()->where('email', $this->email)->exists();
+    }
+
+    public function isInGuruMode(): bool
+    {
+        if (! $this->canSwitchToGuruMode()) {
+            return false;
+        }
+
+        $request = app()->bound('request') ? app(Request::class) : null;
+        if (! $request?->hasSession()) {
+            return false;
+        }
+
+        return $request->session()->get('active_role_mode') === 'guru';
+    }
+
+    public function isOperatingAsAdmin(): bool
+    {
+        return $this->hasAdminRole() && ! $this->isInGuruMode();
+    }
+
+    public function isOperatingAsGuru(): bool
+    {
+        return $this->hasRole('guru') && (! $this->hasAdminRole() || $this->isInGuruMode());
     }
 }

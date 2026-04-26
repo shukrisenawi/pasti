@@ -34,7 +34,7 @@ class GuruCourseController extends Controller
         $pendingResponses = collect();
         $historyResponses = collect();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             $guruId = (int) ($user->guru?->id ?? 0);
             $pendingResponses = GuruCourseOfferResponse::query()
                 ->with('offer')
@@ -57,14 +57,14 @@ class GuruCourseController extends Controller
             'latestOffers' => $latestOffers,
             'pendingResponses' => $pendingResponses,
             'historyResponses' => $historyResponses,
-            'canSendOffer' => $user->hasAnyRole(['master_admin', 'admin']),
+            'canSendOffer' => $user->isOperatingAsAdmin(),
         ]);
     }
 
     public function sendOffer(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+        abort_unless($user->isOperatingAsAdmin(), 403);
 
         $data = $request->validate([
             'deadlines' => ['required', 'array'],
@@ -173,7 +173,7 @@ class GuruCourseController extends Controller
     public function respond(Request $request, GuruCourseOfferResponse $response): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
 
         abort_unless((int) ($user->guru?->id ?? 0) === (int) $response->guru_id, 403);
         abort_if($response->responded_at !== null, 403);

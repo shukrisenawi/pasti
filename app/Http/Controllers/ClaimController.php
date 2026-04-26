@@ -28,10 +28,10 @@ class ClaimController extends Controller
         abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
         $allowedTabs = ['list'];
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             $allowedTabs[] = 'submit';
         }
-        if ($user->hasAnyRole(['master_admin', 'admin'])) {
+        if ($user->isOperatingAsAdmin()) {
             $allowedTabs[] = 'pending';
         }
         $activeTab = in_array($request->query('tab'), $allowedTabs, true)
@@ -73,14 +73,14 @@ class ClaimController extends Controller
             'activeTab' => $activeTab,
             'claims' => $claimsQuery->paginate(9)->withQueryString(),
             'pendingClaims' => $pendingClaimsQuery->paginate(9, ['*'], 'pending_page')->withQueryString(),
-            'canApprove' => $user->hasAnyRole(['master_admin', 'admin']),
+            'canApprove' => $user->isOperatingAsAdmin(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
 
         $data = $request->validate([
             'notes' => ['required', 'string', 'max:1000'],
@@ -143,7 +143,7 @@ class ClaimController extends Controller
     public function approve(Request $request, Claim $claim): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+        abort_unless($user->isOperatingAsAdmin(), 403);
 
         if ($claim->status !== 'pending') {
             return redirect()
@@ -227,7 +227,7 @@ class ClaimController extends Controller
             } elseif ((int) $claim->user_id === (int) $user->id) {
                 $canDelete = true;
             }
-        } elseif ($user->hasRole('guru')) {
+        } elseif ($user->isOperatingAsGuru()) {
             if ((int) $claim->user_id === (int) $user->id) {
                 $canDelete = true;
             }
@@ -244,6 +244,6 @@ class ClaimController extends Controller
 
     private function isGuruOnly(User $user): bool
     {
-        return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
+        return $user->isOperatingAsGuru();
     }
 }

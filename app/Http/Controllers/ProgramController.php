@@ -136,7 +136,7 @@ class ProgramController extends Controller
                 ->orderBy('is_hadir', 'desc')
                 ->get(),
             'canManage' => $user->hasRole('master_admin') || $user->hasRole('admin'),
-            'canUpdateOwn' => $user->hasRole('guru') && (bool) $user->guru,
+            'canUpdateOwn' => $user->isOperatingAsGuru() && (bool) $user->guru,
             'currentGuruId' => $user->guru?->id,
             'isAllTeachers' => $program->gurus()->count() === count($this->activeGuruIds()),
         ]);
@@ -286,7 +286,7 @@ class ProgramController extends Controller
 
     private function isGuruOnly($user): bool
     {
-        return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
+        return $user->isOperatingAsGuru();
     }
 
     private function notifyAssignedUsers(Program $program, Collection $gurus, User $actor, string $action): void
