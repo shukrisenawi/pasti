@@ -78,7 +78,7 @@
         </div>
     @endif
 
-    @role('guru')
+    @if($user->isOperatingAsGuru())
         <section class="mb-8 space-y-5">
             <div class="overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary-dark to-emerald-700 p-5 text-white shadow-xl sm:p-6">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -167,7 +167,7 @@
                 </div>
             </div>
         </section>
-    @endrole
+    @endif
 
     @if($user->isOperatingAsAdmin())
         <section class="mb-8">
@@ -207,7 +207,7 @@
         </section>
     @endif
 
-    @role('guru')
+    @if($user->isOperatingAsGuru())
         @if(($activeAnnouncements ?? collect())->isNotEmpty())
             <section class="mb-8">
                 <div class="rounded-3xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50 p-5 shadow-card sm:p-6">
@@ -227,7 +227,7 @@
                 </div>
             </section>
         @endif
-    @endrole
+    @endif
 
     @if($userAjkPositions->isNotEmpty())
         <section class="mb-8">
@@ -422,7 +422,7 @@
         </section>
     @endif
 
-    @role('guru')
+    @if($user->isOperatingAsGuru())
         <section class="mt-5">
             <div class="rounded-3xl border border-slate-100 bg-white p-4 shadow-card sm:p-5">
                 <div class="flex items-center justify-between gap-3">
@@ -485,7 +485,7 @@
                 </div>
             </div>
         </section>
-    @endrole
+    @endif
 
     @once
         <script>
