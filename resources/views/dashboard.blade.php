@@ -135,7 +135,7 @@
                         <h4 class="mt-2 text-lg font-black text-slate-900">Isi maklumat semasa</h4>
                         <p class="mt-2 text-sm leading-6 text-slate-600">Lengkapkan maklumat guru dan murid terkini untuk PASTI anda supaya admin boleh semak data semasa.</p>
                         @if($pendingPastiInfoRequest)
-                            <a href="{{ route('pasti-information.edit', $pendingPastiInfoRequest) }}" class="btn btn-warning mt-4 rounded-2xl px-4 text-sm font-bold text-white shadow-lg shadow-amber-200/50">
+                            <a href="{{ route('pasti-information.edit', $pendingPastiInfoRequest) }}" class="btn mt-4 rounded-2xl border-none bg-amber-500 px-4 text-sm font-bold text-white hover:bg-amber-600 shadow-lg shadow-amber-200/50">
                                 Isi sekarang
                             </a>
                         @else
