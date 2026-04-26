@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
+use Throwable;
 
 class FirebaseAccessTokenService
 {
@@ -74,11 +75,19 @@ class FirebaseAccessTokenService
         }
 
         $path = config('services.firebase.service_account_path');
-        if (! is_string($path) || trim($path) === '' || ! is_file($path)) {
+        if (! is_string($path) || trim($path) === '') {
             return [];
         }
 
-        $decoded = json_decode((string) file_get_contents($path), true);
+        try {
+            if (! is_file($path)) {
+                return [];
+            }
+
+            $decoded = json_decode((string) file_get_contents($path), true);
+        } catch (Throwable) {
+            return [];
+        }
 
         return is_array($decoded) ? $decoded : [];
     }
