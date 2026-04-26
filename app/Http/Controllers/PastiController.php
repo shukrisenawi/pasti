@@ -23,7 +23,7 @@ class PastiController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         $activeTab = strtolower((string) $request->query('tab', 'jeneri'));
         if (! in_array($activeTab, ['jeneri', 'belantek'], true)) {
@@ -61,7 +61,7 @@ class PastiController extends Controller
     public function create(Request $request): View
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         return view('pasti.form', [
             'pasti' => new Pasti(),
@@ -75,7 +75,7 @@ class PastiController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         $validated = $request->validate($this->validationRules());
         $data = $this->preparePastiPayload($validated);
@@ -99,7 +99,7 @@ class PastiController extends Controller
     public function edit(Request $request, Pasti $pasti): View
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         $this->ensurePastiAllowed($user, $pasti);
 
@@ -115,7 +115,7 @@ class PastiController extends Controller
     public function update(Request $request, Pasti $pasti): RedirectResponse
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         $this->ensurePastiAllowed($user, $pasti);
 
@@ -131,7 +131,7 @@ class PastiController extends Controller
     public function editOwn(Request $request): View
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
 
         $pasti = $user->guru?->pasti;
         abort_unless($pasti, 403);
@@ -148,7 +148,7 @@ class PastiController extends Controller
     public function updateOwn(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
 
         $pasti = $user->guru?->pasti;
         abort_unless($pasti, 403);

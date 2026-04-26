@@ -14,7 +14,7 @@ class KawasanController extends Controller
 
     public function index(Request $request): View
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         return view('kawasan.index', [
             'kawasans' => Kawasan::query()->latest()->paginate(10),
@@ -23,7 +23,7 @@ class KawasanController extends Controller
 
     public function create(Request $request): View
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         return view('kawasan.form', [
             'kawasan' => new Kawasan(),
@@ -33,7 +33,7 @@ class KawasanController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -47,7 +47,7 @@ class KawasanController extends Controller
 
     public function edit(Request $request, Kawasan $kawasan): View
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         return view('kawasan.form', [
             'kawasan' => $kawasan,
@@ -57,7 +57,7 @@ class KawasanController extends Controller
 
     public function update(Request $request, Kawasan $kawasan): RedirectResponse
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -71,7 +71,7 @@ class KawasanController extends Controller
 
     public function destroy(Request $request, Kawasan $kawasan): RedirectResponse
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         $kawasan->delete();
 

@@ -478,7 +478,7 @@ class GuruController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort(403);
         }
 

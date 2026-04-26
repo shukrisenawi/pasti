@@ -15,7 +15,7 @@ class KelasController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         $query = Kelas::query()->with(['pasti', 'studentCount']);
 
@@ -31,7 +31,7 @@ class KelasController extends Controller
     public function create(Request $request): View
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         return view('kelas.form', [
             'kelas' => new Kelas(),
@@ -42,7 +42,7 @@ class KelasController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         $data = $request->validate([
             'pasti_id' => ['required', 'integer', 'exists:pastis,id'],
@@ -69,7 +69,7 @@ class KelasController extends Controller
     public function edit(Request $request, Kelas $kela): View
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         $this->ensurePastiAllowed($user, $kela->pasti_id);
 
@@ -82,7 +82,7 @@ class KelasController extends Controller
     public function update(Request $request, Kelas $kela): RedirectResponse
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         $data = $request->validate([
             'pasti_id' => ['required', 'integer', 'exists:pastis,id'],
@@ -106,7 +106,7 @@ class KelasController extends Controller
     public function destroy(Request $request, Kelas $kela): RedirectResponse
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         $this->ensurePastiAllowed($user, $kela->pasti_id);
         $kela->delete();
@@ -117,7 +117,7 @@ class KelasController extends Controller
     public function updateStudentCount(Request $request, Kelas $kela): RedirectResponse
     {
         $user = $request->user();
-        abort_if($user->hasRole('guru'), 403);
+        abort_if($user->isOperatingAsGuru(), 403);
 
         $this->ensurePastiAllowed($user, $kela->pasti_id);
 

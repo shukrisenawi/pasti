@@ -55,7 +55,7 @@ class AdminMessageController extends Controller
         return view('messages.index', [
             'messages' => $messages,
             'canCompose' => $user->hasAnyRole(['master_admin', 'admin', 'guru']),
-            'isGuru' => $user->hasRole('guru'),
+            'isGuru' => $user->isOperatingAsGuru(),
         ]);
     }
 
@@ -66,8 +66,8 @@ class AdminMessageController extends Controller
 
         return view('messages.form', [
             'gurus' => $this->availableGuruRecipients($user),
-            'isGuru' => $user->hasRole('guru'),
-            'isAdminComposer' => $user->hasAnyRole(['master_admin', 'admin']),
+            'isGuru' => $user->isOperatingAsGuru(),
+            'isAdminComposer' => $user->isOperatingAsAdmin(),
         ]);
     }
 
@@ -76,7 +76,7 @@ class AdminMessageController extends Controller
         $user = $request->user();
         abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
-        if ($user->hasAnyRole(['master_admin', 'admin'])) {
+        if ($user->isOperatingAsAdmin()) {
             return $this->storeFromAdmin($request, $user);
         }
 

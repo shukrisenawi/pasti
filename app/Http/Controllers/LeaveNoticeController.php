@@ -29,7 +29,7 @@ class LeaveNoticeController extends Controller
         $currentGuruId = null;
         $assignedPastiIds = [];
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             $guruId = $user->guru?->id;
             abort_unless($guruId, 403);
             $query->where('guru_id', $guruId);
@@ -52,7 +52,7 @@ class LeaveNoticeController extends Controller
 
     public function create(Request $request): View
     {
-        abort_unless($request->user()->hasRole('guru'), 403);
+        abort_unless($request->user()->isOperatingAsGuru(), 403);
 
         return view('leave-notices.form', [
             'leaveNotice' => new LeaveNotice(),
@@ -75,7 +75,7 @@ class LeaveNoticeController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->hasRole('guru'), 403);
+        abort_unless($user->isOperatingAsGuru(), 403);
 
         $guruId = $user->guru?->id;
         abort_unless($guruId, 403);

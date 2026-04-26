@@ -20,7 +20,7 @@ class KpiController extends Controller
         $currentYear = (int) now()->year;
         $search = trim((string) $request->query('search', ''));
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort(403);
         }
 
@@ -62,7 +62,7 @@ class KpiController extends Controller
         $user = $request->user();
         $currentYear = (int) now()->year;
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             abort_unless($user->guru?->id === $guru->id, 403);
         }
 

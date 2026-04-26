@@ -12,7 +12,7 @@ class ProgramStatusController extends Controller
 {
     public function index(Request $request): View
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         return view('program-statuses.index', [
             'statuses' => ProgramStatus::query()->latest()->paginate(10),
@@ -21,7 +21,7 @@ class ProgramStatusController extends Controller
 
     public function create(Request $request): View
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         return view('program-statuses.form', [
             'status' => new ProgramStatus(),
@@ -30,7 +30,7 @@ class ProgramStatusController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -48,7 +48,7 @@ class ProgramStatusController extends Controller
 
     public function edit(Request $request, ProgramStatus $program_status): View
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         return view('program-statuses.form', [
             'status' => $program_status,
@@ -57,7 +57,7 @@ class ProgramStatusController extends Controller
 
     public function update(Request $request, ProgramStatus $program_status): RedirectResponse
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -75,7 +75,7 @@ class ProgramStatusController extends Controller
 
     public function destroy(Request $request, ProgramStatus $program_status): RedirectResponse
     {
-        abort_if($request->user()->hasRole('guru'), 403);
+        abort_if($request->user()->isOperatingAsGuru(), 403);
 
         $program_status->delete();
 
