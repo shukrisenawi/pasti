@@ -33,7 +33,7 @@ class PastiController extends Controller
 
         $scopeQuery = Pasti::query();
         if ($user->hasRole('admin')) {
-            $scopeQuery->whereIn('id', $this->assignedPastiIds($user));
+            $scopeQuery->whereIn('pastis.id', $this->assignedPastiIds($user));
         }
 
         $query = (clone $scopeQuery)
@@ -185,7 +185,7 @@ class PastiController extends Controller
             return;
         }
 
-        abort_unless(in_array($pasti->id, $this->assignedPastiIds($user), true), 403);
+        abort_unless(in_array($pasti->id, $this->assignedPastiIds($user)), 403);
     }
 
     private function validationRules(?int $pastiId = null): array
