@@ -16,7 +16,7 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    @unless(auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                    @if(auth()->user()->isOperatingAsAdmin())
                         <x-nav-link :href="route('claims.index')" :active="request()->routeIs('claims.*')">
                             {{ __('Claim') }}
                             @php($pendingClaims = auth()->user()->pending_claims_count)
@@ -24,9 +24,9 @@
                                 <span class="ms-2 badge badge-error badge-sm text-white">{{ $pendingClaims }}</span>
                             @endif
                         </x-nav-link>
-                    @endunless
+                    @endif
 
-                    @if(auth()->user()->hasAnyRole(['master_admin', 'admin']))
+                    @if(auth()->user()->isOperatingAsAdmin())
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
                                 <button class="btn btn-sm btn-ghost gap-1 {{ request()->routeIs(['users.*', 'pasti.*', 'kelas.*']) ? 'bg-base-200' : '' }}">
@@ -117,7 +117,7 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-            @unless(auth()->user()->hasRole('guru') && !auth()->user()->hasAnyRole(['master_admin', 'admin']))
+            @if(auth()->user()->isOperatingAsAdmin())
                 <x-responsive-nav-link :href="route('claims.index')" :active="request()->routeIs('claims.*')">
                     <div class="flex items-center justify-between w-full">
                         <span>{{ __('Claim') }}</span>
@@ -127,9 +127,9 @@
                         @endif
                     </div>
                 </x-responsive-nav-link>
-            @endunless
+            @endif
 
-            @if(auth()->user()->hasAnyRole(['master_admin', 'admin']))
+            @if(auth()->user()->isOperatingAsAdmin())
                 <div x-data="{ open: false }" class="space-y-1">
                     <button @click="open = !open" class="btn btn-sm btn-ghost w-full justify-between {{ request()->routeIs(['users.*', 'pasti.*', 'kelas.*']) ? 'bg-base-200' : '' }}">
                         <span>{{ __('Pengurusan') }}</span>
