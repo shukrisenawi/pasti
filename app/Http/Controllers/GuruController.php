@@ -126,8 +126,13 @@ class GuruController extends Controller
             $passwordRules[] = 'nullable';
             array_unshift($avatarRules, 'required');
         } else {
-            $emailRules[] = 'unique:users,email';
             $emailRules[] = 'required';
+            $emailRules[] = function ($attribute, $value, $fail) {
+                $existingUser = User::where('email', $value)->first();
+                if ($existingUser && $existingUser->hasRole('guru')) {
+                    $fail('E-mel ini telah digunakan oleh guru lain.');
+                }
+            };
             $passwordRules[] = 'nullable';
             array_unshift($avatarRules, 'nullable');
         }
@@ -153,19 +158,28 @@ class GuruController extends Controller
 
         $guruUser = null;
         if (! $isAssistant) {
-            $guruUser = User::query()->create([
-                'name' => $data['name'],
-                'nama_samaran' => null,
-                'email' => $data['email'],
-                'tarikh_lahir' => null,
-                'tarikh_exp_skim_pas' => null,
-                'avatar_path' => null,
-                'password' => Hash::make($data['password'] ?: GuruProfileCompletionService::DEFAULT_GURU_PASSWORD),
-                'locale' => 'ms',
-                'force_password_change' => true,
-            ]);
+            $guruUser = User::query()->where('email', $data['email'])->first();
 
-            $guruUser->syncRoles(['guru']);
+            if ($guruUser) {
+                $guruUser->update([
+                    'name' => $data['name'],
+                    ...(! empty($data['password']) ? ['password' => Hash::make($data['password'])] : []),
+                ]);
+            } else {
+                $guruUser = User::query()->create([
+                    'name' => $data['name'],
+                    'nama_samaran' => null,
+                    'email' => $data['email'],
+                    'tarikh_lahir' => null,
+                    'tarikh_exp_skim_pas' => null,
+                    'avatar_path' => null,
+                    'password' => Hash::make($data['password'] ?: GuruProfileCompletionService::DEFAULT_GURU_PASSWORD),
+                    'locale' => 'ms',
+                    'force_password_change' => true,
+                ]);
+            }
+
+            $guruUser->assignRole('guru');
         }
 
         $guru = Guru::query()->create([
@@ -233,8 +247,13 @@ class GuruController extends Controller
             $emailRules[] = 'nullable';
             $passwordRules[] = 'nullable';
         } else {
-            $emailRules[] = Rule::unique('users', 'email')->ignore($users_guru->user_id);
             $emailRules[] = 'required';
+            $emailRules[] = function ($attribute, $value, $fail) use ($users_guru) {
+                $existingUser = User::where('email', $value)->where('id', '<>', $users_guru->user_id)->first();
+                if ($existingUser && $existingUser->hasRole('guru')) {
+                    $fail('E-mel ini telah digunakan oleh guru lain.');
+                }
+            };
             $passwordRules[] = 'nullable';
         }
 
@@ -271,7 +290,28 @@ class GuruController extends Controller
                 $formerUser?->delete();
             }
         } else {
-            if ($users_guru->user_id) {
+            $existingUserWithEmail = User::where('email', $data['email'])->where('id', '<>', $users_guru->user_id)->first();
+
+            if ($existingUserWithEmail) {
+                // If there was a previous separate user for this guru, delete it
+                $oldGuruUser = $users_guru->user;
+                
+                $users_guru->user_id = $existingUserWithEmail->id;
+                $users_guru->save();
+
+                $existingUserWithEmail->update([
+                    'name' => $data['name'],
+                    'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
+                    'tarikh_lahir' => $data['tarikh_lahir'],
+                    'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
+                    ...(! empty($data['password']) ? ['password' => Hash::make($data['password'])] : []),
+                ]);
+                $existingUserWithEmail->assignRole('guru');
+
+                if ($oldGuruUser && $oldGuruUser->id !== $existingUserWithEmail->id) {
+                    $oldGuruUser->delete();
+                }
+            } elseif ($users_guru->user_id) {
                 $users_guru->user?->update([
                     'name' => $data['name'],
                     'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
@@ -289,9 +329,9 @@ class GuruController extends Controller
                     'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
                     'password' => Hash::make($data['password'] ?: GuruProfileCompletionService::DEFAULT_GURU_PASSWORD),
                     'locale' => 'ms',
-                'force_password_change' => true,
+                    'force_password_change' => true,
                 ]);
-                $newGuruUser->syncRoles(['guru']);
+                $newGuruUser->assignRole('guru');
                 if ($existingGuruAvatar) {
                     $newGuruUser->avatar_path = $existingGuruAvatar;
                     $newGuruUser->save();

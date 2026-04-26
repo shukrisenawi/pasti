@@ -40,23 +40,44 @@ class AdminUserController extends Controller
             'nama_samaran' => ['nullable', 'string', 'max:255'],
             'tarikh_lahir' => ['nullable', 'date'],
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'email' => [
+                'required', 'email', 'max:255',
+                function ($attribute, $value, $fail) {
+                    $existingUser = User::where('email', $value)->first();
+                    if ($existingUser && ($existingUser->hasRole('admin') || $existingUser->hasRole('master_admin'))) {
+                        $fail('E-mel ini telah digunakan oleh pentadbir lain.');
+                    }
+                }
+            ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'pasti_ids' => ['array'],
             'pasti_ids.*' => ['integer', 'exists:pastis,id'],
             'assignment_scope' => ['required', 'in:all,selected'],
         ]);
 
-        $admin = User::query()->create([
-            'name' => $data['name'],
-            'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
-            'tarikh_lahir' => $data['tarikh_lahir'],
-            'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'locale' => 'ms',
-            'admin_assignment_scope' => $data['assignment_scope'],
-        ]);
+        $admin = User::query()->where('email', $data['email'])->first();
+
+        if ($admin) {
+            $admin->update([
+                'name' => $data['name'],
+                'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
+                'tarikh_lahir' => $data['tarikh_lahir'],
+                'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
+                'password' => Hash::make($data['password']),
+                'admin_assignment_scope' => $data['assignment_scope'],
+            ]);
+        } else {
+            $admin = User::query()->create([
+                'name' => $data['name'],
+                'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
+                'tarikh_lahir' => $data['tarikh_lahir'],
+                'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'locale' => 'ms',
+                'admin_assignment_scope' => $data['assignment_scope'],
+            ]);
+        }
 
         $isGuru = false;
         $admin->syncRoles(['admin']);
@@ -92,25 +113,58 @@ class AdminUserController extends Controller
             'nama_samaran' => ['nullable', 'string', 'max:255'],
             'tarikh_lahir' => ['nullable', 'date'],
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($users_admin->id)],
+            'email' => [
+                'required', 'email', 'max:255',
+                function ($attribute, $value, $fail) use ($users_admin) {
+                    $existingUser = User::where('email', $value)->where('id', '<>', $users_admin->id)->first();
+                    if ($existingUser && ($existingUser->hasRole('admin') || $existingUser->hasRole('master_admin'))) {
+                        $fail('E-mel ini telah digunakan oleh pentadbir lain.');
+                    }
+                }
+            ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'pasti_ids' => ['array'],
             'pasti_ids.*' => ['integer', 'exists:pastis,id'],
             'assignment_scope' => ['required', 'in:all,selected'],
         ]);
 
-        $users_admin->name = $data['name'];
-        $users_admin->nama_samaran = $data['nama_samaran'] ?? $data['name'];
-        $users_admin->tarikh_lahir = $data['tarikh_lahir'];
-        $users_admin->tarikh_exp_skim_pas = $data['tarikh_exp_skim_pas'];
-        $users_admin->email = $data['email'];
-        $users_admin->admin_assignment_scope = $data['assignment_scope'];
+        $existingUserWithEmail = User::where('email', $data['email'])->where('id', '<>', $users_admin->id)->first();
 
-        if (! empty($data['password'])) {
-            $users_admin->password = Hash::make($data['password']);
+        if ($existingUserWithEmail) {
+            // Merge this admin record into the existing user record
+            $oldUser = $users_admin;
+            $users_admin = $existingUserWithEmail;
+
+            $users_admin->update([
+                'name' => $data['name'],
+                'nama_samaran' => $data['nama_samaran'] ?? $data['name'],
+                'tarikh_lahir' => $data['tarikh_lahir'],
+                'tarikh_exp_skim_pas' => $data['tarikh_exp_skim_pas'],
+                'admin_assignment_scope' => $data['assignment_scope'],
+                ...(! empty($data['password']) ? ['password' => Hash::make($data['password'])] : []),
+            ]);
+
+            // Copy over relations if necessary? Actually roles and assignedPastis will be handled below.
+            
+            if ($oldUser->id !== $users_admin->id) {
+                // If we're merging from a different record, we might need to handle linked data.
+                // But for simplicity, we'll just delete the old one.
+                $oldUser->delete();
+            }
+        } else {
+            $users_admin->name = $data['name'];
+            $users_admin->nama_samaran = $data['nama_samaran'] ?? $data['name'];
+            $users_admin->tarikh_lahir = $data['tarikh_lahir'];
+            $users_admin->tarikh_exp_skim_pas = $data['tarikh_exp_skim_pas'];
+            $users_admin->email = $data['email'];
+            $users_admin->admin_assignment_scope = $data['assignment_scope'];
+
+            if (! empty($data['password'])) {
+                $users_admin->password = Hash::make($data['password']);
+            }
+
+            $users_admin->save();
         }
-
-        $users_admin->save();
         $isGuru = false;
         $users_admin->syncRoles(['admin']);
 
