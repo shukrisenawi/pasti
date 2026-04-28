@@ -1,12 +1,8 @@
 import './bootstrap';
 
-import Alpine from 'alpinejs';
 import { balloons } from 'balloons-js';
 
-window.Alpine = Alpine;
 window.balloons = balloons;
-
-Alpine.start();
 
 const REQUIRED_FIELD_SELECTOR = 'input[required], select[required], textarea[required]';
 const GENERATED_ASTERISK_ATTR = 'data-generated-required-asterisk';
