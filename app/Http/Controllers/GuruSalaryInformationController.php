@@ -76,6 +76,7 @@ class GuruSalaryInformationController extends Controller
             'latestCompletedRequests' => $requestGroups->map(fn ($items) => $items->firstWhere(fn (GuruSalaryRequest $item) => $item->completed_at !== null)),
             'canRequest' => $user->isOperatingAsAdmin(),
             'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
+            'hasPendingRequests' => $hasPendingRequests,
             'isGuru' => $user->isOperatingAsGuru(),
             'guruId' => $user->guru?->id,
             'search' => $search,
@@ -126,6 +127,50 @@ class GuruSalaryInformationController extends Controller
         );
 
         return back()->with('status', __('messages.guru_salary_info_request_sent'));
+    }
+
+    public function requestPendingResponses(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->isOperatingAsAdmin(), 403);
+
+        $accessibleGurusQuery = $this->accessibleGurusQueryForUser($user);
+        $guruIds = (clone $accessibleGurusQuery)->pluck('gurus.id');
+
+        if ($guruIds->isEmpty()) {
+            return back()->with('status', 'Tiada guru untuk dihantar.');
+        }
+
+        $pendingGuruIds = GuruSalaryRequest::query()
+            ->whereIn('guru_id', $guruIds->all())
+            ->whereNull('completed_at')
+            ->pluck('guru_id')
+            ->unique()
+            ->values();
+
+        if ($pendingGuruIds->isEmpty()) {
+            return back()->with('status', 'Semua guru sudah hantar respon.');
+        }
+
+        $pendingGurus = (clone $accessibleGurusQuery)
+            ->select('gurus.*')
+            ->with('user')
+            ->whereIn('gurus.id', $pendingGuruIds->all())
+            ->orderBy('gurus.id')
+            ->get();
+
+        $senaraiGuru = $pendingGurus
+            ->values()
+            ->map(fn (Guru $guru, int $index) => ($index + 1) . '- ' . $guru->display_name)
+            ->implode("\n");
+
+        $this->n8nWebhookService->sendByTemplate(
+            N8nWebhookService::KEY_TEXT_GURU_SALARY_RESPONSE_REMINDER,
+            ['senarai_guru' => $senaraiGuru],
+            $this->n8nWebhookService->toActionUrl(route('guru-salary-information.index'))
+        );
+
+        return back()->with('status', 'Permintaan respon telah dihantar kepada group guru.');
     }
 
     public function edit(Request $request, GuruSalaryRequest $guruSalaryRequest): View|RedirectResponse

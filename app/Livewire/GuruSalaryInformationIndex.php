@@ -75,6 +75,7 @@ class GuruSalaryInformationIndex extends Component
             'latestCompletedRequests' => $requestGroups->map(fn (Collection $items) => $items->firstWhere(fn (GuruSalaryRequest $item) => $item->completed_at !== null)),
             'canRequest' => $user->isOperatingAsAdmin(),
             'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
+            'hasPendingRequests' => $hasPendingRequests,
             'isGuru' => $user->isOperatingAsGuru(),
             'guruId' => $user->guru?->id,
         ]);

@@ -111,6 +111,12 @@
             </div>
 
             <div>
+                <label for="text_guru_salary_response_reminder" class="label-base">Teks Group Guru - Minta Respond Elaun <span class="text-rose-600">*</span></label>
+                <textarea id="text_guru_salary_response_reminder" name="text_guru_salary_response_reminder" rows="4" required class="input-base">{{ old('text_guru_salary_response_reminder', $settings['text_guru_salary_response_reminder'] ?? '') }}</textarea>
+                <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{senarai_guru}</code></p>
+            </div>
+
+            <div>
                 <label for="text_admin_broadcast" class="label-base">Teks Group Guru - Hebahan Admin <span class="text-rose-600">*</span></label>
                 <textarea id="text_admin_broadcast" name="text_admin_broadcast" rows="3" required class="input-base">{{ old('text_admin_broadcast', $settings['text_admin_broadcast'] ?? '') }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_penghantar}</code>, <code>{jumlah_guru}</code>, <code>{mesej}</code></p>

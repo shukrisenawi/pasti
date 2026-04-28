@@ -14,6 +14,13 @@
                     {{ __('messages.request_latest_guru_salary_info_all') }}
                 </button>
             </form>
+
+            <form method="POST" action="{{ route('guru-salary-information.request-reminder') }}">
+                @csrf
+                <button class="btn btn-outline" @disabled(! ($hasPendingRequests ?? false))>
+                    Minta respond
+                </button>
+            </form>
         @endif
     </div>
 

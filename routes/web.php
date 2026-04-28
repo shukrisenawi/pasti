@@ -72,6 +72,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/kelas/{kela}/student-count', [KelasController::class, 'updateStudentCount'])->name('kelas.student-count.update');
         Route::post('/maklumat-pasti/request-all', [PastiInformationController::class, 'requestAllUpdates'])->name('pasti-information.request-all');
         Route::post('/maklumat-gaji-guru/request-all', [GuruSalaryInformationController::class, 'requestAllUpdates'])->name('guru-salary-information.request-all');
+        Route::post('/maklumat-gaji-guru/request-reminder', [GuruSalaryInformationController::class, 'requestPendingResponses'])->name('guru-salary-information.request-reminder');
         Route::resource('/programs', ProgramController::class)->except(['index', 'show']);
         Route::get('/kpi/gurus', [KpiController::class, 'index'])->name('kpi.gurus.index');
         Route::get('/users/expired-skim-pas', [AdminUserController::class, 'expiredSkimPas'])->name('users.expired-skim-pas');

@@ -8,6 +8,7 @@ use App\Models\Guru;
 use App\Models\Kawasan;
 use App\Models\Pasti;
 use App\Models\User;
+use App\Services\N8nWebhookService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -121,6 +122,32 @@ class GuruSalaryInformationSortingTest extends TestCase
         );
     }
 
+    public function test_request_pending_responses_sends_numbered_guru_list_to_n8n(): void
+    {
+        $this->seedPendingGurusForReminder();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/maklumat-gaji-guru')))
+            ->andReturn('https://example.test/maklumat-gaji-guru');
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_GURU_SALARY_RESPONSE_REMINDER,
+                ['senarai_guru' => "1- Ahmad\n2- Siti\n3- Nurul"],
+                'https://example.test/maklumat-gaji-guru'
+            );
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $this->from('/maklumat-gaji-guru')
+            ->actingAs($this->masterAdmin())
+            ->post(route('guru-salary-information.request-reminder'))
+            ->assertRedirect('/maklumat-gaji-guru')
+            ->assertSessionHas('status', 'Permintaan respon telah dihantar kepada group guru.');
+    }
+
     private function masterAdmin(): User
     {
         $user = User::query()->create([
@@ -194,5 +221,43 @@ class GuruSalaryInformationSortingTest extends TestCase
         \DB::table('guru_salary_requests')
             ->where('guru_id', $gurus[2]->id)
             ->update(['completed_at' => now()->addDay()]);
+    }
+
+    private function seedPendingGurusForReminder(): void
+    {
+        $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
+        $pasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Alpha',
+        ]);
+
+        foreach (['Ahmad', 'Siti', 'Nurul'] as $name) {
+            $user = User::query()->create([
+                'name' => $name,
+                'nama_samaran' => $name,
+                'email' => strtolower($name).uniqid().'@example.test',
+            ]);
+
+            $guru = Guru::query()->create([
+                'user_id' => $user->id,
+                'pasti_id' => $pasti->id,
+                'name' => $name,
+                'email' => $user->email,
+                'is_assistant' => false,
+                'active' => true,
+            ]);
+
+            \DB::table('guru_salary_requests')->insert([
+                'guru_id' => $guru->id,
+                'requested_by' => null,
+                'requested_at' => now()->subDay(),
+                'completed_by' => null,
+                'completed_at' => null,
+                'gaji' => null,
+                'elaun' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 }
