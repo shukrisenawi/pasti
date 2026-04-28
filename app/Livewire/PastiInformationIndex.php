@@ -69,6 +69,7 @@ class PastiInformationIndex extends Component
             'latestCompletedRequests' => $requestGroups->map(fn (Collection $items) => $items->firstWhere(fn (PastiInformationRequest $item) => $item->completed_at !== null)),
             'canRequest' => $user->isOperatingAsAdmin(),
             'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessiblePastiIds->isNotEmpty(),
+            'hasPendingRequests' => $hasPendingRequests,
             'isGuru' => $user->isOperatingAsGuru(),
             'guruPastiId' => $user->guru?->pasti_id,
         ]);

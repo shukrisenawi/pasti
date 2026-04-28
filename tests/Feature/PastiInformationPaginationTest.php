@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\EnsureGuruWebOnboardingCompleted;
+use App\Http\Controllers\PastiInformationController;
 use App\Livewire\PastiInformationIndex;
 use App\Models\Kawasan;
 use App\Models\Pasti;
 use App\Models\User;
+use App\Services\N8nWebhookService;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -190,6 +193,34 @@ class PastiInformationPaginationTest extends TestCase
             ->assertDontSee('PASTI Ujian 10');
     }
 
+    public function test_request_pending_responses_sends_numbered_pasti_list_to_n8n(): void
+    {
+        $this->seedPastisForReminder();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/maklumat-pasti')))
+            ->andReturn('https://example.test/maklumat-pasti');
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_PASTI_INFO_RESPONSE_REMINDER,
+                ['senarai_pasti' => "1- PASTI Alpha\n2- PASTI Gamma"],
+                'https://example.test/maklumat-pasti'
+            );
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $admin = $this->adminUserWithAssignedPastis();
+        $request = Request::create('/maklumat-pasti/request-reminder', 'POST');
+        $request->setUserResolver(fn (): User => $admin);
+
+        $response = app(PastiInformationController::class)->requestPendingResponses($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+    }
+
     private function attachRole(User $user, string $roleName): void
     {
         $roleId = (int) \DB::table('roles')->where('name', $roleName)->value('id');
@@ -220,5 +251,57 @@ class PastiInformationPaginationTest extends TestCase
         }
 
         $this->actingAs($user);
+    }
+
+    private function seedPastisForReminder(): void
+    {
+        $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
+
+        foreach (['PASTI Alpha', 'PASTI Beta', 'PASTI Gamma'] as $index => $name) {
+            $pasti = Pasti::query()->create([
+                'kawasan_id' => $kawasan->id,
+                'name' => $name,
+            ]);
+
+            \DB::table('pasti_information_requests')->insert([
+                'pasti_id' => $pasti->id,
+                'requested_by' => null,
+                'requested_at' => now()->subHours(3 - $index),
+                'completed_by' => null,
+                'completed_at' => $name === 'PASTI Beta' ? now() : null,
+                'jumlah_guru' => 2,
+                'jumlah_pembantu_guru' => 1,
+                'murid_lelaki_4_tahun' => 1,
+                'murid_perempuan_4_tahun' => 1,
+                'murid_lelaki_5_tahun' => 1,
+                'murid_perempuan_5_tahun' => 1,
+                'murid_lelaki_6_tahun' => 1,
+                'murid_perempuan_6_tahun' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    }
+
+    private function adminUserWithAssignedPastis(): User
+    {
+        $admin = User::query()->create([
+            'name' => 'Admin',
+            'nama_samaran' => 'Admin',
+            'email' => 'admin'.uniqid().'@example.test',
+        ]);
+        $this->attachRole($admin, 'admin');
+
+        $pastiIds = Pasti::query()->pluck('id')->all();
+        foreach ($pastiIds as $pastiId) {
+            \DB::table('admin_pasti')->insert([
+                'user_id' => $admin->id,
+                'pasti_id' => $pastiId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return $admin;
     }
 }

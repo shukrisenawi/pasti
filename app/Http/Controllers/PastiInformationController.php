@@ -75,6 +75,50 @@ class PastiInformationController extends Controller
         return back()->with('status', __('messages.pasti_info_request_sent'));
     }
 
+    public function requestPendingResponses(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->isOperatingAsAdmin(), 403);
+
+        $accessiblePastisQuery = $this->accessiblePastisQueryForUser($user);
+        $pastiIds = (clone $accessiblePastisQuery)->pluck('pastis.id');
+
+        if ($pastiIds->isEmpty()) {
+            return back()->with('status', 'Tiada PASTI untuk dihantar.');
+        }
+
+        $pendingPastiIds = PastiInformationRequest::query()
+            ->whereIn('pasti_id', $pastiIds->all())
+            ->whereNull('completed_at')
+            ->pluck('pasti_id')
+            ->unique()
+            ->values();
+
+        if ($pendingPastiIds->isEmpty()) {
+            return back()->with('status', 'Semua PASTI sudah hantar respon.');
+        }
+
+        $pendingPastis = (clone $accessiblePastisQuery)
+            ->select('pastis.*')
+            ->with('kawasan')
+            ->whereIn('pastis.id', $pendingPastiIds->all())
+            ->orderBy('pastis.name')
+            ->get();
+
+        $senaraiPasti = $pendingPastis
+            ->values()
+            ->map(fn (Pasti $pasti, int $index) => ($index + 1) . '- ' . $pasti->name)
+            ->implode("\n");
+
+        $this->n8nWebhookService->sendByTemplate(
+            N8nWebhookService::KEY_TEXT_PASTI_INFO_RESPONSE_REMINDER,
+            ['senarai_pasti' => $senaraiPasti],
+            $this->n8nWebhookService->toActionUrl(route('pasti-information.index'))
+        );
+
+        return back()->with('status', 'Permintaan respon telah dihantar kepada group guru.');
+    }
+
     public function edit(Request $request, PastiInformationRequest $pastiInformationRequest): View|RedirectResponse
     {
         $user = $request->user();

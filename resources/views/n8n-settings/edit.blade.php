@@ -81,6 +81,12 @@
             </div>
 
             <div>
+                <label for="text_pasti_info_response_reminder" class="label-base">Teks Group Guru - Minta Respond PASTI <span class="text-rose-600">*</span></label>
+                <textarea id="text_pasti_info_response_reminder" name="text_pasti_info_response_reminder" rows="4" required class="input-base">{{ old('text_pasti_info_response_reminder', $settings['text_pasti_info_response_reminder'] ?? '') }}</textarea>
+                <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{senarai_pasti}</code></p>
+            </div>
+
+            <div>
                 <label for="text_guru_course_offer" class="label-base">Teks Permintaan Kursus Guru <span class="text-rose-600">*</span></label>
                 <textarea id="text_guru_course_offer" name="text_guru_course_offer" rows="3" required class="input-base">{{ old('text_guru_course_offer', $settings['text_guru_course_offer'] ?? '') }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{semester}</code>, <code>{tarikh_akhir}</code>, <code>{nota}</code></p>

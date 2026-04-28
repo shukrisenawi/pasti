@@ -14,6 +14,13 @@
                     {{ __('messages.request_latest_pasti_info_all') }}
                 </button>
             </form>
+
+            <form method="POST" action="{{ route('pasti-information.request-reminder') }}">
+                @csrf
+                <button class="btn btn-outline" @disabled(! ($hasPendingRequests ?? false))>
+                    Minta respon
+                </button>
+            </form>
         @endif
     </div>
 
