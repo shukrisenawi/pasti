@@ -38,12 +38,19 @@ class PastiInformationIndex extends Component
                 ->exists();
 
         $pastis = (clone $accessiblePastisQuery)
+            ->select('pastis.*')
+            ->selectSub(
+                PastiInformationRequest::query()
+                    ->selectRaw('MAX(completed_at)')
+                    ->whereColumn('pasti_information_requests.pasti_id', 'pastis.id'),
+                'latest_response_at'
+            )
             ->with('kawasan')
             ->when(
                 trim($this->search) !== '',
                 fn (Builder $query) => $query->where('name', 'like', '%' . trim($this->search) . '%')
             )
-            ->orderByDesc('updated_at')
+            ->orderByDesc('latest_response_at')
             ->orderByDesc('id')
             ->paginate(9, ['*'], self::PAGE_NAME);
 

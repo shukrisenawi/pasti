@@ -135,13 +135,27 @@ class PastiInformationPaginationTest extends TestCase
             ->assertDontSee('PASTI Ujian 10');
     }
 
-    public function test_pasti_information_page_orders_by_latest_updated_record_first(): void
+    public function test_pasti_information_page_orders_by_latest_completed_response_first(): void
     {
         $this->seedPastisForPagination();
 
-        Pasti::query()
-            ->where('name', 'PASTI Ujian 03')
-            ->update(['updated_at' => now()->addHour()]);
+        \DB::table('pasti_information_requests')->insert([
+            'pasti_id' => Pasti::query()->where('name', 'PASTI Ujian 03')->value('id'),
+            'requested_by' => null,
+            'requested_at' => now()->subHour(),
+            'completed_by' => null,
+            'completed_at' => now()->addHour(),
+            'jumlah_guru' => 1,
+            'jumlah_pembantu_guru' => 1,
+            'murid_lelaki_4_tahun' => 1,
+            'murid_perempuan_4_tahun' => 1,
+            'murid_lelaki_5_tahun' => 1,
+            'murid_perempuan_5_tahun' => 1,
+            'murid_lelaki_6_tahun' => 1,
+            'murid_perempuan_6_tahun' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         Livewire::test(PastiInformationIndex::class)
             ->assertSeeInOrder(['PASTI Ujian 03', 'PASTI Ujian 10']);
