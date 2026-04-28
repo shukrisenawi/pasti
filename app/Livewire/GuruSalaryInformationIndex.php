@@ -38,6 +38,13 @@ class GuruSalaryInformationIndex extends Component
                 ->exists();
 
         $gurus = (clone $accessibleGurusQuery)
+            ->select('gurus.*')
+            ->selectSub(
+                GuruSalaryRequest::query()
+                    ->selectRaw('MAX(completed_at)')
+                    ->whereColumn('guru_salary_requests.guru_id', 'gurus.id'),
+                'latest_response_at'
+            )
             ->with(['pasti', 'user'])
             ->when(
                 trim($this->search) !== '',
@@ -49,8 +56,7 @@ class GuruSalaryInformationIndex extends Component
                 })
             )
             ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
-            ->select('gurus.*')
-            ->orderByDesc('gurus.updated_at')
+            ->orderByDesc('latest_response_at')
             ->orderByDesc('gurus.id')
             ->paginate(9, pageName: self::PAGE_NAME);
 

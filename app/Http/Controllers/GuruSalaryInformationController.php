@@ -36,6 +36,13 @@ class GuruSalaryInformationController extends Controller
                 ->exists();
 
         $gurus = (clone $accessibleGurusQuery)
+            ->select('gurus.*')
+            ->selectSub(
+                GuruSalaryRequest::query()
+                    ->selectRaw('MAX(completed_at)')
+                    ->whereColumn('guru_salary_requests.guru_id', 'gurus.id'),
+                'latest_response_at'
+            )
             ->with(['pasti', 'user'])
             ->when(
                 $search !== '',
@@ -47,7 +54,7 @@ class GuruSalaryInformationController extends Controller
                 })
             )
             ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
-            ->select('gurus.*')
+            ->orderByDesc('latest_response_at')
             ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
             ->orderBy('pastis.name')
             ->orderBy('gurus.name')
