@@ -43,7 +43,7 @@ class PastiInformationIndex extends Component
                 trim($this->search) !== '',
                 fn (Builder $query) => $query->where('name', 'like', '%' . trim($this->search) . '%')
             )
-            ->orderBy('name')
+            ->orderByDesc('updated_at')
             ->paginate(9, pageName: self::PAGE_NAME);
 
         $pastiIds = collect($pastis->items())->pluck('id')->all();
@@ -59,9 +59,9 @@ class PastiInformationIndex extends Component
             'pastis' => $pastis,
             'latestRequests' => $requestGroups->map(fn (Collection $items) => $items->first()),
             'latestCompletedRequests' => $requestGroups->map(fn (Collection $items) => $items->firstWhere(fn (PastiInformationRequest $item) => $item->completed_at !== null)),
-            'canRequest' => $user->hasAnyRole(['master_admin', 'admin']),
-            'canRequestAll' => $user->hasAnyRole(['master_admin', 'admin']) && ! $hasPendingRequests && $allAccessiblePastiIds->isNotEmpty(),
-            'isGuru' => $user->hasRole('guru'),
+            'canRequest' => $user->isOperatingAsAdmin(),
+            'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessiblePastiIds->isNotEmpty(),
+            'isGuru' => $user->isOperatingAsGuru(),
             'guruPastiId' => $user->guru?->pasti_id,
         ]);
     }
@@ -70,7 +70,7 @@ class PastiInformationIndex extends Component
     {
         $query = Pasti::query();
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             $query->whereKey($user->guru?->pasti_id ?: 0);
         } elseif ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
             $query->whereIn('id', $this->assignedPastiIds($user));

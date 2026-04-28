@@ -50,9 +50,7 @@ class GuruSalaryInformationIndex extends Component
             )
             ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
             ->select('gurus.*')
-            ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
-            ->orderBy('pastis.name')
-            ->orderBy('gurus.name')
+            ->orderByDesc('gurus.updated_at')
             ->paginate(9, pageName: self::PAGE_NAME);
 
         $guruIds = collect($gurus->items())->pluck('id')->all();
@@ -68,9 +66,9 @@ class GuruSalaryInformationIndex extends Component
             'gurus' => $gurus,
             'latestRequests' => $requestGroups->map(fn (Collection $items) => $items->first()),
             'latestCompletedRequests' => $requestGroups->map(fn (Collection $items) => $items->firstWhere(fn (GuruSalaryRequest $item) => $item->completed_at !== null)),
-            'canRequest' => $user->hasAnyRole(['master_admin', 'admin']),
-            'canRequestAll' => $user->hasAnyRole(['master_admin', 'admin']) && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
-            'isGuru' => $user->hasRole('guru'),
+            'canRequest' => $user->isOperatingAsAdmin(),
+            'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
+            'isGuru' => $user->isOperatingAsGuru(),
             'guruId' => $user->guru?->id,
         ]);
     }
@@ -82,7 +80,7 @@ class GuruSalaryInformationIndex extends Component
             ->where('active', true)
             ->whereNotNull('user_id');
 
-        if ($user->hasRole('guru')) {
+        if ($user->isOperatingAsGuru()) {
             $query->whereKey($user->guru?->id ?: 0);
         } elseif ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
             $query->whereIn('pasti_id', $this->assignedPastiIds($user));

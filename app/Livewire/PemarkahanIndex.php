@@ -475,7 +475,7 @@ class PemarkahanIndex extends Component
 
     private function isGuruOnly(User $user): bool
     {
-        return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
+        return $user->isOperatingAsGuru();
     }
 
     private function sendScoreNotifications(array $rowsToUpsert, int $titleOptionId, int $year): void

@@ -47,12 +47,12 @@ class ProgramIndex extends Component
 
         return view('livewire.program-index', [
             'programs' => $query->paginate(9),
-            'canManageProgram' => $user->hasAnyRole(['master_admin', 'admin']),
+            'canManageProgram' => $user->isOperatingAsAdmin(),
         ]);
     }
 
     private function isGuruOnly(User $user): bool
     {
-        return $user->hasRole('guru') && ! $user->hasAnyRole(['master_admin', 'admin']);
+        return $user->isOperatingAsGuru();
     }
 }
