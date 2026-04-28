@@ -111,8 +111,8 @@ class PastiInformationPaginationTest extends TestCase
         $this->seedPastisForPagination();
 
         Livewire::test(PastiInformationIndex::class)
-            ->assertSee('PASTI Ujian 01')
-            ->assertDontSee('PASTI Ujian 10');
+            ->assertSee('PASTI Ujian 10')
+            ->assertDontSee('PASTI Ujian 01');
     }
 
     public function test_pasti_information_page_ignores_default_page_query_string(): void
@@ -121,8 +121,8 @@ class PastiInformationPaginationTest extends TestCase
 
         Livewire::withQueryParams(['page' => 2])
             ->test(PastiInformationIndex::class)
-            ->assertSee('PASTI Ujian 01')
-            ->assertDontSee('PASTI Ujian 10');
+            ->assertSee('PASTI Ujian 10')
+            ->assertDontSee('PASTI Ujian 01');
     }
 
     public function test_pasti_information_page_uses_dedicated_pagination_query_string(): void
@@ -131,8 +131,20 @@ class PastiInformationPaginationTest extends TestCase
 
         Livewire::withQueryParams(['pastiInfoPage' => 2])
             ->test(PastiInformationIndex::class)
-            ->assertSee('PASTI Ujian 10')
-            ->assertDontSee('PASTI Ujian 01');
+            ->assertSee('PASTI Ujian 01')
+            ->assertDontSee('PASTI Ujian 10');
+    }
+
+    public function test_pasti_information_page_orders_by_latest_updated_record_first(): void
+    {
+        $this->seedPastisForPagination();
+
+        Pasti::query()
+            ->where('name', 'PASTI Ujian 03')
+            ->update(['updated_at' => now()->addHour()]);
+
+        Livewire::test(PastiInformationIndex::class)
+            ->assertSeeInOrder(['PASTI Ujian 03', 'PASTI Ujian 10']);
     }
 
     public function test_admin_pasti_information_page_uses_dedicated_pagination_query_string(): void
@@ -160,8 +172,8 @@ class PastiInformationPaginationTest extends TestCase
 
         Livewire::withQueryParams(['pastiInfoPage' => 2])
             ->test(PastiInformationIndex::class)
-            ->assertSee('PASTI Ujian 10')
-            ->assertDontSee('PASTI Ujian 01');
+            ->assertSee('PASTI Ujian 01')
+            ->assertDontSee('PASTI Ujian 10');
     }
 
     private function attachRole(User $user, string $roleName): void
