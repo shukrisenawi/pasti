@@ -175,7 +175,7 @@ class GuruSalaryInformationController extends Controller
             $this->n8nWebhookService->toActionUrl(route('guru-salary-information.index'))
         );
 
-        return back()->with('status', 'Permintaan respon telah dihantar kepada group guru.');
+        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
     }
 
     public function edit(Request $request, GuruSalaryRequest $guruSalaryRequest): View|RedirectResponse

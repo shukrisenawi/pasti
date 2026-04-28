@@ -116,7 +116,7 @@ class PastiInformationController extends Controller
             $this->n8nWebhookService->toActionUrl(route('pasti-information.index'))
         );
 
-        return back()->with('status', 'Permintaan respon telah dihantar kepada group guru.');
+        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
     }
 
     public function edit(Request $request, PastiInformationRequest $pastiInformationRequest): View|RedirectResponse

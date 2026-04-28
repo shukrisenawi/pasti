@@ -219,6 +219,7 @@ class PastiInformationPaginationTest extends TestCase
         $response = app(PastiInformationController::class)->requestPendingResponses($request);
 
         $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
     private function attachRole(User $user, string $roleName): void

@@ -145,7 +145,7 @@ class GuruSalaryInformationSortingTest extends TestCase
             ->actingAs($this->masterAdmin())
             ->post(route('guru-salary-information.request-reminder'))
             ->assertRedirect('/maklumat-gaji-guru')
-            ->assertSessionHas('status', 'Permintaan respon telah dihantar kepada group guru.');
+            ->assertSessionHas('status', 'Mesej telah berjaya dihantar ke group guru.');
     }
 
     private function masterAdmin(): User
