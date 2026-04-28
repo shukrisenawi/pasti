@@ -222,6 +222,35 @@ class PastiInformationPaginationTest extends TestCase
         $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
+    public function test_send_thanks_sends_thank_you_message_when_all_pasti_completed(): void
+    {
+        $this->seedPastisForThanks();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/maklumat-pasti')))
+            ->andReturn('https://example.test/maklumat-pasti');
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                \Mockery::on(fn (array $variables) => ($variables['perkara'] ?? null) === 'maklumat PASTI' && filled($variables['tarikh'] ?? null)),
+                'https://example.test/maklumat-pasti'
+            );
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $admin = $this->adminUserWithAssignedPastis();
+        $request = Request::create('/maklumat-pasti/send-thanks', 'POST');
+        $request->setUserResolver(fn (): User => $admin);
+
+        $response = app(PastiInformationController::class)->sendThanks($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
+    }
+
     private function attachRole(User $user, string $roleName): void
     {
         $roleId = (int) \DB::table('roles')->where('name', $roleName)->value('id');
@@ -270,6 +299,36 @@ class PastiInformationPaginationTest extends TestCase
                 'requested_at' => now()->subHours(3 - $index),
                 'completed_by' => null,
                 'completed_at' => $name === 'PASTI Beta' ? now() : null,
+                'jumlah_guru' => 2,
+                'jumlah_pembantu_guru' => 1,
+                'murid_lelaki_4_tahun' => 1,
+                'murid_perempuan_4_tahun' => 1,
+                'murid_lelaki_5_tahun' => 1,
+                'murid_perempuan_5_tahun' => 1,
+                'murid_lelaki_6_tahun' => 1,
+                'murid_perempuan_6_tahun' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    }
+
+    private function seedPastisForThanks(): void
+    {
+        $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
+
+        foreach (['PASTI Alpha', 'PASTI Beta'] as $name) {
+            $pasti = Pasti::query()->create([
+                'kawasan_id' => $kawasan->id,
+                'name' => $name,
+            ]);
+
+            \DB::table('pasti_information_requests')->insert([
+                'pasti_id' => $pasti->id,
+                'requested_by' => null,
+                'requested_at' => now()->subHours(2),
+                'completed_by' => 1,
+                'completed_at' => now(),
                 'jumlah_guru' => 2,
                 'jumlah_pembantu_guru' => 1,
                 'murid_lelaki_4_tahun' => 1,

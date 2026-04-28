@@ -124,6 +124,7 @@ class ProgramController extends Controller
         $submittedParticipations = $allParticipations
             ->filter(fn ($participation) => filled($participation->program_status_id))
             ->values();
+        $pendingReminderGurus = $this->pendingReminderGurusForProgram($program);
 
         $program->setRelation('participations', $allParticipations);
 
@@ -136,8 +137,9 @@ class ProgramController extends Controller
                 ->orderBy('is_hadir', 'desc')
                 ->get(),
             'canManage' => $user->hasRole('master_admin') || $user->hasRole('admin'),
-            'canRequestReminder' => $user->hasRole('master_admin') || $user->hasRole('admin'),
-            'programPendingReminderCount' => $program->participations->whereNull('program_status_id')->count(),
+            'canRequestReminder' => ($user->hasRole('master_admin') || $user->hasRole('admin')) && $pendingReminderGurus->isNotEmpty(),
+            'canSendThanks' => ($user->hasRole('master_admin') || $user->hasRole('admin')) && $program->participations->isNotEmpty() && $pendingReminderGurus->isEmpty(),
+            'programPendingReminderCount' => $pendingReminderGurus->count(),
             'canUpdateOwn' => $user->isOperatingAsGuru() && (bool) $user->guru,
             'currentGuruId' => $user->guru?->id,
             'isAllTeachers' => $program->gurus()->count() === count($this->activeGuruIds()),
@@ -244,15 +246,7 @@ class ProgramController extends Controller
         abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
 
         $program->loadMissing('participations.guru.user');
-
-        $pendingGurus = $program->participations
-            ->whereNull('program_status_id')
-            ->pluck('guru')
-            ->filter()
-            ->reject(fn (Guru $guru): bool => $this->isTestReminderAccount($guru))
-            ->unique('id')
-            ->sortBy(fn (Guru $guru) => $guru->display_name)
-            ->values();
+        $pendingGurus = $this->pendingReminderGurusForProgram($program);
 
         if ($pendingGurus->isEmpty()) {
             return back()->with('status', 'Tiada guru layak untuk dihantar.');
@@ -268,6 +262,34 @@ class ProgramController extends Controller
             [
                 'program_title' => trim((string) $program->title),
                 'senarai_guru' => $senaraiGuru,
+            ],
+            $this->n8nWebhookService->toActionUrl(route('programs.show', $program))
+        );
+
+        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
+    }
+
+    public function sendThanks(Request $request, Program $program): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+
+        $program->loadMissing('participations.guru.user');
+        $pendingGurus = $this->pendingReminderGurusForProgram($program);
+
+        if ($program->participations->isEmpty()) {
+            return back()->with('status', 'Tiada program untuk dihantar.');
+        }
+
+        if ($pendingGurus->isNotEmpty()) {
+            return back()->with('status', 'Masih ada guru yang belum hantar respon.');
+        }
+
+        $this->n8nWebhookService->sendByTemplate(
+            N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+            [
+                'perkara' => 'status program',
+                'tarikh' => now()->format('d/m/Y H:i'),
             ],
             $this->n8nWebhookService->toActionUrl(route('programs.show', $program))
         );
@@ -386,6 +408,18 @@ class ProgramController extends Controller
         $guruName = trim(mb_strtolower((string) $guru->name));
 
         return in_array('test', [$displayName, $guruName], true);
+    }
+
+    private function pendingReminderGurusForProgram(Program $program): Collection
+    {
+        return $program->participations
+            ->whereNull('program_status_id')
+            ->pluck('guru')
+            ->filter()
+            ->reject(fn (Guru $guru): bool => $this->isTestReminderAccount($guru))
+            ->unique('id')
+            ->sortBy(fn (Guru $guru) => $guru->display_name)
+            ->values();
     }
 
     private function dayNameInMalay(Carbon $date): string

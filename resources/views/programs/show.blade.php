@@ -41,6 +41,15 @@
                 </button>
             </form>
         @endif
+
+        @if($canSendThanks)
+            <form method="POST" action="{{ route('programs.send-thanks', $program) }}" class="mt-3">
+                @csrf
+                <button class="btn btn-outline" @disabled(! ($canSendThanks ?? false))>
+                    Ucapan terima kasih
+                </button>
+            </form>
+        @endif
     </div>
 
     <div class="mt-4" x-data="{ showAllTeachers: false }">

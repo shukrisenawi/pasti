@@ -56,6 +56,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/kewangan/jenis-transaksi/{financialTransactionType}', [FinancialController::class, 'destroyType'])->name('financial.types.destroy');
         Route::get('/settings/n8n', [N8nSettingController::class, 'edit'])->name('n8n-settings.edit');
         Route::put('/settings/n8n', [N8nSettingController::class, 'update'])->name('n8n-settings.update');
+        Route::post('/maklumat-pasti/send-thanks', [PastiInformationController::class, 'sendThanks'])->name('pasti-information.send-thanks');
+        Route::post('/maklumat-gaji-guru/send-thanks', [GuruSalaryInformationController::class, 'sendThanks'])->name('guru-salary-information.send-thanks');
     });
 
     Route::middleware(['role:master_admin|admin', 'admin.mode'])->group(function () {
@@ -102,6 +104,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/maklumat-gaji-guru/{guruSalaryRequest}/isi', [GuruSalaryInformationController::class, 'update'])->name('guru-salary-information.update');
         Route::post('/kursus-guru/responses/{response}', [GuruCourseController::class, 'respond'])->name('kursus-guru.responses.respond');
         Route::post('/kursus-guru/request-reminder', [GuruCourseController::class, 'requestPendingResponses'])->name('kursus-guru.request-reminder');
+        Route::post('/kursus-guru/send-thanks', [GuruCourseController::class, 'sendThanks'])->name('kursus-guru.send-thanks');
         Route::put('/profile/pasti-selection', [ProfileController::class, 'updatePastiSelection'])->name('profile.pasti-selection.update');
     });
 
@@ -122,6 +125,8 @@ Route::middleware(['auth'])->group(function () {
             ->name('programs.teachers.absence-review');
         Route::post('/programs/{program}/request-reminder', [ProgramController::class, 'requestPendingResponses'])
             ->name('programs.request-reminder');
+        Route::post('/programs/{program}/send-thanks', [ProgramController::class, 'sendThanks'])
+            ->name('programs.send-thanks');
         Route::get('/kpi/guru/{guru}', [KpiController::class, 'show'])->name('kpi.guru.show');
         Route::get('/leave-notices', [LeaveNoticeController::class, 'index'])->name('leave-notices.index');
         Route::delete('/leave-notices/{leaveNotice}', [LeaveNoticeController::class, 'destroy'])->name('leave-notices.destroy');

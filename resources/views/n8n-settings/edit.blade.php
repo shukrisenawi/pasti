@@ -129,6 +129,12 @@
             </div>
 
             <div>
+                <label for="text_all_guru_completed_thanks" class="label-base">Teks Group Guru - Ucapan Terima Kasih Semua Siap <span class="text-rose-600">*</span></label>
+                <textarea id="text_all_guru_completed_thanks" name="text_all_guru_completed_thanks" rows="3" required class="input-base">{{ old('text_all_guru_completed_thanks', $settings['text_all_guru_completed_thanks'] ?? '') }}</textarea>
+                <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{perkara}</code>, <code>{tarikh}</code></p>
+            </div>
+
+            <div>
                 <label for="text_guru_salary_response_reminder" class="label-base">Teks Group Guru - Minta Respond Elaun <span class="text-rose-600">*</span></label>
                 <textarea id="text_guru_salary_response_reminder" name="text_guru_salary_response_reminder" rows="4" required class="input-base">{{ old('text_guru_salary_response_reminder', $settings['text_guru_salary_response_reminder'] ?? '') }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{senarai_guru}</code></p>

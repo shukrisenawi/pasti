@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class GuruSalaryInformationController extends Controller
@@ -29,11 +30,8 @@ class GuruSalaryInformationController extends Controller
         $search = trim((string) $request->query('search', ''));
         $accessibleGurusQuery = $this->accessibleGurusQueryForUser($user);
         $allAccessibleGuruIds = (clone $accessibleGurusQuery)->pluck('gurus.id');
-        $hasPendingRequests = $allAccessibleGuruIds->isNotEmpty()
-            && GuruSalaryRequest::query()
-                ->whereIn('guru_id', $allAccessibleGuruIds->all())
-                ->whereNull('completed_at')
-                ->exists();
+        $pendingReminderGurus = $this->pendingReminderGurusForAdmin($allAccessibleGuruIds);
+        $hasPendingRequests = $pendingReminderGurus->isNotEmpty();
 
         $gurus = (clone $accessibleGurusQuery)
             ->select('gurus.*')
@@ -76,7 +74,10 @@ class GuruSalaryInformationController extends Controller
             'latestCompletedRequests' => $requestGroups->map(fn ($items) => $items->firstWhere(fn (GuruSalaryRequest $item) => $item->completed_at !== null)),
             'canRequest' => $user->isOperatingAsAdmin(),
             'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
+            'canRequestReminder' => $user->isOperatingAsAdmin() && $pendingReminderGurus->isNotEmpty(),
+            'canSendThanks' => $user->isOperatingAsAdmin() && $allAccessibleGuruIds->isNotEmpty() && $pendingReminderGurus->isEmpty(),
             'hasPendingRequests' => $hasPendingRequests,
+            'pendingReminderCount' => $pendingReminderGurus->count(),
             'isGuru' => $user->isOperatingAsGuru(),
             'guruId' => $user->guru?->id,
             'search' => $search,
@@ -93,13 +94,9 @@ class GuruSalaryInformationController extends Controller
             return back();
         }
 
-        $guruIds = $gurus->pluck('id')->all();
-        $hasPendingRequests = GuruSalaryRequest::query()
-            ->whereIn('guru_id', $guruIds)
-            ->whereNull('completed_at')
-            ->exists();
+        $pendingReminderGurus = $this->pendingReminderGurusForAdmin($gurus->pluck('id'));
 
-        if ($hasPendingRequests) {
+        if ($pendingReminderGurus->isNotEmpty()) {
             return back()->withErrors([
                 'guru_salary_information' => __('messages.guru_salary_info_wait_until_complete'),
             ]);
@@ -141,37 +138,46 @@ class GuruSalaryInformationController extends Controller
             return back()->with('status', 'Tiada guru untuk dihantar.');
         }
 
-        $pendingGuruIds = GuruSalaryRequest::query()
-            ->whereIn('guru_id', $guruIds->all())
-            ->whereNull('completed_at')
-            ->pluck('guru_id')
-            ->unique()
-            ->values();
-
-        if ($pendingGuruIds->isEmpty()) {
+        $pendingReminderGurus = $this->pendingReminderGurusForAdmin($guruIds);
+        if ($pendingReminderGurus->isEmpty()) {
             return back()->with('status', 'Semua guru sudah hantar respon.');
         }
 
-        $pendingGurus = (clone $accessibleGurusQuery)
-            ->select('gurus.*')
-            ->with('user')
-            ->whereIn('gurus.id', $pendingGuruIds->all())
-            ->orderBy('gurus.id')
-            ->get();
-
-        $senaraiGuru = $pendingGurus
-            ->reject(fn (Guru $guru): bool => $this->isTestReminderAccount($guru))
-            ->values()
+        $senaraiGuru = $pendingReminderGurus
             ->map(fn (Guru $guru, int $index) => ($index + 1) . '- ' . $guru->display_name)
             ->implode("\n");
-
-        if ($senaraiGuru === '') {
-            return back()->with('status', 'Tiada guru layak untuk dihantar.');
-        }
 
         $this->n8nWebhookService->sendByTemplate(
             N8nWebhookService::KEY_TEXT_GURU_SALARY_RESPONSE_REMINDER,
             ['senarai_guru' => $senaraiGuru],
+            $this->n8nWebhookService->toActionUrl(route('guru-salary-information.index'))
+        );
+
+        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
+    }
+
+    public function sendThanks(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->isOperatingAsAdmin(), 403);
+
+        $accessibleGurusQuery = $this->accessibleGurusQueryForUser($user);
+        $allAccessibleGuruIds = (clone $accessibleGurusQuery)->pluck('gurus.id');
+
+        if ($allAccessibleGuruIds->isEmpty()) {
+            return back()->with('status', 'Tiada guru untuk dihantar.');
+        }
+
+        if ($this->pendingReminderGurusForAdmin($allAccessibleGuruIds)->isNotEmpty()) {
+            return back()->with('status', 'Masih ada guru yang belum hantar respon.');
+        }
+
+        $this->n8nWebhookService->sendByTemplate(
+            N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+            [
+                'perkara' => 'maklumat gaji guru',
+                'tarikh' => now()->format('d/m/Y H:i'),
+            ],
             $this->n8nWebhookService->toActionUrl(route('guru-salary-information.index'))
         );
 
@@ -283,5 +289,24 @@ class GuruSalaryInformationController extends Controller
         $guruName = trim(mb_strtolower((string) $guru->name));
 
         return in_array('test', [$displayName, $guruName], true);
+    }
+
+    private function pendingReminderGurusForAdmin(Collection $guruIds): Collection
+    {
+        if ($guruIds->isEmpty()) {
+            return collect();
+        }
+
+        return GuruSalaryRequest::query()
+            ->with('guru.user')
+            ->whereIn('guru_id', $guruIds->all())
+            ->whereNull('completed_at')
+            ->get()
+            ->pluck('guru')
+            ->filter()
+            ->reject(fn (Guru $guru): bool => $this->isTestReminderAccount($guru))
+            ->unique('id')
+            ->sortBy(fn (Guru $guru) => $guru->display_name)
+            ->values();
     }
 }

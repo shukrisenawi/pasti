@@ -17,8 +17,15 @@
 
             <form method="POST" action="{{ route('guru-salary-information.request-reminder') }}">
                 @csrf
-                <button class="btn btn-outline" @disabled(! ($hasPendingRequests ?? false))>
+                <button class="btn btn-outline" @disabled(! ($canRequestReminder ?? false))>
                     Minta respond
+                </button>
+            </form>
+
+            <form method="POST" action="{{ route('guru-salary-information.send-thanks') }}">
+                @csrf
+                <button class="btn btn-outline" @disabled(! ($canSendThanks ?? false))>
+                    Ucapan terima kasih
                 </button>
             </form>
         @endif

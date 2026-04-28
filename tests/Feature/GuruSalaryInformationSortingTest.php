@@ -135,7 +135,7 @@ class GuruSalaryInformationSortingTest extends TestCase
             ->once()
             ->with(
                 N8nWebhookService::KEY_TEXT_GURU_SALARY_RESPONSE_REMINDER,
-                ['senarai_guru' => "1- Ahmad\n2- Siti\n3- Nurul"],
+                ['senarai_guru' => "1- Ahmad\n2- Nurul\n3- Siti"],
                 'https://example.test/maklumat-gaji-guru'
             );
 
@@ -146,6 +146,34 @@ class GuruSalaryInformationSortingTest extends TestCase
             ->post(route('guru-salary-information.request-reminder'))
             ->assertRedirect('/maklumat-gaji-guru')
             ->assertSessionHas('status', 'Mesej telah berjaya dihantar ke group guru.');
+    }
+
+    public function test_send_thanks_sends_thank_you_message_when_test_is_ignored(): void
+    {
+        $this->seedCompletedGurusForThanks();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/maklumat-gaji-guru')))
+            ->andReturn('https://example.test/maklumat-gaji-guru');
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                \Mockery::on(fn (array $variables) => ($variables['perkara'] ?? null) === 'maklumat gaji guru' && filled($variables['tarikh'] ?? null)),
+                'https://example.test/maklumat-gaji-guru'
+            );
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $request = Request::create('/maklumat-gaji-guru/send-thanks', 'POST');
+        $request->setUserResolver(fn (): User => $this->masterAdmin());
+
+        $response = app(GuruSalaryInformationController::class)->sendThanks($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
     private function masterAdmin(): User
@@ -255,6 +283,44 @@ class GuruSalaryInformationSortingTest extends TestCase
                 'completed_at' => null,
                 'gaji' => null,
                 'elaun' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    }
+
+    private function seedCompletedGurusForThanks(): void
+    {
+        $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
+        $pasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Alpha',
+        ]);
+
+        foreach (['Test', 'Ahmad', 'Siti', 'Nurul'] as $index => $name) {
+            $user = User::query()->create([
+                'name' => $name,
+                'nama_samaran' => $name,
+                'email' => strtolower($name).uniqid().'@example.test',
+            ]);
+
+            $guru = Guru::query()->create([
+                'user_id' => $user->id,
+                'pasti_id' => $pasti->id,
+                'name' => $name,
+                'email' => $user->email,
+                'is_assistant' => false,
+                'active' => true,
+            ]);
+
+            \DB::table('guru_salary_requests')->insert([
+                'guru_id' => $guru->id,
+                'requested_by' => null,
+                'requested_at' => now()->subDays(4 - $index),
+                'completed_by' => $index === 0 ? null : 1,
+                'completed_at' => $index === 0 ? null : now()->subDays(4 - $index),
+                'gaji' => $index === 0 ? null : 1000 + ($index * 100),
+                'elaun' => $index === 0 ? null : 100 + ($index * 10),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

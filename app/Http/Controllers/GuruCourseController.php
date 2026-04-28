@@ -59,6 +59,7 @@ class GuruCourseController extends Controller
             'latestOffers' => $latestOffers,
             'canRequestReminder' => $user->isOperatingAsAdmin() && $pendingReminderGurus->isNotEmpty(),
             'pendingReminderCount' => $pendingReminderGurus->count(),
+            'canSendThanks' => $user->isOperatingAsAdmin() && $latestOffers->isNotEmpty() && $pendingReminderGurus->isEmpty(),
             'pendingResponses' => $pendingResponses,
             'historyResponses' => $historyResponses,
             'canSendOffer' => $user->isOperatingAsAdmin(),
@@ -194,6 +195,34 @@ class GuruCourseController extends Controller
         $this->n8nWebhookService->sendByTemplate(
             N8nWebhookService::KEY_TEXT_GURU_COURSE_RESPONSE_REMINDER,
             ['senarai_guru' => $senaraiGuru],
+            $this->n8nWebhookService->toActionUrl(route('kursus-guru.index'))
+        );
+
+        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
+    }
+
+    public function sendThanks(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->isOperatingAsAdmin(), 403);
+
+        $latestOffers = $this->latestOffersBySemester();
+        $pendingReminderGurus = $this->pendingReminderGurusForAdmin($latestOffers);
+
+        if ($latestOffers->isEmpty()) {
+            return back()->with('status', 'Tiada kursus untuk dihantar.');
+        }
+
+        if ($pendingReminderGurus->isNotEmpty()) {
+            return back()->with('status', 'Masih ada guru yang belum hantar respon.');
+        }
+
+        $this->n8nWebhookService->sendByTemplate(
+            N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+            [
+                'perkara' => 'respon sambung kursus guru',
+                'tarikh' => now()->format('d/m/Y H:i'),
+            ],
             $this->n8nWebhookService->toActionUrl(route('kursus-guru.index'))
         );
 

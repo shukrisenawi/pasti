@@ -21,6 +21,13 @@
                     Minta respon
                 </button>
             </form>
+
+            <form method="POST" action="{{ route('pasti-information.send-thanks') }}">
+                @csrf
+                <button class="btn btn-outline" @disabled(! ($canSendThanks ?? false))>
+                    Ucapan terima kasih
+                </button>
+            </form>
         @endif
     </div>
 

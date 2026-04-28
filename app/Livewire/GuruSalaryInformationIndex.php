@@ -31,11 +31,8 @@ class GuruSalaryInformationIndex extends Component
 
         $accessibleGurusQuery = $this->accessibleGurusQueryForUser($user);
         $allAccessibleGuruIds = (clone $accessibleGurusQuery)->pluck('gurus.id');
-        $hasPendingRequests = $allAccessibleGuruIds->isNotEmpty()
-            && GuruSalaryRequest::query()
-                ->whereIn('guru_id', $allAccessibleGuruIds->all())
-                ->whereNull('completed_at')
-                ->exists();
+        $pendingReminderGurus = $this->pendingReminderGurusForAdmin($allAccessibleGuruIds);
+        $hasPendingRequests = $pendingReminderGurus->isNotEmpty();
 
         $gurus = (clone $accessibleGurusQuery)
             ->select('gurus.*')
@@ -75,7 +72,10 @@ class GuruSalaryInformationIndex extends Component
             'latestCompletedRequests' => $requestGroups->map(fn (Collection $items) => $items->firstWhere(fn (GuruSalaryRequest $item) => $item->completed_at !== null)),
             'canRequest' => $user->isOperatingAsAdmin(),
             'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
+            'canRequestReminder' => $user->isOperatingAsAdmin() && $pendingReminderGurus->isNotEmpty(),
+            'canSendThanks' => $user->isOperatingAsAdmin() && $allAccessibleGuruIds->isNotEmpty() && $pendingReminderGurus->isEmpty(),
             'hasPendingRequests' => $hasPendingRequests,
+            'pendingReminderCount' => $pendingReminderGurus->count(),
             'isGuru' => $user->isOperatingAsGuru(),
             'guruId' => $user->guru?->id,
         ]);
@@ -100,5 +100,32 @@ class GuruSalaryInformationIndex extends Component
     private function assignedPastiIds(User $user): array
     {
         return $user->assignedPastis()->pluck('pastis.id')->all();
+    }
+
+    private function pendingReminderGurusForAdmin(Collection $guruIds): Collection
+    {
+        if ($guruIds->isEmpty()) {
+            return collect();
+        }
+
+        return GuruSalaryRequest::query()
+            ->with('guru.user')
+            ->whereIn('guru_id', $guruIds->all())
+            ->whereNull('completed_at')
+            ->get()
+            ->pluck('guru')
+            ->filter()
+            ->reject(fn (Guru $guru): bool => $this->isTestReminderAccount($guru))
+            ->unique('id')
+            ->sortBy(fn (Guru $guru) => $guru->display_name)
+            ->values();
+    }
+
+    private function isTestReminderAccount(Guru $guru): bool
+    {
+        $displayName = trim(mb_strtolower((string) $guru->display_name));
+        $guruName = trim(mb_strtolower((string) $guru->name));
+
+        return in_array('test', [$displayName, $guruName], true);
     }
 }

@@ -120,6 +120,34 @@ class GuruCourseReminderTest extends TestCase
         $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
+    public function test_send_thanks_sends_thank_you_message_when_test_is_ignored(): void
+    {
+        $this->seedCompletedGuruCourseResponsesExceptTest();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/kursus-guru')))
+            ->andReturn('https://example.test/kursus-guru');
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                \Mockery::on(fn (array $variables) => ($variables['perkara'] ?? null) === 'respon sambung kursus guru' && filled($variables['tarikh'] ?? null)),
+                'https://example.test/kursus-guru'
+            );
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $request = Request::create('/kursus-guru/send-thanks', 'POST');
+        $request->setUserResolver(fn (): User => $this->masterAdmin());
+
+        $response = app(GuruCourseController::class)->sendThanks($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
+    }
+
     private function masterAdmin(): User
     {
         $user = User::query()->create([
@@ -171,6 +199,43 @@ class GuruCourseReminderTest extends TestCase
                 'decision' => null,
                 'stop_reason' => null,
                 'responded_at' => null,
+            ]);
+        }
+    }
+
+    private function seedCompletedGuruCourseResponsesExceptTest(): void
+    {
+        $offer = GuruCourseOffer::query()->create([
+            'target_semester' => 1,
+            'registration_deadline' => now()->addWeek()->toDateString(),
+            'sent_by' => null,
+            'sent_at' => now(),
+            'note' => null,
+        ]);
+
+        foreach (['Test', 'Ahmad', 'Siti', 'Nurul'] as $index => $name) {
+            $user = User::query()->create([
+                'name' => $name,
+                'nama_samaran' => $name,
+                'email' => strtolower($name).uniqid().'@example.test',
+            ]);
+
+            $guru = Guru::query()->create([
+                'user_id' => $user->id,
+                'name' => $name,
+                'email' => $user->email,
+                'kursus_guru' => 'belum_kursus',
+                'is_assistant' => false,
+                'active' => true,
+            ]);
+
+            GuruCourseOfferResponse::query()->create([
+                'guru_course_offer_id' => $offer->id,
+                'guru_id' => $guru->id,
+                'user_id' => $user->id,
+                'decision' => $index === 0 ? null : 'continue',
+                'stop_reason' => null,
+                'responded_at' => $index === 0 ? null : now()->subMinutes(10 - $index),
             ]);
         }
     }

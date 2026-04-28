@@ -144,6 +144,34 @@ class ProgramReminderTest extends TestCase
         $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
+    public function test_send_thanks_sends_thank_you_message_when_test_is_ignored(): void
+    {
+        $program = $this->seedProgramWithCompletedGurusExceptTest();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/programs/' . $program->id)))
+            ->andReturn('https://example.test/programs/' . $program->id);
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                \Mockery::on(fn (array $variables) => ($variables['perkara'] ?? null) === 'status program' && filled($variables['tarikh'] ?? null)),
+                'https://example.test/programs/' . $program->id
+            );
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $request = Request::create('/programs/' . $program->id . '/send-thanks', 'POST');
+        $request->setUserResolver(fn (): User => $this->masterAdmin());
+
+        $response = app(ProgramController::class)->sendThanks($request, $program);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
+    }
+
     private function masterAdmin(): User
     {
         $user = User::query()->create([
@@ -202,6 +230,59 @@ class ProgramReminderTest extends TestCase
                 'program_id' => $program->id,
                 'guru_id' => $guru->id,
                 'program_status_id' => null,
+                'absence_reason' => null,
+                'absence_reason_status' => null,
+                'absence_reason_reviewed_by' => null,
+                'absence_reason_reviewed_at' => null,
+                'updated_by' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return $program;
+    }
+
+    private function seedProgramWithCompletedGurusExceptTest(): Program
+    {
+        $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
+        $pasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Alpha',
+        ]);
+
+        $program = Program::query()->create([
+            'pasti_id' => $pasti->id,
+            'title' => 'Program Ujian',
+            'program_date' => now()->addDay()->toDateString(),
+            'program_time' => null,
+            'location' => 'Dewan',
+            'description' => null,
+            'require_absence_reason' => false,
+            'markah' => 3,
+            'created_by' => 1,
+        ]);
+
+        foreach (['Test', 'Ahmad', 'Siti', 'Nurul'] as $index => $name) {
+            $user = User::query()->create([
+                'name' => $name,
+                'nama_samaran' => $name,
+                'email' => strtolower($name).uniqid().'@example.test',
+            ]);
+
+            $guru = Guru::query()->create([
+                'user_id' => $user->id,
+                'pasti_id' => $pasti->id,
+                'name' => $name,
+                'email' => $user->email,
+                'is_assistant' => false,
+                'active' => true,
+            ]);
+
+            \DB::table('program_teacher')->insert([
+                'program_id' => $program->id,
+                'guru_id' => $guru->id,
+                'program_status_id' => $index === 0 ? null : 1,
                 'absence_reason' => null,
                 'absence_reason_status' => null,
                 'absence_reason_reviewed_by' => null,
