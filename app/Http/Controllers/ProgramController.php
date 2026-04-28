@@ -136,6 +136,8 @@ class ProgramController extends Controller
                 ->orderBy('is_hadir', 'desc')
                 ->get(),
             'canManage' => $user->hasRole('master_admin') || $user->hasRole('admin'),
+            'canRequestReminder' => $user->hasRole('master_admin') || $user->hasRole('admin'),
+            'programPendingReminderCount' => $program->participations->whereNull('program_status_id')->count(),
             'canUpdateOwn' => $user->isOperatingAsGuru() && (bool) $user->guru,
             'currentGuruId' => $user->guru?->id,
             'isAllTeachers' => $program->gurus()->count() === count($this->activeGuruIds()),
@@ -234,6 +236,43 @@ class ProgramController extends Controller
         Guru::query()->whereIn('id', $guruIds)->get()->each(fn (Guru $guru) => $this->kpiCalculationService->recalculateForGuru($guru));
 
         return redirect()->route('programs.index')->with('status', __('messages.deleted'));
+    }
+
+    public function requestPendingResponses(Request $request, Program $program): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
+
+        $program->loadMissing('participations.guru.user');
+
+        $pendingGurus = $program->participations
+            ->whereNull('program_status_id')
+            ->pluck('guru')
+            ->filter()
+            ->reject(fn (Guru $guru): bool => $this->isTestReminderAccount($guru))
+            ->unique('id')
+            ->sortBy(fn (Guru $guru) => $guru->display_name)
+            ->values();
+
+        if ($pendingGurus->isEmpty()) {
+            return back()->with('status', 'Tiada guru layak untuk dihantar.');
+        }
+
+        $senaraiGuru = $pendingGurus
+            ->values()
+            ->map(fn (Guru $guru, int $index) => ($index + 1) . '- ' . $guru->display_name)
+            ->implode("\n");
+
+        $this->n8nWebhookService->sendByTemplate(
+            N8nWebhookService::KEY_TEXT_PROGRAM_RESPONSE_REMINDER,
+            [
+                'program_title' => trim((string) $program->title),
+                'senarai_guru' => $senaraiGuru,
+            ],
+            $this->n8nWebhookService->toActionUrl(route('programs.show', $program))
+        );
+
+        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
     }
 
     private function activeGuruIds(): array
@@ -339,6 +378,14 @@ class ProgramController extends Controller
             $link,
             $gambar
         );
+    }
+
+    private function isTestReminderAccount(Guru $guru): bool
+    {
+        $displayName = trim(mb_strtolower((string) $guru->display_name));
+        $guruName = trim(mb_strtolower((string) $guru->name));
+
+        return in_array('test', [$displayName, $guruName], true);
     }
 
     private function dayNameInMalay(Carbon $date): string

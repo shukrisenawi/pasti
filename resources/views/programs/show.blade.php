@@ -32,6 +32,15 @@
             {{ $program->require_absence_reason ? __('messages.yes') : __('messages.no') }}
         </p>
         <p><strong>{{ __('messages.description') }}:</strong> {{ $program->description ?? '-' }}</p>
+
+        @if($canRequestReminder)
+            <form method="POST" action="{{ route('programs.request-reminder', $program) }}" class="mt-4">
+                @csrf
+                <button class="btn btn-outline" @disabled(! ($programPendingReminderCount ?? 0))>
+                    Minta respond
+                </button>
+            </form>
+        @endif
     </div>
 
     <div class="mt-4" x-data="{ showAllTeachers: false }">

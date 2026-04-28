@@ -99,6 +99,12 @@
             </div>
 
             <div>
+                <label for="text_program_response_reminder" class="label-base">Teks Group Guru - Minta Respond Program <span class="text-rose-600">*</span></label>
+                <textarea id="text_program_response_reminder" name="text_program_response_reminder" rows="4" required class="input-base">{{ old('text_program_response_reminder', $settings['text_program_response_reminder'] ?? '') }}</textarea>
+                <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{program_title}</code>, <code>{senarai_guru}</code></p>
+            </div>
+
+            <div>
                 <label for="text_leave_notice_submitted" class="label-base">Teks Group AJK - Notis Cuti <span class="text-rose-600">*</span></label>
                 <textarea id="text_leave_notice_submitted" name="text_leave_notice_submitted" rows="3" required class="input-base">{{ old('text_leave_notice_submitted', $settings['text_leave_notice_submitted'] ?? '') }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">Placeholder: <code>{nama_guru}</code>, <code>{tarikh_cuti}</code>, <code>{tarikh_hingga}</code>, <code>{sebab}</code></p>
