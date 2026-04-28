@@ -52,6 +52,12 @@ class PastiInformationPaginationTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('admin_pasti', function (Blueprint $table): void {
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('pasti_id');
+            $table->timestamps();
+        });
+
         Schema::create('pastis', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('kawasan_id');
@@ -91,6 +97,7 @@ class PastiInformationPaginationTest extends TestCase
         Schema::dropIfExists('pasti_information_requests');
         Schema::dropIfExists('pastis');
         Schema::dropIfExists('gurus');
+        Schema::dropIfExists('admin_pasti');
         Schema::dropIfExists('kawasans');
         Schema::dropIfExists('model_has_roles');
         Schema::dropIfExists('roles');
@@ -121,6 +128,35 @@ class PastiInformationPaginationTest extends TestCase
     public function test_pasti_information_page_uses_dedicated_pagination_query_string(): void
     {
         $this->seedPastisForPagination();
+
+        Livewire::withQueryParams(['pastiInfoPage' => 2])
+            ->test(PastiInformationIndex::class)
+            ->assertSee('PASTI Ujian 10')
+            ->assertDontSee('PASTI Ujian 01');
+    }
+
+    public function test_admin_pasti_information_page_uses_dedicated_pagination_query_string(): void
+    {
+        $this->seedPastisForPagination();
+
+        $admin = User::query()->create([
+            'name' => 'Admin',
+            'nama_samaran' => 'Admin',
+            'email' => 'admin'.uniqid().'@example.test',
+        ]);
+        $this->attachRole($admin, 'admin');
+
+        $pastiIds = Pasti::query()->pluck('id')->all();
+        foreach ($pastiIds as $pastiId) {
+            \DB::table('admin_pasti')->insert([
+                'user_id' => $admin->id,
+                'pasti_id' => $pastiId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->actingAs($admin);
 
         Livewire::withQueryParams(['pastiInfoPage' => 2])
             ->test(PastiInformationIndex::class)

@@ -43,9 +43,7 @@ class PastiInformationIndex extends Component
                 trim($this->search) !== '',
                 fn (Builder $query) => $query->where('name', 'like', '%' . trim($this->search) . '%')
             )
-            ->orderByDesc('updated_at')
-            ->orderByDesc('id')
-            // Fix pagination: use correct parameter order
+            ->orderBy('name')
             ->paginate(9, ['*'], self::PAGE_NAME);
 
         $pastiIds = collect($pastis->items())->pluck('id')->all();
