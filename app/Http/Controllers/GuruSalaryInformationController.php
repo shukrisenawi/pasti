@@ -160,9 +160,14 @@ class GuruSalaryInformationController extends Controller
             ->get();
 
         $senaraiGuru = $pendingGurus
+            ->reject(fn (Guru $guru): bool => $this->isTestReminderAccount($guru))
             ->values()
             ->map(fn (Guru $guru, int $index) => ($index + 1) . '- ' . $guru->display_name)
             ->implode("\n");
+
+        if ($senaraiGuru === '') {
+            return back()->with('status', 'Tiada guru layak untuk dihantar.');
+        }
 
         $this->n8nWebhookService->sendByTemplate(
             N8nWebhookService::KEY_TEXT_GURU_SALARY_RESPONSE_REMINDER,
@@ -270,5 +275,13 @@ class GuruSalaryInformationController extends Controller
             ->value('id');
 
         abort_unless($latestRequestId && (int) $latestRequestId === (int) $salaryRequest->id, 403);
+    }
+
+    private function isTestReminderAccount(Guru $guru): bool
+    {
+        $displayName = trim(mb_strtolower((string) $guru->display_name));
+        $guruName = trim(mb_strtolower((string) $guru->name));
+
+        return in_array('test', [$displayName, $guruName], true);
     }
 }

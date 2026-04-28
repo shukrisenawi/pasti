@@ -231,7 +231,7 @@ class GuruSalaryInformationSortingTest extends TestCase
             'name' => 'PASTI Alpha',
         ]);
 
-        foreach (['Ahmad', 'Siti', 'Nurul'] as $name) {
+        foreach (['Test', 'Ahmad', 'Siti', 'Nurul'] as $name) {
             $user = User::query()->create([
                 'name' => $name,
                 'nama_samaran' => $name,
