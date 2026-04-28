@@ -51,6 +51,7 @@ class GuruSalaryInformationIndex extends Component
             ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
             ->select('gurus.*')
             ->orderByDesc('gurus.updated_at')
+            ->orderByDesc('gurus.id')
             ->paginate(9, pageName: self::PAGE_NAME);
 
         $guruIds = collect($gurus->items())->pluck('id')->all();
