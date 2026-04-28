@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class GuruCourseController extends Controller
@@ -31,6 +32,7 @@ class GuruCourseController extends Controller
         abort_unless($user->hasAnyRole(['master_admin', 'admin', 'guru']), 403);
 
         $latestOffers = $this->latestOffersBySemester();
+        $pendingReminderGurus = $this->pendingReminderGurusForAdmin($latestOffers);
         $pendingResponses = collect();
         $historyResponses = collect();
 
@@ -55,6 +57,8 @@ class GuruCourseController extends Controller
         return view('guru-course.index', [
             'semesterList' => range(self::MIN_SEMESTER, self::MAX_SEMESTER),
             'latestOffers' => $latestOffers,
+            'canRequestReminder' => $user->isOperatingAsAdmin() && $pendingReminderGurus->isNotEmpty(),
+            'pendingReminderCount' => $pendingReminderGurus->count(),
             'pendingResponses' => $pendingResponses,
             'historyResponses' => $historyResponses,
             'canSendOffer' => $user->isOperatingAsAdmin(),
@@ -170,6 +174,32 @@ class GuruCourseController extends Controller
         return back()->with('status', __('messages.saved'));
     }
 
+    public function requestPendingResponses(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user->isOperatingAsAdmin(), 403);
+
+        $latestOffers = $this->latestOffersBySemester();
+        $pendingReminderGurus = $this->pendingReminderGurusForAdmin($latestOffers);
+
+        if ($pendingReminderGurus->isEmpty()) {
+            return back()->with('status', 'Tiada guru layak untuk dihantar.');
+        }
+
+        $senaraiGuru = $pendingReminderGurus
+            ->values()
+            ->map(fn (Guru $guru, int $index) => ($index + 1) . '- ' . $guru->display_name)
+            ->implode("\n");
+
+        $this->n8nWebhookService->sendByTemplate(
+            N8nWebhookService::KEY_TEXT_GURU_COURSE_RESPONSE_REMINDER,
+            ['senarai_guru' => $senaraiGuru],
+            $this->n8nWebhookService->toActionUrl(route('kursus-guru.index'))
+        );
+
+        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
+    }
+
     public function respond(Request $request, GuruCourseOfferResponse $response): RedirectResponse
     {
         $user = $request->user();
@@ -240,5 +270,34 @@ class GuruCourseController extends Controller
             ->whereIn('id', $latestOfferIds)
             ->get()
             ->keyBy(fn (GuruCourseOffer $offer) => (int) $offer->target_semester);
+    }
+
+    private function pendingReminderGurusForAdmin(Collection $latestOffers): Collection
+    {
+        $latestOfferIds = $latestOffers->pluck('id')->all();
+
+        if ($latestOfferIds === []) {
+            return collect();
+        }
+
+        return GuruCourseOfferResponse::query()
+            ->with('guru.user')
+            ->whereIn('guru_course_offer_id', $latestOfferIds)
+            ->whereNull('responded_at')
+            ->get()
+            ->pluck('guru')
+            ->filter()
+            ->reject(fn (Guru $guru): bool => $this->isTestReminderAccount($guru))
+            ->unique('id')
+            ->sortBy(fn (Guru $guru) => $guru->display_name)
+            ->values();
+    }
+
+    private function isTestReminderAccount(Guru $guru): bool
+    {
+        $displayName = trim(mb_strtolower((string) $guru->display_name));
+        $guruName = trim(mb_strtolower((string) $guru->name));
+
+        return in_array('test', [$displayName, $guruName], true);
     }
 }

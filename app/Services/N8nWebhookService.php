@@ -22,6 +22,7 @@ class N8nWebhookService
     public const KEY_TEXT_PASTI_INFO_REQUEST = 'n8n_text_pasti_info_request';
     public const KEY_TEXT_PASTI_INFO_RESPONSE_REMINDER = 'n8n_text_pasti_info_response_reminder';
     public const KEY_TEXT_GURU_COURSE_OFFER = 'n8n_text_guru_course_offer';
+    public const KEY_TEXT_GURU_COURSE_RESPONSE_REMINDER = 'n8n_text_guru_course_response_reminder';
     public const KEY_TEXT_LEAVE_NOTICE_SUBMITTED = 'n8n_text_leave_notice_submitted';
     public const KEY_TEXT_CLAIM_SUBMITTED = 'n8n_text_claim_submitted';
     public const KEY_TEXT_ALL_PASTI_INFO_COMPLETED = 'n8n_text_all_pasti_info_completed';
@@ -37,6 +38,7 @@ class N8nWebhookService
     private const DEFAULT_TEXT_PASTI_INFO_REQUEST = 'Permintaan kemaskini maklumat PASTI telah dihantar pada {tarikh}. Sila lengkapkan maklumat terkini PASTI.';
     private const DEFAULT_TEXT_PASTI_INFO_RESPONSE_REMINDER = "Sila hantar respon maklumat PASTI segera.\n\nPASTI yang belum respon:\n{senarai_pasti}";
     private const DEFAULT_TEXT_GURU_COURSE_OFFER = 'Permintaan sambung Kursus Guru ke Semester {semester} telah dihantar. Tarikh akhir pendaftaran: {tarikh_akhir}.{nota}';
+    private const DEFAULT_TEXT_GURU_COURSE_RESPONSE_REMINDER = "Sila hantar respon sambung kursus guru segera.\n\nGuru yang belum respon:\n{senarai_guru}";
     private const DEFAULT_TEXT_LEAVE_NOTICE_SUBMITTED = '{nama_guru} hantar notis cuti pada {tarikh_cuti} hingga {tarikh_hingga}. Sebab: {sebab}.';
     private const DEFAULT_TEXT_CLAIM_SUBMITTED = '{nama_guru} hantar claim sebanyak RM{jumlah} pada {tarikh_claim}. Catatan: {catatan}.';
     private const DEFAULT_TEXT_ALL_PASTI_INFO_COMPLETED = 'Semua PASTI telah hantar maklumat PASTI. Dikemaskini pada {tarikh}.';
@@ -205,6 +207,7 @@ class N8nWebhookService
             'text_pasti_info_request' => $this->template(self::KEY_TEXT_PASTI_INFO_REQUEST),
             'text_pasti_info_response_reminder' => $this->template(self::KEY_TEXT_PASTI_INFO_RESPONSE_REMINDER),
             'text_guru_course_offer' => $this->template(self::KEY_TEXT_GURU_COURSE_OFFER),
+            'text_guru_course_response_reminder' => $this->template(self::KEY_TEXT_GURU_COURSE_RESPONSE_REMINDER),
             'text_leave_notice_submitted' => $this->template(self::KEY_TEXT_LEAVE_NOTICE_SUBMITTED),
             'text_claim_submitted' => $this->template(self::KEY_TEXT_CLAIM_SUBMITTED),
             'text_all_pasti_info_completed' => $this->template(self::KEY_TEXT_ALL_PASTI_INFO_COMPLETED),
@@ -266,6 +269,7 @@ class N8nWebhookService
             self::KEY_TEXT_PASTI_INFO_REQUEST => $this->setting($key, self::DEFAULT_TEXT_PASTI_INFO_REQUEST),
             self::KEY_TEXT_PASTI_INFO_RESPONSE_REMINDER => $this->setting($key, self::DEFAULT_TEXT_PASTI_INFO_RESPONSE_REMINDER),
             self::KEY_TEXT_GURU_COURSE_OFFER => $this->setting($key, self::DEFAULT_TEXT_GURU_COURSE_OFFER),
+            self::KEY_TEXT_GURU_COURSE_RESPONSE_REMINDER => $this->setting($key, self::DEFAULT_TEXT_GURU_COURSE_RESPONSE_REMINDER),
             self::KEY_TEXT_LEAVE_NOTICE_SUBMITTED => $this->setting($key, self::DEFAULT_TEXT_LEAVE_NOTICE_SUBMITTED),
             self::KEY_TEXT_CLAIM_SUBMITTED => $this->setting($key, self::DEFAULT_TEXT_CLAIM_SUBMITTED),
             self::KEY_TEXT_ALL_PASTI_INFO_COMPLETED => $this->setting($key, self::DEFAULT_TEXT_ALL_PASTI_INFO_COMPLETED),

@@ -76,6 +76,13 @@
                     <button class="btn btn-primary">Hantar</button>
                 </div>
             </form>
+
+            <form method="POST" action="{{ route('kursus-guru.request-reminder') }}" class="mt-4">
+                @csrf
+                <button class="btn btn-outline" @disabled(! ($canRequestReminder ?? false))>
+                    Minta respond
+                </button>
+            </form>
         </section>
     @endif
 

@@ -101,6 +101,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/maklumat-gaji-guru/{guruSalaryRequest}/isi', [GuruSalaryInformationController::class, 'edit'])->name('guru-salary-information.edit');
         Route::post('/maklumat-gaji-guru/{guruSalaryRequest}/isi', [GuruSalaryInformationController::class, 'update'])->name('guru-salary-information.update');
         Route::post('/kursus-guru/responses/{response}', [GuruCourseController::class, 'respond'])->name('kursus-guru.responses.respond');
+        Route::post('/kursus-guru/request-reminder', [GuruCourseController::class, 'requestPendingResponses'])->name('kursus-guru.request-reminder');
         Route::put('/profile/pasti-selection', [ProfileController::class, 'updatePastiSelection'])->name('profile.pasti-selection.update');
     });
 
