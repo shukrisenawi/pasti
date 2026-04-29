@@ -129,6 +129,15 @@ class ProgramController extends Controller
         $currentParticipation = $currentGuruId
             ? $allParticipations->firstWhere('guru_id', $currentGuruId)
             : null;
+        $adminPendingReviewParticipations = $allParticipations
+            ->filter(fn ($participation) => $participation->absence_reason_status === ProgramParticipationService::ABSENCE_REASON_PENDING)
+            ->values();
+        $adminCompletedParticipations = $allParticipations
+            ->filter(fn ($participation) => in_array($participation->absence_reason_status, [
+                ProgramParticipationService::ABSENCE_REASON_APPROVED,
+                ProgramParticipationService::ABSENCE_REASON_REJECTED,
+            ], true))
+            ->values();
 
         $program->setRelation('participations', $allParticipations);
 
@@ -146,6 +155,8 @@ class ProgramController extends Controller
             'canUpdateOwn' => $user->isOperatingAsGuru() && (bool) $user->guru,
             'currentGuruId' => $currentGuruId,
             'currentParticipation' => $currentParticipation,
+            'adminPendingReviewParticipations' => $adminPendingReviewParticipations,
+            'adminCompletedParticipations' => $adminCompletedParticipations,
             'isAllTeachers' => $program->gurus()->count() === count($this->activeGuruIds()),
         ]);
     }

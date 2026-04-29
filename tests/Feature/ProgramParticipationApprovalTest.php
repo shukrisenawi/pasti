@@ -249,7 +249,10 @@ class ProgramParticipationApprovalTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Program Ujian')
-            ->assertSee('data-testid="program-participation-card"', false)
+            ->assertSee('Menunggu Semakan')
+            ->assertSee('Complete')
+            ->assertSee('Tiada semakan yang menunggu pada masa ini.')
+            ->assertSee('Tiada rekod complete untuk dipaparkan.')
             ->assertDontSee('<table class="table-base">', false);
     }
 
@@ -257,18 +260,42 @@ class ProgramParticipationApprovalTest extends TestCase
     {
         Notification::fake();
 
-        [$program, , , $admin, $latestGuruUser] = $this->createProgramFixtures(withSecondGuru: true);
+        [$program, $guruUser, $absentStatus, $admin, $latestGuruUser] = $this->createProgramFixtures(withSecondGuru: true);
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $guruUser->guru->id)
+            ->update([
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Ada urusan keluarga.',
+                'absence_reason_status' => 'pending',
+            ]);
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $latestGuruUser->guru->id)
+            ->update([
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Sakit.',
+                'absence_reason_status' => 'approved',
+            ]);
 
         $response = $this->actingAs($admin)
             ->get(route('programs.show', $program));
 
         $response
             ->assertOk()
+            ->assertSee('Menunggu Semakan')
+            ->assertSee('Complete')
             ->assertSee('data-testid="program-participation-avatar"', false)
-            ->assertSeeInOrder([
-                $latestGuruUser->display_name,
-                'Cikgu Program',
-            ]);
+            ->assertViewHas('adminPendingReviewParticipations', function ($participations): bool {
+                return $participations->count() === 1
+                    && $participations->first()->guru->display_name === 'Cikgu Program';
+            })
+            ->assertViewHas('adminCompletedParticipations', function ($participations): bool {
+                return $participations->count() === 1
+                    && $participations->first()->guru->display_name === 'Cikgu Kedua';
+            });
     }
 
     public function test_program_show_page_defaults_to_submitted_gurus_and_exposes_toggle_for_all_gurus(): void
@@ -360,6 +387,51 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertSee('data-testid="program-guru-group-tidak_hadir"', false)
             ->assertSee('data-testid="program-guru-group-menunggu"', false)
             ->assertDontSee('data-testid="program-participation-card"', false);
+    }
+
+    public function test_program_show_page_for_admin_uses_pending_review_and_complete_tabs(): void
+    {
+        Notification::fake();
+
+        [$program, $guruUser, $absentStatus, $admin, $latestGuruUser] = $this->createProgramFixtures(
+            withSecondGuru: true,
+            secondGuruHasStatus: false
+        );
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $guruUser->guru->id)
+            ->update([
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Ada urusan keluarga.',
+                'absence_reason_status' => 'pending',
+            ]);
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $latestGuruUser->guru->id)
+            ->update([
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Sakit.',
+                'absence_reason_status' => 'approved',
+            ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('Menunggu Semakan')
+            ->assertSee('Complete')
+            ->assertSee('data-testid="program-participation-card"', false)
+            ->assertViewHas('adminPendingReviewParticipations', function ($participations): bool {
+                return $participations->count() === 1
+                    && $participations->first()->guru->display_name === 'Cikgu Program';
+            })
+            ->assertViewHas('adminCompletedParticipations', function ($participations): bool {
+                return $participations->count() === 1
+                    && $participations->first()->guru->display_name === 'Cikgu Kedua';
+            });
     }
 
     public function test_program_menu_badge_uses_pending_absence_reason_approval_count(): void
