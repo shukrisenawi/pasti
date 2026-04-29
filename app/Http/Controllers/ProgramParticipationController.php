@@ -28,7 +28,9 @@ class ProgramParticipationController extends Controller
         $operatingGuruIds = $user->operatingGuruIds();
         if ($this->isGuruOnly($user)) {
             abort_unless(in_array($guruId, $operatingGuruIds, true), 403);
-            abort_unless($program->gurus()->where('gurus.id', $guruId)->exists(), 403);
+            $canUpdateProgram = $program->gurus()->where('gurus.id', $guruId)->exists()
+                || $program->pasti_id === null;
+            abort_unless($canUpdateProgram, 403);
         }
 
         $data = $request->validate([

@@ -121,6 +121,7 @@ class AdminGuruProgramAccessTest extends TestCase
         [$admin, $guru] = $this->seedAdminWithGuruProfileByEmailOnly('program-switch@example.test');
 
         $ownProgram = Program::query()->create([
+            'pasti_id' => 1,
             'title' => 'Program Saya',
             'program_date' => now()->addDay()->toDateString(),
             'location' => 'Dewan A',
@@ -128,6 +129,7 @@ class AdminGuruProgramAccessTest extends TestCase
         ]);
 
         $otherProgram = Program::query()->create([
+            'pasti_id' => 2,
             'title' => 'Program Orang Lain',
             'program_date' => now()->addDays(2)->toDateString(),
             'location' => 'Dewan B',
@@ -235,6 +237,7 @@ class AdminGuruProgramAccessTest extends TestCase
         [$admin, $primaryGuru, $secondaryGuru] = $this->seedAdminWithTwoLinkedGuruProfiles('dua-profil-list@example.test');
 
         Program::query()->create([
+            'pasti_id' => 1,
             'title' => 'Program Profil Kedua',
             'program_date' => now()->addDay()->toDateString(),
             'location' => 'Dewan C',
@@ -242,6 +245,7 @@ class AdminGuruProgramAccessTest extends TestCase
         ])->gurus()->sync([$secondaryGuru->id]);
 
         Program::query()->create([
+            'pasti_id' => 2,
             'title' => 'Program Guru Lain',
             'program_date' => now()->addDays(2)->toDateString(),
             'location' => 'Dewan D',
@@ -319,6 +323,59 @@ class AdminGuruProgramAccessTest extends TestCase
             'updated_by' => $admin->id,
         ]);
         $this->assertNotEquals($primaryGuru->id, $secondaryGuru->id);
+    }
+
+    public function test_admin_switched_to_guru_mode_can_see_and_update_global_program_without_existing_assignment(): void
+    {
+        [$admin, $guru] = $this->seedAdminWithGuruProfileByEmailOnly('program-global@example.test');
+
+        $globalProgram = Program::query()->create([
+            'title' => 'Program Global',
+            'program_date' => now()->addDay()->toDateString(),
+            'location' => 'Dewan Global',
+            'pasti_id' => null,
+            'created_by' => $admin->id,
+        ]);
+
+        $session = app('session')->driver();
+        $session->start();
+        $session->put([
+            'login_using_admin_role' => true,
+            'active_role_mode' => 'guru',
+        ]);
+
+        $request = Request::create('/programs', 'GET');
+        $request->setLaravelSession($session);
+        app()->instance('request', $request);
+        auth()->setUser($admin->fresh());
+
+        $response = app(ProgramIndex::class)->render();
+        $programs = $response->getData()['programs'];
+
+        $this->assertInstanceOf(LengthAwarePaginator::class, $programs);
+        $this->assertContains('Program Global', $programs->pluck('title')->all());
+
+        $hadirStatusId = (int) ProgramStatus::query()->where('code', 'HADIR')->value('id');
+        $kpiService = \Mockery::mock(KpiCalculationService::class);
+        $kpiService->shouldReceive('recalculateForGuru')->once();
+        $this->app->instance(KpiCalculationService::class, $kpiService);
+
+        $this->actingAs($admin)
+            ->withSession([
+                'login_using_admin_role' => true,
+                'active_role_mode' => 'guru',
+            ])
+            ->post(route('programs.teachers.status.update', [$globalProgram, $guru->id]), [
+                'program_status_id' => $hadirStatusId,
+            ])
+            ->assertStatus(302);
+
+        $this->assertDatabaseHas('program_teacher', [
+            'program_id' => $globalProgram->id,
+            'guru_id' => $guru->id,
+            'program_status_id' => $hadirStatusId,
+            'updated_by' => $admin->id,
+        ]);
     }
 
     /**

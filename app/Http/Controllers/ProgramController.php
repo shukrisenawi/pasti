@@ -114,7 +114,9 @@ class ProgramController extends Controller
 
         if ($this->isGuruOnly($user)) {
             abort_unless($operatingGuruIds !== [], 403);
-            abort_unless($program->gurus()->whereIn('gurus.id', $operatingGuruIds)->exists(), 403);
+            $canAccessProgram = $program->gurus()->whereIn('gurus.id', $operatingGuruIds)->exists()
+                || $program->pasti_id === null;
+            abort_unless($canAccessProgram, 403);
         }
 
         $program->load([

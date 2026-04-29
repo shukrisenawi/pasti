@@ -33,7 +33,11 @@ class ProgramIndex extends Component
             ])
             ->when(
                 $this->isGuruOnly($user),
-                fn (Builder $q) => $q->whereHas('gurus', fn ($gq) => $gq->whereIn('gurus.id', $guruIds))
+                fn (Builder $q) => $q->where(function (Builder $guruScope) use ($guruIds): void {
+                    $guruScope
+                        ->whereHas('gurus', fn ($gq) => $gq->whereIn('gurus.id', $guruIds))
+                        ->orWhereNull('pasti_id');
+                })
             )
             ->when(
                 trim($this->search) !== '',
