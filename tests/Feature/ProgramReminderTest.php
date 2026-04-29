@@ -43,6 +43,15 @@ class ProgramReminderTest extends TestCase
             $table->unsignedBigInteger('model_id');
         });
 
+        Schema::create('notifications', function (Blueprint $table): void {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('kawasans', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
@@ -54,6 +63,11 @@ class ProgramReminderTest extends TestCase
             $table->unsignedBigInteger('kawasan_id')->nullable();
             $table->string('name');
             $table->timestamps();
+        });
+
+        Schema::create('admin_pasti', function (Blueprint $table): void {
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('pasti_id');
         });
 
         Schema::create('gurus', function (Blueprint $table): void {
@@ -121,9 +135,11 @@ class ProgramReminderTest extends TestCase
         Schema::dropIfExists('programs');
         Schema::dropIfExists('gurus');
         Schema::dropIfExists('pastis');
+        Schema::dropIfExists('admin_pasti');
         Schema::dropIfExists('kawasans');
         Schema::dropIfExists('model_has_roles');
         Schema::dropIfExists('roles');
+        Schema::dropIfExists('notifications');
         Schema::dropIfExists('users');
 
         parent::tearDown();
@@ -208,7 +224,6 @@ class ProgramReminderTest extends TestCase
                 ['perkara' => 'status program'],
                 'https://example.test/programs/' . $payload['program']->id
             );
-
         $this->app->instance(N8nWebhookService::class, $webhookService);
         $kpiService = \Mockery::mock(KpiCalculationService::class);
         $kpiService->shouldReceive('recalculateForGuru')->twice();
@@ -226,6 +241,62 @@ class ProgramReminderTest extends TestCase
 
         $this->assertSame(302, $firstResponse->getStatusCode());
         $this->assertSame(302, $secondResponse->getStatusCode());
+    }
+
+    public function test_pending_absence_review_does_not_send_auto_thanks_until_admin_completes_review(): void
+    {
+        $payload = $this->seedProgramAwaitingAbsenceReview();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')->never();
+        $webhookService->shouldReceive('sendByTemplate')->never();
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+        $kpiService = \Mockery::mock(KpiCalculationService::class);
+        $kpiService->shouldReceive('recalculateForGuru')->twice();
+        $this->app->instance(KpiCalculationService::class, $kpiService);
+
+        $guruRequest = Request::create('/programs/' . $payload['program']->id . '/guru/' . $payload['pendingGuruId'] . '/status', 'POST', [
+            'program_status_id' => $payload['tidakHadirStatusId'],
+            'absence_reason' => 'Tidak sihat',
+        ]);
+        $guruRequest->setUserResolver(fn (): User => $payload['pendingUser']);
+
+        $guruResponse = app(\App\Http\Controllers\ProgramParticipationController::class)->updateStatus(
+            $guruRequest,
+            $payload['program'],
+            $payload['pendingGuruId']
+        );
+
+        $this->assertSame(302, $guruResponse->getStatusCode());
+
+        $reviewWebhookService = \Mockery::mock(N8nWebhookService::class);
+        $reviewWebhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/programs/' . $payload['program']->id)))
+            ->andReturn('https://example.test/programs/' . $payload['program']->id);
+        $reviewWebhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                ['perkara' => 'status program'],
+                'https://example.test/programs/' . $payload['program']->id
+            );
+        $this->app->instance(N8nWebhookService::class, $reviewWebhookService);
+        $this->app->forgetInstance(\App\Http\Controllers\ProgramParticipationController::class);
+
+        $adminRequest = Request::create('/programs/' . $payload['program']->id . '/teachers/' . $payload['pendingGuruId'] . '/absence-review', 'POST', [
+            'decision' => 'approved',
+        ]);
+        $adminRequest->setUserResolver(fn (): User => $payload['adminUser']);
+
+        $adminResponse = app(\App\Http\Controllers\ProgramParticipationController::class)->reviewAbsenceReason(
+            $adminRequest,
+            $payload['program'],
+            $payload['pendingGuruId']
+        );
+
+        $this->assertSame(302, $adminResponse->getStatusCode());
     }
 
     private function masterAdmin(): User
@@ -364,6 +435,77 @@ class ProgramReminderTest extends TestCase
             'user' => $pendingUser,
             'guruId' => $realGuruIds['Nurul'],
             'hadirStatusId' => ProgramStatus::query()->where('code', 'HADIR')->value('id'),
+        ];
+    }
+
+    private function seedProgramAwaitingAbsenceReview(): array
+    {
+        $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
+        $pasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Alpha',
+        ]);
+
+        $program = Program::query()->create([
+            'pasti_id' => $pasti->id,
+            'title' => 'Program Ujian',
+            'program_date' => now()->addDay()->toDateString(),
+            'program_time' => null,
+            'location' => 'Dewan',
+            'description' => null,
+            'require_absence_reason' => true,
+            'markah' => 3,
+            'created_by' => 1,
+        ]);
+
+        $hadirStatusId = (int) ProgramStatus::query()->where('code', 'HADIR')->value('id');
+        $tidakHadirStatusId = (int) ProgramStatus::query()->where('code', 'TIDAK_HADIR')->value('id');
+
+        $pendingUser = null;
+        $pendingGuruId = null;
+
+        foreach (['Test', 'Ahmad', 'Nurul'] as $index => $name) {
+            $user = User::query()->create([
+                'name' => $name,
+                'nama_samaran' => $name,
+                'email' => strtolower($name).uniqid().'@example.test',
+            ]);
+            $this->attachRole($user, 'guru');
+
+            $guru = Guru::query()->create([
+                'user_id' => $user->id,
+                'pasti_id' => $pasti->id,
+                'name' => $name,
+                'email' => $user->email,
+                'is_assistant' => false,
+                'active' => true,
+            ]);
+
+            \DB::table('program_teacher')->insert([
+                'program_id' => $program->id,
+                'guru_id' => $guru->id,
+                'program_status_id' => $index === 1 ? $hadirStatusId : null,
+                'absence_reason' => null,
+                'absence_reason_status' => null,
+                'absence_reason_reviewed_by' => null,
+                'absence_reason_reviewed_at' => null,
+                'updated_by' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            if ($name === 'Nurul') {
+                $pendingUser = $user;
+                $pendingGuruId = $guru->id;
+            }
+        }
+
+        return [
+            'program' => $program,
+            'pendingUser' => $pendingUser,
+            'pendingGuruId' => $pendingGuruId,
+            'adminUser' => $this->masterAdmin(),
+            'tidakHadirStatusId' => $tidakHadirStatusId,
         ];
     }
 

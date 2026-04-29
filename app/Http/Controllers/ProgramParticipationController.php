@@ -11,6 +11,7 @@ use App\Services\KpiCalculationService;
 use App\Services\N8nWebhookService;
 use App\Services\ProgramParticipationService;
 use App\Models\Guru;
+use Illuminate\Support\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -58,13 +59,7 @@ class ProgramParticipationController extends Controller
             ->where('program_id', $program->id)
             ->where('guru_id', $guruId)
             ->first();
-        $realProgramParticipationsBefore = ProgramParticipation::query()
-            ->with('guru.user')
-            ->where('program_id', $program->id)
-            ->get()
-            ->filter(fn (ProgramParticipation $participation): bool => $participation->guru && ! $this->isTestReminderAccount($participation->guru));
-        $realProgramCompletedBefore = $realProgramParticipationsBefore->isNotEmpty()
-            && $realProgramParticipationsBefore->contains(fn (ProgramParticipation $participation): bool => $participation->program_status_id === null) === false;
+        $realProgramCompletedBefore = $this->allRealProgramResponsesCompleted($program);
 
         $newAbsenceReason = $selectedStatus?->code === 'TIDAK_HADIR' ? ($data['absence_reason'] ?? null) : null;
         $newAbsenceReasonStatus = $selectedStatus?->code === 'TIDAK_HADIR' && filled($newAbsenceReason)
@@ -113,14 +108,7 @@ class ProgramParticipationController extends Controller
 
         $this->kpiCalculationService->recalculateForGuru($participation->guru);
 
-        $realProgramParticipations = ProgramParticipation::query()
-            ->with('guru.user')
-            ->where('program_id', $program->id)
-            ->get()
-            ->filter(fn (ProgramParticipation $participation): bool => $participation->guru && ! $this->isTestReminderAccount($participation->guru));
-
-        $realProgramCompleted = $realProgramParticipations->isNotEmpty()
-            && $realProgramParticipations->contains(fn (ProgramParticipation $participation): bool => $participation->program_status_id === null) === false;
+        $realProgramCompleted = $this->allRealProgramResponsesCompleted($program);
 
         if (! $realProgramCompletedBefore && $realProgramCompleted) {
             $this->n8nWebhookService->sendByTemplate(
@@ -152,6 +140,7 @@ class ProgramParticipationController extends Controller
             ->where('program_id', $program->id)
             ->where('guru_id', $guruId)
             ->firstOrFail();
+        $realProgramCompletedBefore = $this->allRealProgramResponsesCompleted($program);
 
         $absentStatusIds = ProgramStatus::query()
             ->where('code', 'TIDAK_HADIR')
@@ -178,6 +167,18 @@ class ProgramParticipationController extends Controller
         $participation->loadMissing('guru');
         $this->kpiCalculationService->recalculateForGuru($participation->guru);
 
+        $realProgramCompleted = $this->allRealProgramResponsesCompleted($program);
+
+        if (! $realProgramCompletedBefore && $realProgramCompleted) {
+            $this->n8nWebhookService->sendByTemplate(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                [
+                    'perkara' => 'status program',
+                ],
+                $this->n8nWebhookService->toActionUrl(route('programs.show', $program))
+            );
+        }
+
         return redirect()
             ->route('programs.show', $program)
             ->with('status', __('messages.saved'))
@@ -197,5 +198,30 @@ class ProgramParticipationController extends Controller
         $guruName = trim(mb_strtolower((string) $guru->name));
 
         return in_array('test', [$displayName, $guruName], true);
+    }
+
+    private function allRealProgramResponsesCompleted(Program $program): bool
+    {
+        $participations = $this->realProgramParticipations($program);
+
+        return $participations->isNotEmpty()
+            && $participations->every(function (ProgramParticipation $participation): bool {
+                return filled($participation->program_status_id)
+                    && $participation->absence_reason_status !== ProgramParticipationService::ABSENCE_REASON_PENDING;
+            });
+    }
+
+    /**
+     * @return Collection<int, ProgramParticipation>
+     */
+    private function realProgramParticipations(Program $program): Collection
+    {
+        return ProgramParticipation::query()
+            ->with('guru.user')
+            ->where('program_id', $program->id)
+            ->get()
+            ->filter(fn (ProgramParticipation $participation): bool => $participation->guru && ! $this->isTestReminderAccount($participation->guru))
+            ->unique('guru_id')
+            ->values();
     }
 }
