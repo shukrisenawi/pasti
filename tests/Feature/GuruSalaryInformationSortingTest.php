@@ -149,6 +149,24 @@ class GuruSalaryInformationSortingTest extends TestCase
             ->assertSessionHas('status', 'Mesej telah berjaya dihantar ke group guru.');
     }
 
+    public function test_guru_salary_tabs_separate_pending_and_responded_gurus(): void
+    {
+        $this->seedGurusForTabs();
+        $this->actingAs($this->masterAdmin());
+
+        \Livewire\Livewire::withQueryParams(['tab' => 'pending'])
+            ->test(\App\Livewire\GuruSalaryInformationIndex::class)
+            ->assertSet('activeTab', 'pending')
+            ->assertSee('Guru Pending')
+            ->assertSee('Guru Belum Request')
+            ->assertDontSee('Guru Responded')
+            ->call('switchTab', 'responded')
+            ->assertSet('activeTab', 'responded')
+            ->assertSee('Guru Responded')
+            ->assertDontSee('Guru Pending')
+            ->assertDontSee('Guru Belum Request');
+    }
+
     public function test_menu_badge_counts_unique_pending_gurus_only(): void
     {
         $this->seedPendingGurusForReminder();
@@ -357,6 +375,63 @@ class GuruSalaryInformationSortingTest extends TestCase
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+        }
+    }
+
+    private function seedGurusForTabs(): void
+    {
+        $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
+        $pasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Tab',
+        ]);
+
+        foreach ([
+            ['name' => 'Guru Responded', 'completed_at' => now()->subDay(), 'completed' => true],
+            ['name' => 'Guru Pending', 'completed_at' => null, 'completed' => false],
+            ['name' => 'Guru Belum Request', 'completed_at' => null, 'completed' => null],
+        ] as $index => $item) {
+            $user = User::query()->create([
+                'name' => $item['name'],
+                'nama_samaran' => $item['name'],
+                'email' => strtolower(str_replace(' ', '', $item['name'])) . uniqid() . '@example.test',
+            ]);
+            $this->attachRole($user, 'guru');
+
+            $guru = Guru::query()->create([
+                'user_id' => $user->id,
+                'pasti_id' => $pasti->id,
+                'name' => $item['name'],
+                'email' => $user->email,
+                'is_assistant' => false,
+                'active' => true,
+            ]);
+
+            if ($item['completed'] === true) {
+                \DB::table('guru_salary_requests')->insert([
+                    'guru_id' => $guru->id,
+                    'requested_by' => null,
+                    'requested_at' => now()->subDays(2),
+                    'completed_by' => $user->id,
+                    'completed_at' => $item['completed_at'],
+                    'gaji' => 1000,
+                    'elaun' => 100,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } elseif ($item['completed'] === false) {
+                \DB::table('guru_salary_requests')->insert([
+                    'guru_id' => $guru->id,
+                    'requested_by' => null,
+                    'requested_at' => now()->subHours(4),
+                    'completed_by' => null,
+                    'completed_at' => null,
+                    'gaji' => null,
+                    'elaun' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
     }
 

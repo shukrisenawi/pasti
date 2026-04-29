@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Guru;
 use App\Models\GuruSalaryRequest;
 use App\Models\User;
+use Livewire\Attributes\Url;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -16,11 +17,41 @@ class GuruSalaryInformationIndex extends Component
 
     private const PAGE_NAME = 'guruSalaryPage';
 
+    #[Url(as: 'tab', except: 'pending')]
+    public string $activeTab = 'pending';
+
     public string $search = '';
+
+    public function mount(): void
+    {
+        if (! in_array($this->activeTab, $this->allowedTabs(), true)) {
+            $this->activeTab = 'pending';
+        }
+    }
 
     public function updatingSearch(): void
     {
         $this->resetPage(self::PAGE_NAME);
+    }
+
+    public function updatedActiveTab(): void
+    {
+        if (! in_array($this->activeTab, $this->allowedTabs(), true)) {
+            $this->activeTab = 'pending';
+        }
+
+        $this->resetPage(self::PAGE_NAME);
+    }
+
+    public function switchTab(string $tab): void
+    {
+        if (! in_array($tab, $this->allowedTabs(), true)) {
+            return;
+        }
+
+        if ($this->activeTab !== $tab) {
+            $this->activeTab = $tab;
+        }
     }
 
     public function render()
@@ -34,27 +65,7 @@ class GuruSalaryInformationIndex extends Component
         $pendingReminderGurus = $this->pendingReminderGurusForAdmin($allAccessibleGuruIds);
         $hasPendingRequests = $pendingReminderGurus->isNotEmpty();
 
-        $gurus = (clone $accessibleGurusQuery)
-            ->select('gurus.*')
-            ->selectSub(
-                GuruSalaryRequest::query()
-                    ->selectRaw('MAX(completed_at)')
-                    ->whereColumn('guru_salary_requests.guru_id', 'gurus.id'),
-                'latest_response_at'
-            )
-            ->with(['pasti', 'user'])
-            ->when(
-                trim($this->search) !== '',
-                fn (Builder $query) => $query->where(function (Builder $searchQuery): void {
-                    $keyword = '%' . trim($this->search) . '%';
-                    $searchQuery
-                        ->where('gurus.name', 'like', $keyword)
-                        ->orWhereHas('pasti', fn (Builder $pastiQuery) => $pastiQuery->where('name', 'like', $keyword));
-                })
-            )
-            ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
-            ->orderByDesc('latest_response_at')
-            ->orderByDesc('gurus.id')
+        $gurus = $this->gurusQueryForActiveTab($accessibleGurusQuery)
             ->paginate(9, pageName: self::PAGE_NAME);
 
         $guruIds = collect($gurus->items())->pluck('id')->all();
@@ -77,7 +88,51 @@ class GuruSalaryInformationIndex extends Component
             'pendingReminderCount' => $pendingReminderGurus->count(),
             'isGuru' => $user->isOperatingAsGuru(),
             'guruId' => $user->guru?->id,
+            'activeTab' => $this->activeTab,
         ]);
+    }
+
+    private function gurusQueryForActiveTab(Builder $accessibleGurusQuery): Builder
+    {
+        $query = (clone $accessibleGurusQuery)
+            ->select('gurus.*')
+            ->selectSub(
+                GuruSalaryRequest::query()
+                    ->selectRaw('MAX(id)')
+                    ->whereColumn('guru_salary_requests.guru_id', 'gurus.id'),
+                'latest_request_id'
+            )
+            ->selectSub(
+                GuruSalaryRequest::query()
+                    ->selectRaw('MAX(completed_at)')
+                    ->whereColumn('guru_salary_requests.guru_id', 'gurus.id'),
+                'latest_response_at'
+            )
+            ->with(['pasti', 'user', 'latestSalaryRequest'])
+            ->when(
+                trim($this->search) !== '',
+                fn (Builder $query) => $query->where(function (Builder $searchQuery): void {
+                    $keyword = '%' . trim($this->search) . '%';
+                    $searchQuery
+                        ->where('gurus.name', 'like', $keyword)
+                        ->orWhereHas('pasti', fn (Builder $pastiQuery) => $pastiQuery->where('name', 'like', $keyword));
+                })
+            )
+            ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id');
+
+        if ($this->activeTab === 'responded') {
+            $query->whereHas('latestSalaryRequest', fn (Builder $salaryRequestQuery) => $salaryRequestQuery->whereNotNull('completed_at'));
+        } else {
+            $query->where(function (Builder $tabQuery): void {
+                $tabQuery
+                    ->whereDoesntHave('latestSalaryRequest')
+                    ->orWhereHas('latestSalaryRequest', fn (Builder $salaryRequestQuery) => $salaryRequestQuery->whereNull('completed_at'));
+            });
+        }
+
+        return $query
+            ->orderByRaw('COALESCE(latest_request_id, gurus.id) DESC')
+            ->orderBy('gurus.name');
     }
 
     private function accessibleGurusQueryForUser(User $user): Builder
@@ -126,5 +181,13 @@ class GuruSalaryInformationIndex extends Component
         $guruName = trim(mb_strtolower((string) $guru->name));
 
         return in_array('test', [$displayName, $guruName], true);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function allowedTabs(): array
+    {
+        return ['pending', 'responded'];
     }
 }

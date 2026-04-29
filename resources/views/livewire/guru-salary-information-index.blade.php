@@ -1,27 +1,46 @@
 <div>
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <input
-            type="text"
-            wire:model.live.debounce.300ms="search"
-            placeholder="{{ __('messages.search') }}..."
-            class="input-base w-full max-w-sm"
-        >
+    <div class="mb-4 space-y-3">
+        <div class="flex flex-wrap items-center gap-2">
+            <button
+                type="button"
+                wire:click="switchTab('pending')"
+                class="btn {{ $activeTab === 'pending' ? 'btn-primary' : 'btn-outline' }}"
+            >
+                Elaun guru belum respond
+            </button>
+            <button
+                type="button"
+                wire:click="switchTab('responded')"
+                class="btn {{ $activeTab === 'responded' ? 'btn-primary' : 'btn-outline' }}"
+            >
+                Elaun guru dah respond
+            </button>
+        </div>
 
-        @if($canRequest)
-            <form method="POST" action="{{ route('guru-salary-information.request-all') }}">
-                @csrf
-                <button class="btn btn-outline" @disabled(! $canRequestAll)>
-                    {{ __('messages.request_latest_guru_salary_info_all') }}
-                </button>
-            </form>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <input
+                type="text"
+                wire:model.live.debounce.300ms="search"
+                placeholder="{{ __('messages.search') }}..."
+                class="input-base w-full max-w-sm"
+            >
 
-            <form method="POST" action="{{ route('guru-salary-information.request-reminder') }}">
-                @csrf
-                <button class="btn btn-outline" @disabled(! ($canRequestReminder ?? false))>
-                    Minta respond
-                </button>
-            </form>
-        @endif
+            @if($canRequest)
+                <form method="POST" action="{{ route('guru-salary-information.request-all') }}">
+                    @csrf
+                    <button class="btn btn-outline" @disabled(! $canRequestAll)>
+                        {{ __('messages.request_latest_guru_salary_info_all') }}
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ route('guru-salary-information.request-reminder') }}">
+                    @csrf
+                    <button class="btn btn-outline" @disabled(! ($canRequestReminder ?? false))>
+                        Minta respond
+                    </button>
+                </form>
+            @endif
+        </div>
     </div>
 
     @if($gurus->count())
@@ -58,7 +77,7 @@
                                 <p class="text-slate-500">{{ __('messages.completed_at_label') }}: {{ optional($latestRequest->completed_at)->format('d/m/Y H:i') }}</p>
                             @endif
                         @else
-                            <p class="mt-1 text-slate-500">-</p>
+                            <p class="mt-1 font-semibold text-slate-500">Belum dihantar</p>
                         @endif
                     </div>
 
