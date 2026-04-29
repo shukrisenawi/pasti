@@ -229,7 +229,7 @@ class DashboardController extends Controller
             'latestProgram' => $latestProgram,
             'currentParticipation' => $currentParticipation,
             'statuses' => $statuses,
-            'canUpdateOwnStatus' => $user->isOperatingAsGuru() && (bool) $currentParticipation,
+            'canUpdateOwnStatus' => $user->isOperatingAsGuru() && (bool) $latestProgram && (bool) $currentGuruId,
             'topKpiGurus' => $topKpiGurus,
             'latestYear' => $currentYear,
             'latestInboxMessage' => $latestInboxMessage,

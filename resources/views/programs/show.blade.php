@@ -38,7 +38,7 @@
         </p>
         <p><strong>{{ __('messages.description') }}:</strong> {{ $program->description ?? '-' }}</p>
 
-        @if($canUpdateOwn && $currentParticipation && blank($currentParticipation->program_status_id))
+        @if($canUpdateOwn && blank($currentParticipation?->program_status_id))
             <div class="mt-5 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white p-4 shadow-sm">
                 <div class="flex items-start gap-3">
                     <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-200/80">
@@ -55,10 +55,10 @@
 
                 <form
                     method="POST"
-                    action="{{ route('programs.teachers.status.update', [$program, $currentParticipation->guru_id]) }}"
+                    action="{{ route('programs.teachers.status.update', [$program, $currentGuruId]) }}"
                     class="mt-4 grid gap-2 md:grid-cols-[170px_1fr_auto] md:items-center"
                     x-data="{
-                        selectedStatusId: @js((string) $currentParticipation->program_status_id),
+                        selectedStatusId: @js((string) ($currentParticipation?->program_status_id ?? '')),
                         statusCodeById: @js($statusCodeById),
                         requiresAbsenceReason() {
                             return this.statusCodeById[this.selectedStatusId] === 'TIDAK_HADIR';
@@ -69,7 +69,7 @@
                     <select name="program_status_id" class="input-base max-w-xs text-xs" x-model="selectedStatusId">
                         <option value="">-</option>
                         @foreach($statuses as $status)
-                            <option value="{{ $status->id }}" @selected($currentParticipation->program_status_id === $status->id)>{{ $status->name }}</option>
+                            <option value="{{ $status->id }}" @selected(($currentParticipation?->program_status_id) === $status->id)>{{ $status->name }}</option>
                         @endforeach
                     </select>
                     @if($program->require_absence_reason)
@@ -79,7 +79,7 @@
                                 name="absence_reason"
                                 class="input-base text-xs"
                                 placeholder="{{ __('messages.absence_reason_placeholder') }}"
-                                value="{{ old('absence_reason', $currentParticipation->absence_reason) }}"
+                                value="{{ old('absence_reason', $currentParticipation?->absence_reason) }}"
                             >
                         </div>
                     @endif
