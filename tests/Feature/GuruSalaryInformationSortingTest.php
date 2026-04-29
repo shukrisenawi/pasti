@@ -179,17 +179,51 @@ class GuruSalaryInformationSortingTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $count = GuruSalaryRequest::query()
-            ->whereNull('completed_at')
-            ->whereDoesntHave('guru.user', function ($query): void {
+        foreach (['Nur Famiza Fazilah', 'Roslina Lahman'] as $name) {
+            $user = User::query()->create([
+                'name' => $name,
+                'nama_samaran' => $name,
+                'email' => strtolower(str_replace(' ', '', $name)) . uniqid() . '@example.test',
+            ]);
+            $this->attachRole($user, 'guru');
+
+            $guru = Guru::query()->create([
+                'user_id' => $user->id,
+                'pasti_id' => Pasti::query()->where('name', $name === 'Nur Famiza Fazilah' ? 'AL-FALAH' : 'AL-FURQAN')->value('id'),
+                'name' => $name,
+                'email' => $user->email,
+                'is_assistant' => false,
+                'active' => false,
+            ]);
+
+            \DB::table('guru_salary_requests')->insert([
+                'guru_id' => $guru->id,
+                'requested_by' => null,
+                'requested_at' => now()->subHours(3),
+                'completed_by' => null,
+                'completed_at' => null,
+                'gaji' => null,
+                'elaun' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $count = Guru::query()
+            ->where('is_assistant', false)
+            ->where('active', true)
+            ->whereNotNull('user_id')
+            ->whereDoesntHave('user', function ($query): void {
                 $query->where(function ($nameQuery): void {
                     $nameQuery
                         ->whereRaw('lower(coalesce(name, \'\')) = ?', ['test'])
                         ->orWhereRaw('lower(coalesce(nama_samaran, \'\')) = ?', ['test']);
                 });
             })
-            ->distinct()
-            ->count('guru_salary_requests.guru_id');
+            ->whereHas('salaryRequests', function ($query): void {
+                $query->whereNull('completed_at');
+            })
+            ->count();
 
         $this->assertSame(3, $count);
     }

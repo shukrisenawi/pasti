@@ -139,6 +139,23 @@
                     });
                 };
 
+                $guruSalaryPendingCountForUser = function ($user) use ($isTestReminderUser): int {
+                    $query = \App\Models\Guru::query()
+                        ->where('is_assistant', false)
+                        ->where('active', true)
+                        ->whereNotNull('user_id')
+                        ->whereDoesntHave('user', $isTestReminderUser)
+                        ->whereHas('salaryRequests', fn ($salaryQuery) => $salaryQuery->whereNull('completed_at'));
+
+                    if ($user->isOperatingAsGuru()) {
+                        $query->whereKey($user->guru?->id ?? 0);
+                    } elseif ($user->hasRole('admin') && ! $user->hasRole('master_admin')) {
+                        $query->whereIn('pasti_id', $user->assignedPastis()->pluck('pastis.id'));
+                    }
+
+                    return $query->count();
+                };
+
                 $drawerInboxCount = 0;
                 $drawerProgramApprovalCount = 0;
                 $drawerPastiInfoPendingCount = 0;
@@ -162,16 +179,7 @@
                     ->whereDoesntHave('pasti.gurus.user', $isTestReminderUser)
                     ->whereNull('completed_at')
                     ->count();
-                $drawerGuruSalaryPendingCount = \App\Models\GuruSalaryRequest::query()
-                    ->when($authUser->isOperatingAsGuru(), fn ($q) => $q->where('guru_id', $authUser->guru?->id ?? 0))
-                    ->when(
-                        $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
-                        fn ($q) => $q->whereHas('guru', fn ($q2) => $q2->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
-                    )
-                    ->whereDoesntHave('guru.user', $isTestReminderUser)
-                    ->whereNull('completed_at')
-                    ->distinct()
-                    ->count('guru_salary_requests.guru_id');
+                $drawerGuruSalaryPendingCount = $guruSalaryPendingCountForUser($authUser);
                 $drawerOnLeaveGuruCount = \App\Models\LeaveNotice::query()
                     ->when($authUser->isOperatingAsGuru(), fn ($q) => $q->where('guru_id', $authUser->guru?->id ?? 0))
                     ->when($authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'), fn ($q) => $q->whereHas('guru', fn ($q2) => $q2->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id'))))
@@ -495,19 +503,7 @@
                         ->whereDoesntHave('pasti.gurus.user', $isTestReminderUser)
                         ->whereNull('completed_at')
                         ->count();
-                    $menuGuruSalaryPendingCount = \App\Models\GuruSalaryRequest::query()
-                        ->when(
-                            $authUser->isOperatingAsGuru(),
-                            fn ($query) => $query->where('guru_id', $authUser->guru?->id ?? 0)
-                        )
-                        ->when(
-                            $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
-                            fn ($query) => $query->whereHas('guru', fn ($q) => $q->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
-                    )
-                    ->whereDoesntHave('guru.user', $isTestReminderUser)
-                    ->whereNull('completed_at')
-                        ->distinct()
-                        ->count('guru_salary_requests.guru_id');
+                    $menuGuruSalaryPendingCount = $guruSalaryPendingCountForUser($authUser);
 
                     $menuOnLeaveGuruCount = \App\Models\LeaveNotice::query()
                         ->when(
