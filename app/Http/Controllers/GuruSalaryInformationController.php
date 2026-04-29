@@ -75,7 +75,6 @@ class GuruSalaryInformationController extends Controller
             'canRequest' => $user->isOperatingAsAdmin(),
             'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
             'canRequestReminder' => $user->isOperatingAsAdmin() && $pendingReminderGurus->isNotEmpty(),
-            'pendingReminderGuruNames' => $pendingReminderGurus->pluck('display_name')->values(),
             'hasPendingRequests' => $hasPendingRequests,
             'pendingReminderCount' => $pendingReminderGurus->count(),
             'isGuru' => $user->isOperatingAsGuru(),

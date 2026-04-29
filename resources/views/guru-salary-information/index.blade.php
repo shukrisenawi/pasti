@@ -1,18 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-start justify-between gap-4">
-            <h2 class="text-lg font-bold">{{ __('messages.guru_salary_information') }}</h2>
-            @if(! empty($pendingReminderGuruNames ?? []))
-                <div class="float-right max-w-sm rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-right text-xs text-amber-900 shadow-sm">
-                    <p class="font-semibold">Guru belum respond</p>
-                    <div class="mt-1 max-h-44 space-y-1 overflow-y-auto pr-1 leading-5">
-                        @foreach($pendingReminderGuruNames as $name)
-                            <div class="break-words">{{ $name }}</div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-        </div>
+        <h2 class="text-lg font-bold">{{ __('messages.guru_salary_information') }}</h2>
     </x-slot>
 
     <div>

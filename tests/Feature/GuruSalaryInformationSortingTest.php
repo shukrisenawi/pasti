@@ -149,19 +149,6 @@ class GuruSalaryInformationSortingTest extends TestCase
             ->assertSessionHas('status', 'Mesej telah berjaya dihantar ke group guru.');
     }
 
-    public function test_guru_salary_page_exposes_pending_reminder_names_without_test_account(): void
-    {
-        $this->seedPendingGurusForReminder();
-
-        $request = Request::create('/maklumat-gaji-guru', 'GET');
-        $request->setUserResolver(fn (): User => $this->masterAdmin());
-
-        $view = app(GuruSalaryInformationController::class)->index($request);
-        $names = $view->getData()['pendingReminderGuruNames'];
-
-        $this->assertSame(['Ahmad', 'Nurul', 'Siti'], $names->all());
-    }
-
     public function test_menu_badge_counts_unique_pending_gurus_only(): void
     {
         $this->seedPendingGurusForReminder();
