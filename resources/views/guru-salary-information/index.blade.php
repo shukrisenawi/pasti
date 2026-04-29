@@ -5,9 +5,11 @@
             @if(! empty($pendingReminderGuruNames ?? []))
                 <div class="float-right max-w-sm rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-right text-xs text-amber-900 shadow-sm">
                     <p class="font-semibold">Guru belum respond</p>
-                    <p class="mt-1 leading-5">
-                        {{ collect($pendingReminderGuruNames)->implode(', ') }}
-                    </p>
+                    <div class="mt-1 max-h-44 space-y-1 overflow-y-auto pr-1 leading-5">
+                        @foreach($pendingReminderGuruNames as $name)
+                            <div class="break-words">{{ $name }}</div>
+                        @endforeach
+                    </div>
                 </div>
             @endif
         </div>
