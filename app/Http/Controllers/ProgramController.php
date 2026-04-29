@@ -125,6 +125,10 @@ class ProgramController extends Controller
             ->filter(fn ($participation) => filled($participation->program_status_id))
             ->values();
         $pendingReminderGurus = $this->pendingReminderGurusForProgram($program);
+        $currentGuruId = $user->guru?->id;
+        $currentParticipation = $currentGuruId
+            ? $allParticipations->firstWhere('guru_id', $currentGuruId)
+            : null;
 
         $program->setRelation('participations', $allParticipations);
 
@@ -140,7 +144,8 @@ class ProgramController extends Controller
             'canRequestReminder' => ($user->hasRole('master_admin') || $user->hasRole('admin')) && $pendingReminderGurus->isNotEmpty(),
             'programPendingReminderCount' => $pendingReminderGurus->count(),
             'canUpdateOwn' => $user->isOperatingAsGuru() && (bool) $user->guru,
-            'currentGuruId' => $user->guru?->id,
+            'currentGuruId' => $currentGuruId,
+            'currentParticipation' => $currentParticipation,
             'isAllTeachers' => $program->gurus()->count() === count($this->activeGuruIds()),
         ]);
     }

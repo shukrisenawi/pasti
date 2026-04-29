@@ -297,6 +297,26 @@ class ProgramParticipationApprovalTest extends TestCase
             });
     }
 
+    public function test_program_show_page_displays_response_box_for_guru_with_pending_status(): void
+    {
+        Notification::fake();
+
+        [$program, , , , $latestGuruUser] = $this->createProgramFixtures(
+            withSecondGuru: true,
+            secondGuruHasStatus: false
+        );
+
+        $response = $this->actingAs($latestGuruUser)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('Respon Program')
+            ->assertSee('Perlu Respon')
+            ->assertSee('name="program_status_id"', false)
+            ->assertSee(route('programs.teachers.status.update', [$program, $latestGuruUser->guru->id]), false);
+    }
+
     public function test_program_menu_badge_uses_pending_absence_reason_approval_count(): void
     {
         Notification::fake();

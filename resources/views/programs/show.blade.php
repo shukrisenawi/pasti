@@ -16,6 +16,11 @@
     </x-slot>
 
     <div class="card">
+        @php
+            $statusCodeById = $statuses->mapWithKeys(
+                fn ($status) => [(string) $status->id => $status->code]
+            );
+        @endphp
         @if($program->banner_url)
             <img src="{{ $program->banner_url }}" alt="{{ $program->title }}" class="mb-4 h-56 w-full rounded-2xl border border-slate-200 object-cover">
         @endif
@@ -32,6 +37,56 @@
             {{ $program->require_absence_reason ? __('messages.yes') : __('messages.no') }}
         </p>
         <p><strong>{{ __('messages.description') }}:</strong> {{ $program->description ?? '-' }}</p>
+
+        @if($canUpdateOwn && $currentParticipation && blank($currentParticipation->program_status_id))
+            <div class="mt-5 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white p-4 shadow-sm">
+                <div class="flex items-start gap-3">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-200/80">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-700">Perlu Respon</p>
+                        <h3 class="mt-1 text-xl font-black text-slate-900">Respon Program</h3>
+                        <p class="mt-1 text-sm text-slate-600">Sila pilih status kehadiran anda untuk program ini sebelum admin buat semakan.</p>
+                    </div>
+                </div>
+
+                <form
+                    method="POST"
+                    action="{{ route('programs.teachers.status.update', [$program, $currentParticipation->guru_id]) }}"
+                    class="mt-4 grid gap-2 md:grid-cols-[170px_1fr_auto] md:items-center"
+                    x-data="{
+                        selectedStatusId: @js((string) $currentParticipation->program_status_id),
+                        statusCodeById: @js($statusCodeById),
+                        requiresAbsenceReason() {
+                            return this.statusCodeById[this.selectedStatusId] === 'TIDAK_HADIR';
+                        }
+                    }"
+                >
+                    @csrf
+                    <select name="program_status_id" class="input-base max-w-xs text-xs" x-model="selectedStatusId">
+                        <option value="">-</option>
+                        @foreach($statuses as $status)
+                            <option value="{{ $status->id }}" @selected($currentParticipation->program_status_id === $status->id)>{{ $status->name }}</option>
+                        @endforeach
+                    </select>
+                    @if($program->require_absence_reason)
+                        <div x-show="requiresAbsenceReason()" x-cloak>
+                            <input
+                                type="text"
+                                name="absence_reason"
+                                class="input-base text-xs"
+                                placeholder="{{ __('messages.absence_reason_placeholder') }}"
+                                value="{{ old('absence_reason', $currentParticipation->absence_reason) }}"
+                            >
+                        </div>
+                    @endif
+                    <button class="btn btn-outline btn-sm">{{ __('messages.save') }}</button>
+                </form>
+            </div>
+        @endif
 
         @if($canRequestReminder)
             <form method="POST" action="{{ route('programs.request-reminder', $program) }}" class="mt-4">
