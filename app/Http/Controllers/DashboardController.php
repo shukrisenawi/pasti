@@ -227,6 +227,7 @@ class DashboardController extends Controller
         return view('dashboard', [
             'latestPrograms' => $latestPrograms,
             'latestProgram' => $latestProgram,
+            'currentGuruId' => $currentGuruId,
             'currentParticipation' => $currentParticipation,
             'statuses' => $statuses,
             'canUpdateOwnStatus' => $user->isOperatingAsGuru() && (bool) $latestProgram && (bool) $currentGuruId,
