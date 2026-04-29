@@ -108,44 +108,35 @@
             </div>
         </section>
 
+        @if(($pendingPastiInfoRequest ?? null) || ($pendingGuruSalaryRequest ?? null))
         <section class="mb-8">
-            <div class="rounded-3xl border {{ (($pendingPastiInfoRequest ?? null) || ($pendingGuruSalaryRequest ?? null)) ? 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50' : 'border-slate-100 bg-white' }} p-5 shadow-card sm:p-6">
+            <div class="rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-5 shadow-card sm:p-6">
                 <div class="flex items-start gap-3">
-                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl {{ (($pendingPastiInfoRequest ?? null) || ($pendingGuruSalaryRequest ?? null)) ? 'bg-amber-500 text-white shadow-lg shadow-amber-200/80' : 'bg-slate-100 text-slate-500' }}">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-200/80">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-[10px] font-bold uppercase tracking-[0.22em] {{ (($pendingPastiInfoRequest ?? null) || ($pendingGuruSalaryRequest ?? null)) ? 'text-amber-700' : 'text-slate-400' }}">
-                            {{ (($pendingPastiInfoRequest ?? null) || ($pendingGuruSalaryRequest ?? null)) ? 'Perlu Tindakan' : 'Kemaskini Maklumat' }}
-                        </p>
-                        <h3 class="mt-1 text-xl font-black text-slate-900">
-                            {{ (($pendingPastiInfoRequest ?? null) || ($pendingGuruSalaryRequest ?? null)) ? 'Tindakan Diperlukan' : 'Maklumat PASTI & Guru' }}
-                        </h3>
-                        <p class="mt-1 text-sm text-slate-600">
-                            {{ (($pendingPastiInfoRequest ?? null) || ($pendingGuruSalaryRequest ?? null)) ? 'Admin telah menghantar permintaan yang masih menunggu maklum balas anda.' : 'Pastikan maklumat guru dan murid terkini telah direkodkan dalam sistem.' }}
-                        </p>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.22em] text-amber-700">Perlu Tindakan</p>
+                        <h3 class="mt-1 text-xl font-black text-slate-900">Tindakan Diperlukan</h3>
+                        <p class="mt-1 text-sm text-slate-600">Admin telah menghantar permintaan yang masih menunggu maklum balas anda.</p>
                     </div>
                 </div>
 
-                <div class="mt-5 grid gap-4 lg:grid-cols-2">
-                    <div class="rounded-2xl border {{ $pendingPastiInfoRequest ? 'border-amber-200 bg-white' : 'border-slate-50 bg-slate-50/50' }} p-4 shadow-sm">
+                <div class="mt-5 grid gap-4 {{ $pendingPastiInfoRequest && $pendingGuruSalaryRequest ? 'lg:grid-cols-2' : 'lg:grid-cols-1' }}">
+                    @if($pendingPastiInfoRequest)
+                    <div class="rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">
                         <p class="text-xs font-bold uppercase tracking-[0.16em] {{ $pendingPastiInfoRequest ? 'text-amber-700' : 'text-slate-400' }}">Maklumat Semasa</p>
                         <h4 class="mt-2 text-lg font-black text-slate-900">Isi maklumat semasa</h4>
                         <p class="mt-2 text-sm leading-6 text-slate-600">Lengkapkan maklumat guru dan murid terkini untuk PASTI anda supaya admin boleh semak data semasa.</p>
-                        @if($pendingPastiInfoRequest)
-                            <a href="{{ route('pasti-information.edit', $pendingPastiInfoRequest) }}" class="btn mt-4 rounded-2xl border-none bg-amber-500 px-4 text-sm font-bold text-white hover:bg-amber-600 shadow-lg shadow-amber-200/50">
-                                Isi sekarang
-                            </a>
-                        @else
-                            <a href="{{ route('pasti-information.index') }}" class="btn mt-4 rounded-2xl border-none bg-slate-200 px-4 text-sm font-bold text-slate-700 hover:bg-slate-300">
-                                Lihat Rekod
-                            </a>
-                        @endif
+                        <a href="{{ route('pasti-information.edit', $pendingPastiInfoRequest) }}" class="btn mt-4 rounded-2xl border-none bg-amber-500 px-4 text-sm font-bold text-white hover:bg-amber-600 shadow-lg shadow-amber-200/50">
+                            Isi sekarang
+                        </a>
                     </div>
+                    @endif
 
-                    @if($pendingGuruSalaryRequest ?? null)
+                    @if($pendingGuruSalaryRequest)
                         <div class="rounded-2xl border border-sky-200 bg-white p-4 shadow-sm">
                             <p class="text-xs font-bold uppercase tracking-[0.16em] text-sky-700">Maklumat Elaun</p>
                             <h4 class="mt-2 text-lg font-black text-slate-900">Isi maklumat elaun</h4>
@@ -154,19 +145,11 @@
                                 Isi sekarang
                             </a>
                         </div>
-                    @else
-                        <div class="rounded-2xl border border-slate-50 bg-slate-50/50 p-4 shadow-sm">
-                            <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Maklumat Gaji</p>
-                            <h4 class="mt-2 text-lg font-black text-slate-900">Kemaskini Gaji</h4>
-                            <p class="mt-2 text-sm leading-6 text-slate-600">Semak dan pastikan maklumat gaji serta elaun anda adalah yang terkini.</p>
-                            <a href="{{ route('guru-salary-information.index') }}" class="btn mt-4 rounded-2xl border-none bg-slate-200 px-4 text-sm font-bold text-slate-700 hover:bg-slate-300">
-                                Semak Maklumat
-                            </a>
-                        </div>
                     @endif
                 </div>
             </div>
         </section>
+        @endif
     @endif
 
     @if($user->isOperatingAsAdmin())
