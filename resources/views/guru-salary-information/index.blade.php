@@ -31,6 +31,15 @@
                     Minta respond
                 </button>
             </form>
+
+            @if(! empty($pendingReminderGuruNames ?? []))
+                <div class="ml-auto max-w-sm rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-right text-xs text-amber-900 shadow-sm">
+                    <p class="font-semibold">Guru belum respond</p>
+                    <p class="mt-1 leading-5">
+                        {{ collect($pendingReminderGuruNames)->implode(', ') }}
+                    </p>
+                </div>
+            @endif
         @endif
     </div>
 
