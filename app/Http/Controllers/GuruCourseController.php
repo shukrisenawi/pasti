@@ -230,10 +230,7 @@ class GuruCourseController extends Controller
             }
         });
 
-        $realCourseResponses = GuruCourseOfferResponse::query()
-            ->with('guru.user')
-            ->get()
-            ->filter(fn (GuruCourseOfferResponse $response): bool => $response->guru && ! $this->isTestReminderAccount($response->guru));
+        $realCourseResponses = $this->latestRealCourseResponsesForCompletion();
 
         $realCourseResponsesCompleted = $realCourseResponses->isNotEmpty()
             && $realCourseResponses->contains(fn (GuruCourseOfferResponse $response): bool => $response->responded_at === null) === false;
@@ -317,5 +314,24 @@ class GuruCourseController extends Controller
         $guruName = trim(mb_strtolower((string) $guru->name));
 
         return in_array('test', [$displayName, $guruName], true);
+    }
+
+    /**
+     * @return Collection<int, GuruCourseOfferResponse>
+     */
+    private function latestRealCourseResponsesForCompletion(): Collection
+    {
+        $latestOfferIds = $this->latestOffersBySemester()->pluck('id')->all();
+
+        if ($latestOfferIds === []) {
+            return collect();
+        }
+
+        return GuruCourseOfferResponse::query()
+            ->with('guru.user')
+            ->whereIn('guru_course_offer_id', $latestOfferIds)
+            ->get()
+            ->filter(fn (GuruCourseOfferResponse $response): bool => $response->guru && ! $this->isTestReminderAccount($response->guru))
+            ->values();
     }
 }

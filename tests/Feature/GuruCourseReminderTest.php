@@ -149,6 +149,35 @@ class GuruCourseReminderTest extends TestCase
         $this->assertSame(302, $response->getStatusCode());
     }
 
+    public function test_responding_last_latest_offer_sends_auto_thanks_even_when_old_offer_has_pending_response(): void
+    {
+        $payload = $this->seedLatestGuruCourseResponsesExceptTestWithOldPendingResponse();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/kursus-guru')))
+            ->andReturn('https://example.test/kursus-guru');
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                ['perkara' => 'respon sambung kursus guru'],
+                'https://example.test/kursus-guru'
+            );
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $request = Request::create('/kursus-guru/' . $payload['response']->id . '/respond', 'POST', [
+            'decision' => 'continue',
+        ]);
+        $request->setUserResolver(fn (): User => $payload['user']);
+
+        $response = app(GuruCourseController::class)->respond($request, $payload['response']);
+
+        $this->assertSame(302, $response->getStatusCode());
+    }
+
     private function masterAdmin(): User
     {
         $user = User::query()->create([
@@ -249,6 +278,72 @@ class GuruCourseReminderTest extends TestCase
         return [
             'user' => $pendingUser,
                 'response' => $pendingResponse,
+        ];
+    }
+
+    private function seedLatestGuruCourseResponsesExceptTestWithOldPendingResponse(): array
+    {
+        $oldOffer = GuruCourseOffer::query()->create([
+            'target_semester' => 1,
+            'registration_deadline' => now()->subWeek()->toDateString(),
+            'sent_by' => null,
+            'sent_at' => now()->subWeeks(2),
+            'note' => null,
+        ]);
+
+        $latestOffer = GuruCourseOffer::query()->create([
+            'target_semester' => 1,
+            'registration_deadline' => now()->addWeek()->toDateString(),
+            'sent_by' => null,
+            'sent_at' => now(),
+            'note' => null,
+        ]);
+
+        foreach (['Test', 'Ahmad', 'Siti', 'Nurul'] as $index => $name) {
+            $user = User::query()->create([
+                'name' => $name,
+                'nama_samaran' => $name,
+                'email' => strtolower($name).uniqid().'@example.test',
+            ]);
+            $this->attachRole($user, 'guru');
+
+            $guru = Guru::query()->create([
+                'user_id' => $user->id,
+                'name' => $name,
+                'email' => $user->email,
+                'kursus_guru' => 'belum_kursus',
+                'is_assistant' => false,
+                'active' => true,
+            ]);
+
+            GuruCourseOfferResponse::query()->create([
+                'guru_course_offer_id' => $oldOffer->id,
+                'guru_id' => $guru->id,
+                'user_id' => $user->id,
+                'decision' => $name === 'Ahmad' ? null : 'continue',
+                'stop_reason' => null,
+                'responded_at' => $name === 'Ahmad' ? null : now()->subWeeks(2),
+            ]);
+
+            GuruCourseOfferResponse::query()->create([
+                'guru_course_offer_id' => $latestOffer->id,
+                'guru_id' => $guru->id,
+                'user_id' => $user->id,
+                'decision' => $index < 3 ? 'continue' : null,
+                'stop_reason' => null,
+                'responded_at' => $index < 3 ? now()->subMinutes(10 - $index) : null,
+            ]);
+        }
+
+        $pendingUser = User::query()->where('name', 'Nurul')->firstOrFail();
+        $pendingResponse = GuruCourseOfferResponse::query()
+            ->where('guru_course_offer_id', $latestOffer->id)
+            ->whereHas('guru', fn ($query) => $query->where('name', 'Nurul'))
+            ->firstOrFail();
+
+        return [
+            'user' => $pendingUser,
+            'response' => $pendingResponse,
         ];
     }
 
