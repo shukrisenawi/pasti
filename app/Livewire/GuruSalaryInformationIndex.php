@@ -140,7 +140,12 @@ class GuruSalaryInformationIndex extends Component
         $query = Guru::query()
             ->where('is_assistant', false)
             ->where('active', true)
-            ->whereNotNull('user_id');
+            ->whereNotNull('user_id')
+            ->whereDoesntHave('user', fn (Builder $userQuery) => $userQuery->where(function (Builder $nameQuery): void {
+                $nameQuery
+                    ->whereRaw('lower(coalesce(name, \'\')) = ?', ['test'])
+                    ->orWhereRaw('lower(coalesce(nama_samaran, \'\')) = ?', ['test']);
+            }));
 
         if ($user->isOperatingAsGuru()) {
             $query->whereKey($user->guru?->id ?: 0);

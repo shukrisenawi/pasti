@@ -159,6 +159,7 @@ class GuruSalaryInformationSortingTest extends TestCase
             ->assertSet('activeTab', 'pending')
             ->assertSee('Guru Pending')
             ->assertSee('Guru Belum Request')
+            ->assertDontSee('Test')
             ->assertDontSee('Guru Responded')
             ->call('switchTab', 'responded')
             ->assertSet('activeTab', 'responded')
@@ -387,6 +388,7 @@ class GuruSalaryInformationSortingTest extends TestCase
         ]);
 
         foreach ([
+            ['name' => 'Test', 'completed_at' => null, 'completed' => false],
             ['name' => 'Guru Responded', 'completed_at' => now()->subDay(), 'completed' => true],
             ['name' => 'Guru Pending', 'completed_at' => null, 'completed' => false],
             ['name' => 'Guru Belum Request', 'completed_at' => null, 'completed' => null],
@@ -416,6 +418,18 @@ class GuruSalaryInformationSortingTest extends TestCase
                     'completed_at' => $item['completed_at'],
                     'gaji' => 1000,
                     'elaun' => 100,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } elseif ($item['name'] === 'Test') {
+                \DB::table('guru_salary_requests')->insert([
+                    'guru_id' => $guru->id,
+                    'requested_by' => null,
+                    'requested_at' => now()->subDays(2),
+                    'completed_by' => null,
+                    'completed_at' => null,
+                    'gaji' => null,
+                    'elaun' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
