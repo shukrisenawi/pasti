@@ -131,6 +131,14 @@
         {{-- Drawer Navigation --}}
         <nav class="space-y-1 px-3 py-2 text-sm">
             @php
+                $isTestReminderUser = function ($query): void {
+                    $query->where(function ($nameQuery): void {
+                        $nameQuery
+                            ->whereRaw('lower(coalesce(name, \'\')) = ?', ['test'])
+                            ->orWhereRaw('lower(coalesce(nama_samaran, \'\')) = ?', ['test']);
+                    });
+                };
+
                 $drawerInboxCount = 0;
                 $drawerProgramApprovalCount = 0;
                 $drawerPastiInfoPendingCount = 0;
@@ -151,6 +159,7 @@
                 $drawerPastiInfoPendingCount = \App\Models\PastiInformationRequest::query()
                     ->when($authUser->isOperatingAsGuru(), fn ($q) => $q->where('pasti_id', $authUser->guru?->pasti_id ?? 0))
                     ->when($authUser->hasRole('admin') && !$authUser->hasRole('master_admin'), fn ($q) => $q->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
+                    ->whereDoesntHave('pasti.gurus.user', $isTestReminderUser)
                     ->whereNull('completed_at')
                     ->count();
                 $drawerGuruSalaryPendingCount = \App\Models\GuruSalaryRequest::query()
@@ -159,6 +168,7 @@
                         $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
                         fn ($q) => $q->whereHas('guru', fn ($q2) => $q2->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
                     )
+                    ->whereDoesntHave('guru.user', $isTestReminderUser)
                     ->whereNull('completed_at')
                     ->count();
                 $drawerOnLeaveGuruCount = \App\Models\LeaveNotice::query()
@@ -221,7 +231,7 @@
                         <a href="{{ route('pemarkahan.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
                         <a href="{{ route('pasti-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.maklumat_pasti') }}</span>
-                            @if($drawerPastiInfoPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerPastiInfoPendingCount > 99 ? '99+' : $drawerPastiInfoPendingCount }}</span>@endif
+                            @if($drawerPastiInfoPendingCount > 0)<span data-testid="menu-pasti-badge" class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerPastiInfoPendingCount > 99 ? '99+' : $drawerPastiInfoPendingCount }}</span>@endif
                         </a>
                         <a href="{{ route('guru-salary-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.guru_salary_information') }}</span>
@@ -286,7 +296,7 @@
                             <a href="{{ route('pemarkahan.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pemarkahan.*') ? 'menu-link-active' : '' }}">{{ __('messages.pemarkahan') }}</a>
                             <a href="{{ route('pasti-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                                 <span>{{ __('messages.maklumat_pasti') }}</span>
-                                @if($drawerPastiInfoPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerPastiInfoPendingCount > 99 ? '99+' : $drawerPastiInfoPendingCount }}</span>@endif
+                                @if($drawerPastiInfoPendingCount > 0)<span data-testid="menu-pasti-badge" class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerPastiInfoPendingCount > 99 ? '99+' : $drawerPastiInfoPendingCount }}</span>@endif
                             </a>
                             <a href="{{ route('guru-salary-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                                 <span>{{ __('messages.guru_salary_information') }}</span>
@@ -481,6 +491,7 @@
                             $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
                             fn ($query) => $query->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id'))
                         )
+                        ->whereDoesntHave('pasti.gurus.user', $isTestReminderUser)
                         ->whereNull('completed_at')
                         ->count();
                     $menuGuruSalaryPendingCount = \App\Models\GuruSalaryRequest::query()
@@ -492,6 +503,7 @@
                             $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
                             fn ($query) => $query->whereHas('guru', fn ($q) => $q->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
                         )
+                        ->whereDoesntHave('guru.user', $isTestReminderUser)
                         ->whereNull('completed_at')
                         ->count();
 
@@ -571,7 +583,7 @@
                             <a href="{{ route('pasti-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.maklumat_pasti') }}</span>
                                 @if(($menuPastiInfoPendingCount ?? 0) > 0)
-                                    <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuPastiInfoPendingCount ?? 0) > 99 ? '99+' : ($menuPastiInfoPendingCount ?? 0) }}</span>
+                                    <span data-testid="menu-pasti-badge" class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuPastiInfoPendingCount ?? 0) > 99 ? '99+' : ($menuPastiInfoPendingCount ?? 0) }}</span>
                                 @endif
                             </a>
                             <a href="{{ route('guru-salary-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
@@ -651,7 +663,7 @@
                                 <a href="{{ route('pasti-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                                     <span>{{ __('messages.maklumat_pasti') }}</span>
                                     @if(($menuPastiInfoPendingCount ?? 0) > 0)
-                                        <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuPastiInfoPendingCount ?? 0) > 99 ? '99+' : ($menuPastiInfoPendingCount ?? 0) }}</span>
+                                        <span data-testid="menu-pasti-badge" class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuPastiInfoPendingCount ?? 0) > 99 ? '99+' : ($menuPastiInfoPendingCount ?? 0) }}</span>
                                     @endif
                                 </a>
                                 <a href="{{ route('guru-salary-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between">

@@ -63,6 +63,35 @@ class PastiInformationPaginationTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('admin_messages', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('sender_id')->nullable();
+            $table->string('title')->nullable();
+            $table->text('body')->nullable();
+            $table->string('image_path')->nullable();
+            $table->boolean('sent_to_all')->default(false);
+            $table->unsignedBigInteger('deleted_by_id')->nullable();
+            $table->timestamp('deleted_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('admin_message_recipients', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('admin_message_id');
+            $table->unsignedBigInteger('user_id');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('notifications', function (Blueprint $table): void {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('pastis', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('kawasan_id');
@@ -88,6 +117,19 @@ class PastiInformationPaginationTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('program_teacher', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('program_id');
+            $table->unsignedBigInteger('guru_id');
+            $table->unsignedBigInteger('program_status_id')->nullable();
+            $table->text('absence_reason')->nullable();
+            $table->string('absence_reason_status')->nullable();
+            $table->unsignedBigInteger('absence_reason_reviewed_by')->nullable();
+            $table->timestamp('absence_reason_reviewed_at')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+        });
+
         \DB::table('roles')->insert([
             ['name' => 'master_admin', 'guard_name' => 'web'],
             ['name' => 'admin', 'guard_name' => 'web'],
@@ -100,9 +142,13 @@ class PastiInformationPaginationTest extends TestCase
     protected function tearDown(): void
     {
         Schema::dropIfExists('pasti_information_requests');
+        Schema::dropIfExists('program_teacher');
         Schema::dropIfExists('pastis');
         Schema::dropIfExists('gurus');
         Schema::dropIfExists('admin_pasti');
+        Schema::dropIfExists('admin_message_recipients');
+        Schema::dropIfExists('admin_messages');
+        Schema::dropIfExists('notifications');
         Schema::dropIfExists('kawasans');
         Schema::dropIfExists('model_has_roles');
         Schema::dropIfExists('roles');
@@ -224,6 +270,23 @@ class PastiInformationPaginationTest extends TestCase
         $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
+    public function test_menu_badge_for_pasti_information_ignores_test_account(): void
+    {
+        $this->seedPastisForMenuBadgeCount();
+        $count = PastiInformationRequest::query()
+            ->whereNull('completed_at')
+            ->whereDoesntHave('pasti.gurus.user', function ($query): void {
+                $query->where(function ($nameQuery): void {
+                    $nameQuery
+                        ->whereRaw('lower(coalesce(name, \'\')) = ?', ['test'])
+                        ->orWhereRaw('lower(coalesce(nama_samaran, \'\')) = ?', ['test']);
+                });
+            })
+            ->count();
+
+        $this->assertSame(1, $count);
+    }
+
     public function test_update_last_pasti_request_sends_auto_thanks_when_all_completed(): void
     {
         $payload = $this->seedPastisForAutoThanks();
@@ -272,6 +335,18 @@ class PastiInformationPaginationTest extends TestCase
             'model_type' => User::class,
             'model_id' => $user->id,
         ]);
+    }
+
+    private function masterAdmin(): User
+    {
+        $user = User::query()->create([
+            'name' => 'Master Admin',
+            'nama_samaran' => 'Master Admin',
+            'email' => 'master'.uniqid().'@example.test',
+        ]);
+        $this->attachRole($user, 'master_admin');
+
+        return $user;
     }
 
     private function seedPastisForPagination(): void
@@ -422,5 +497,53 @@ class PastiInformationPaginationTest extends TestCase
         }
 
         return $admin;
+    }
+
+    private function seedPastisForMenuBadgeCount(): void
+    {
+        $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
+
+        $testPasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Test',
+        ]);
+
+        $realPasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Benar',
+        ]);
+
+        foreach ([
+            ['pasti' => $testPasti, 'guru_name' => 'Test'],
+            ['pasti' => $realPasti, 'guru_name' => 'Guru Benar'],
+        ] as $item) {
+            $user = User::query()->create([
+                'name' => $item['guru_name'],
+                'nama_samaran' => $item['guru_name'],
+                'email' => strtolower(str_replace(' ', '', $item['guru_name'])).uniqid().'@example.test',
+            ]);
+            $this->attachRole($user, 'guru');
+
+            Guru::query()->create([
+                'user_id' => $user->id,
+                'pasti_id' => $item['pasti']->id,
+            ]);
+
+            PastiInformationRequest::query()->create([
+                'pasti_id' => $item['pasti']->id,
+                'requested_by' => null,
+                'requested_at' => now()->subHour(),
+                'completed_by' => null,
+                'completed_at' => null,
+                'jumlah_guru' => null,
+                'jumlah_pembantu_guru' => null,
+                'murid_lelaki_4_tahun' => null,
+                'murid_perempuan_4_tahun' => null,
+                'murid_lelaki_5_tahun' => null,
+                'murid_perempuan_5_tahun' => null,
+                'murid_lelaki_6_tahun' => null,
+                'murid_perempuan_6_tahun' => null,
+            ]);
+        }
     }
 }
