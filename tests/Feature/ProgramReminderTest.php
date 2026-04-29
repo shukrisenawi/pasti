@@ -192,6 +192,42 @@ class ProgramReminderTest extends TestCase
         $this->assertSame(302, $response->getStatusCode());
     }
 
+    public function test_repeated_updates_after_program_is_complete_do_not_resend_auto_thanks(): void
+    {
+        $payload = $this->seedProgramWithCompletedGurusExceptTest();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/programs/' . $payload['program']->id)))
+            ->andReturn('https://example.test/programs/' . $payload['program']->id);
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                ['perkara' => 'status program'],
+                'https://example.test/programs/' . $payload['program']->id
+            );
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+        $kpiService = \Mockery::mock(KpiCalculationService::class);
+        $kpiService->shouldReceive('recalculateForGuru')->twice();
+        $this->app->instance(KpiCalculationService::class, $kpiService);
+
+        $request = Request::create('/programs/' . $payload['program']->id . '/guru/' . $payload['guruId'] . '/status', 'POST', [
+            'program_status_id' => $payload['hadirStatusId'],
+        ]);
+        $request->setUserResolver(fn (): User => $payload['user']);
+
+        $controller = app(\App\Http\Controllers\ProgramParticipationController::class);
+
+        $firstResponse = $controller->updateStatus($request, $payload['program'], $payload['guruId']);
+        $secondResponse = $controller->updateStatus($request, $payload['program'], $payload['guruId']);
+
+        $this->assertSame(302, $firstResponse->getStatusCode());
+        $this->assertSame(302, $secondResponse->getStatusCode());
+    }
+
     private function masterAdmin(): User
     {
         $user = User::query()->create([

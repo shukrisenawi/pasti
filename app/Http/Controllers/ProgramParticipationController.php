@@ -58,6 +58,13 @@ class ProgramParticipationController extends Controller
             ->where('program_id', $program->id)
             ->where('guru_id', $guruId)
             ->first();
+        $realProgramParticipationsBefore = ProgramParticipation::query()
+            ->with('guru.user')
+            ->where('program_id', $program->id)
+            ->get()
+            ->filter(fn (ProgramParticipation $participation): bool => $participation->guru && ! $this->isTestReminderAccount($participation->guru));
+        $realProgramCompletedBefore = $realProgramParticipationsBefore->isNotEmpty()
+            && $realProgramParticipationsBefore->contains(fn (ProgramParticipation $participation): bool => $participation->program_status_id === null) === false;
 
         $newAbsenceReason = $selectedStatus?->code === 'TIDAK_HADIR' ? ($data['absence_reason'] ?? null) : null;
         $newAbsenceReasonStatus = $selectedStatus?->code === 'TIDAK_HADIR' && filled($newAbsenceReason)
@@ -115,7 +122,7 @@ class ProgramParticipationController extends Controller
         $realProgramCompleted = $realProgramParticipations->isNotEmpty()
             && $realProgramParticipations->contains(fn (ProgramParticipation $participation): bool => $participation->program_status_id === null) === false;
 
-        if ($realProgramCompleted) {
+        if (! $realProgramCompletedBefore && $realProgramCompleted) {
             $this->n8nWebhookService->sendByTemplate(
                 N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
                 [
