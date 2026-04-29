@@ -60,7 +60,7 @@
                 @endif
             </div>
 
-            @if($canManage || ($canUpdateOwn && $currentGuruId === $participation->guru_id))
+            @if(($canManage || ($canUpdateOwn && $currentGuruId === $participation->guru_id)) && ! ($hideActions ?? false))
                 <div class="mt-3 border-t border-slate-100 pt-3">
                     <div class="space-y-2">
                         <form

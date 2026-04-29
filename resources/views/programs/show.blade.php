@@ -223,6 +223,7 @@
                 <div x-show="activeAdminTab === 'pending'">
                     @include('programs.partials.participation-cards', [
                         'participations' => $adminPendingReviewParticipations,
+                        'hideActions' => false,
                         'emptyMessage' => 'Tiada semakan yang menunggu pada masa ini.',
                     ])
                 </div>
@@ -230,6 +231,7 @@
                 <div x-show="activeAdminTab === 'complete'" x-cloak>
                     @include('programs.partials.participation-cards', [
                         'participations' => $adminCompletedParticipations,
+                        'hideActions' => true,
                         'emptyMessage' => 'Tiada rekod complete untuk dipaparkan.',
                     ])
                 </div>
