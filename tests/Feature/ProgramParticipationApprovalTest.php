@@ -317,6 +317,51 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertSee(route('programs.teachers.status.update', [$program, $latestGuruUser->guru->id]), false);
     }
 
+    public function test_program_show_page_for_guru_uses_avatar_only_status_groups(): void
+    {
+        Notification::fake();
+
+        [$program, , $absentStatus, , $latestGuruUser] = $this->createProgramFixtures(
+            withSecondGuru: true,
+            secondGuruHasStatus: false
+        );
+
+        $thirdUser = User::query()->create([
+            'name' => 'Cikgu Tambahan',
+            'nama_samaran' => 'Cikgu Tambahan',
+            'email' => 'guru-tambahan@example.test',
+            'avatar_path' => 'avatars/cikgu-tambahan.jpg',
+        ]);
+        $this->attachRole($thirdUser, 'guru');
+
+        $thirdGuru = Guru::query()->create([
+            'user_id' => $thirdUser->id,
+            'pasti_id' => $latestGuruUser->guru->pasti_id,
+            'active' => true,
+        ]);
+        $thirdUser->setRelation('guru', $thirdGuru);
+
+        \DB::table('program_teacher')->insert([
+            'program_id' => $program->id,
+            'guru_id' => $thirdGuru->id,
+            'program_status_id' => $absentStatus->id,
+            'updated_by' => $latestGuruUser->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($latestGuruUser)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('Paparan ringkas ikut status')
+            ->assertSee('data-testid="program-guru-group-hadir"', false)
+            ->assertSee('data-testid="program-guru-group-tidak_hadir"', false)
+            ->assertSee('data-testid="program-guru-group-menunggu"', false)
+            ->assertDontSee('data-testid="program-participation-card"', false);
+    }
+
     public function test_program_menu_badge_uses_pending_absence_reason_approval_count(): void
     {
         Notification::fake();

@@ -103,6 +103,25 @@
             $statusCodeById = $statuses->mapWithKeys(
                 fn ($status) => [(string) $status->id => $status->code]
             );
+            $guruParticipationGroups = [
+                'hadir' => $allParticipations->filter(fn ($participation) => $participation->status?->code === 'HADIR')->values(),
+                'tidak_hadir' => $allParticipations->filter(fn ($participation) => $participation->status?->code === 'TIDAK_HADIR')->values(),
+                'menunggu' => $allParticipations->filter(fn ($participation) => blank($participation->program_status_id))->values(),
+            ];
+            $guruParticipationGroupStyles = [
+                'hadir' => [
+                    'label' => 'text-emerald-700',
+                    'count' => 'bg-emerald-100 text-emerald-700',
+                ],
+                'tidak_hadir' => [
+                    'label' => 'text-rose-700',
+                    'count' => 'bg-rose-100 text-rose-700',
+                ],
+                'menunggu' => [
+                    'label' => 'text-amber-700',
+                    'count' => 'bg-amber-100 text-amber-700',
+                ],
+            ];
             $programStatusSuccessMessage = session('program_status_success_actor') === 'admin'
                 ? session('program_status_success_message')
                 : null;
@@ -126,32 +145,69 @@
                 }, { once: true });
             </script>
         @endif
-        <div class="mb-3 flex items-center justify-between gap-3">
-            <div>
-                <h3 class="ml-[20px] text-sm font-black text-slate-900">Guru Terlibat</h3>
+        @if($canUpdateOwn)
+            <section class="space-y-4">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <h3 class="ml-[20px] text-sm font-black text-slate-900">Guru Terlibat</h3>
+                        <p class="ml-[20px] text-xs text-slate-500">Paparan ringkas ikut status</p>
+                    </div>
+                </div>
+
+                <div class="grid gap-4 lg:grid-cols-3">
+                    @foreach([
+                        'hadir' => ['label' => 'Hadir', 'count' => $guruParticipationGroups['hadir']->count()],
+                        'tidak_hadir' => ['label' => 'Tidak Hadir', 'count' => $guruParticipationGroups['tidak_hadir']->count()],
+                        'menunggu' => ['label' => 'Menunggu Respon', 'count' => $guruParticipationGroups['menunggu']->count()],
+                    ] as $groupKey => $groupMeta)
+                        <div class="rounded-3xl border border-slate-100 bg-white p-4 shadow-card">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-xs font-bold uppercase tracking-[0.16em] {{ $guruParticipationGroupStyles[$groupKey]['label'] }}">{{ $groupMeta['label'] }}</p>
+                                    <p class="mt-1 text-lg font-black text-slate-900">{{ $groupMeta['count'] }} guru</p>
+                                </div>
+                                <span class="inline-flex h-9 min-w-9 items-center justify-center rounded-full px-3 text-sm font-black {{ $guruParticipationGroupStyles[$groupKey]['count'] }}">{{ $groupMeta['count'] }}</span>
+                            </div>
+
+                            <div class="mt-4 flex flex-wrap gap-2" data-testid="program-guru-group-{{ $groupKey }}">
+                                @forelse($guruParticipationGroups[$groupKey] as $participation)
+                                    <x-avatar :guru="$participation->guru" size="h-11 w-11" rounded="rounded-2xl" border="border border-slate-200" />
+                                @empty
+                                    <span class="text-xs text-slate-400">Tiada guru</span>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        @else
+            <div class="mb-3 flex items-center justify-between gap-3">
+                <div>
+                    <h3 class="ml-[20px] text-sm font-black text-slate-900">Guru Terlibat</h3>
+                </div>
+                <label class="ml-auto inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
+                    <input
+                        type="checkbox"
+                        x-model="showAllTeachers"
+                        class="h-4 w-4 rounded-full border-slate-300 text-primary focus:ring-primary/30"
+                    >
+                    <span>Semua guru</span>
+                </label>
             </div>
-            <label class="ml-auto inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
-                <input
-                    type="checkbox"
-                    x-model="showAllTeachers"
-                    class="h-4 w-4 rounded-full border-slate-300 text-primary focus:ring-primary/30"
-                >
-                <span>Semua guru</span>
-            </label>
-        </div>
 
-        <div x-show="!showAllTeachers">
-            @include('programs.partials.participation-cards', [
-                'participations' => $submittedParticipations,
-                'emptyMessage' => 'Belum ada guru yang hantar status kedatangan.',
-            ])
-        </div>
+            <div x-show="!showAllTeachers">
+                @include('programs.partials.participation-cards', [
+                    'participations' => $submittedParticipations,
+                    'emptyMessage' => 'Belum ada guru yang hantar status kedatangan.',
+                ])
+            </div>
 
-        <div x-show="showAllTeachers" x-cloak>
-            @include('programs.partials.participation-cards', [
-                'participations' => $allParticipations,
-                'emptyMessage' => 'Tiada guru terlibat untuk program ini.',
-            ])
-        </div>
+            <div x-show="showAllTeachers" x-cloak>
+                @include('programs.partials.participation-cards', [
+                    'participations' => $allParticipations,
+                    'emptyMessage' => 'Tiada guru terlibat untuk program ini.',
+                ])
+            </div>
+        @endif
     </div>
 </x-app-layout>
