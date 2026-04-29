@@ -21,7 +21,7 @@
                             <h3 class="text-base font-extrabold text-slate-800">{{ $program->title }}</h3>
                             <p class="text-sm text-slate-600">{{ __('messages.location') }}: {{ $program->location ?? '-' }}</p>
                         </div>
-                        @if(($program->pending_absence_reason_approvals_count ?? 0) > 0)
+                        @if($canManageProgram && ($program->pending_absence_reason_approvals_count ?? 0) > 0)
                             <span data-testid="program-card-pending-badge" class="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700">
                                 {{ ($program->pending_absence_reason_approvals_count ?? 0) > 99 ? '99+' : ($program->pending_absence_reason_approvals_count ?? 0) }}
                             </span>

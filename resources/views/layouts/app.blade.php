@@ -165,14 +165,29 @@
                 $expiredSkimPasCount = 0;
 
                 $drawerInboxCount = $authUser->unreadInboxMessagesCount();
-                $drawerProgramApprovalCount = \App\Models\ProgramParticipation::query()
-                    ->where('absence_reason_status', \App\Services\ProgramParticipationService::ABSENCE_REASON_PENDING)
-                    ->when(
-                        $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
-                        fn ($q) => $q->whereHas('program', fn ($q2) => $q2->whereIn('pasti_id', $assignedPastiIds))
-                    )
-                    ->when($isGuruOnly, fn ($q) => $q->whereRaw('1 = 0'))
-                    ->count();
+                if ($isGuruOnly) {
+                    $drawerGuruIds = $authUser->operatingGuruIds();
+                    $drawerProgramApprovalCount = \App\Models\Program::query()
+                        ->where(function ($query) use ($drawerGuruIds): void {
+                            $query
+                                ->whereHas('gurus', fn ($guruQuery) => $guruQuery->whereIn('gurus.id', $drawerGuruIds))
+                                ->orWhereNull('pasti_id');
+                        })
+                        ->whereDoesntHave('participations', function ($query) use ($drawerGuruIds): void {
+                            $query
+                                ->whereIn('guru_id', $drawerGuruIds)
+                                ->whereNotNull('program_status_id');
+                        })
+                        ->count();
+                } else {
+                    $drawerProgramApprovalCount = \App\Models\ProgramParticipation::query()
+                        ->where('absence_reason_status', \App\Services\ProgramParticipationService::ABSENCE_REASON_PENDING)
+                        ->when(
+                            $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
+                            fn ($q) => $q->whereHas('program', fn ($q2) => $q2->whereIn('pasti_id', $assignedPastiIds))
+                        )
+                        ->count();
+                }
                 $drawerPastiInfoPendingCount = \App\Models\PastiInformationRequest::query()
                     ->when($authUser->isOperatingAsGuru(), fn ($q) => $q->where('pasti_id', $authUser->guru?->pasti_id ?? 0))
                     ->when($authUser->hasRole('admin') && !$authUser->hasRole('master_admin'), fn ($q) => $q->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
@@ -482,14 +497,29 @@
                 @php
                     $menuInboxCount = $authUser->unreadInboxMessagesCount();
 
-                    $menuProgramApprovalCount = \App\Models\ProgramParticipation::query()
-                        ->where('absence_reason_status', \App\Services\ProgramParticipationService::ABSENCE_REASON_PENDING)
-                        ->when(
-                            $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
-                            fn ($query) => $query->whereHas('program', fn ($q) => $q->whereIn('pasti_id', $assignedPastiIds))
-                        )
-                        ->when($isGuruOnly, fn ($query) => $query->whereRaw('1 = 0'))
-                        ->count();
+                    if ($isGuruOnly) {
+                        $menuGuruIds = $authUser->operatingGuruIds();
+                        $menuProgramApprovalCount = \App\Models\Program::query()
+                            ->where(function ($query) use ($menuGuruIds): void {
+                                $query
+                                    ->whereHas('gurus', fn ($guruQuery) => $guruQuery->whereIn('gurus.id', $menuGuruIds))
+                                    ->orWhereNull('pasti_id');
+                            })
+                            ->whereDoesntHave('participations', function ($query) use ($menuGuruIds): void {
+                                $query
+                                    ->whereIn('guru_id', $menuGuruIds)
+                                    ->whereNotNull('program_status_id');
+                            })
+                            ->count();
+                    } else {
+                        $menuProgramApprovalCount = \App\Models\ProgramParticipation::query()
+                            ->where('absence_reason_status', \App\Services\ProgramParticipationService::ABSENCE_REASON_PENDING)
+                            ->when(
+                                $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
+                                fn ($query) => $query->whereHas('program', fn ($q) => $q->whereIn('pasti_id', $assignedPastiIds))
+                            )
+                            ->count();
+                    }
 
                     $menuPastiInfoPendingCount = \App\Models\PastiInformationRequest::query()
                         ->when(
