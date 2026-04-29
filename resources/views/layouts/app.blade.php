@@ -170,7 +170,8 @@
                     )
                     ->whereDoesntHave('guru.user', $isTestReminderUser)
                     ->whereNull('completed_at')
-                    ->count();
+                    ->distinct()
+                    ->count('guru_salary_requests.guru_id');
                 $drawerOnLeaveGuruCount = \App\Models\LeaveNotice::query()
                     ->when($authUser->isOperatingAsGuru(), fn ($q) => $q->where('guru_id', $authUser->guru?->id ?? 0))
                     ->when($authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'), fn ($q) => $q->whereHas('guru', fn ($q2) => $q2->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id'))))
@@ -502,10 +503,11 @@
                         ->when(
                             $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
                             fn ($query) => $query->whereHas('guru', fn ($q) => $q->whereIn('pasti_id', $authUser->assignedPastis()->pluck('pastis.id')))
-                        )
-                        ->whereDoesntHave('guru.user', $isTestReminderUser)
-                        ->whereNull('completed_at')
-                        ->count();
+                    )
+                    ->whereDoesntHave('guru.user', $isTestReminderUser)
+                    ->whereNull('completed_at')
+                        ->distinct()
+                        ->count('guru_salary_requests.guru_id');
 
                     $menuOnLeaveGuruCount = \App\Models\LeaveNotice::query()
                         ->when(

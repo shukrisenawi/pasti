@@ -162,6 +162,38 @@ class GuruSalaryInformationSortingTest extends TestCase
         $this->assertSame(['Ahmad', 'Nurul', 'Siti'], $names->all());
     }
 
+    public function test_menu_badge_counts_unique_pending_gurus_only(): void
+    {
+        $this->seedPendingGurusForReminder();
+
+        $ahmad = Guru::query()->where('name', 'Ahmad')->firstOrFail();
+        \DB::table('guru_salary_requests')->insert([
+            'guru_id' => $ahmad->id,
+            'requested_by' => null,
+            'requested_at' => now()->subHours(2),
+            'completed_by' => null,
+            'completed_at' => null,
+            'gaji' => null,
+            'elaun' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $count = GuruSalaryRequest::query()
+            ->whereNull('completed_at')
+            ->whereDoesntHave('guru.user', function ($query): void {
+                $query->where(function ($nameQuery): void {
+                    $nameQuery
+                        ->whereRaw('lower(coalesce(name, \'\')) = ?', ['test'])
+                        ->orWhereRaw('lower(coalesce(nama_samaran, \'\')) = ?', ['test']);
+                });
+            })
+            ->distinct()
+            ->count('guru_salary_requests.guru_id');
+
+        $this->assertSame(3, $count);
+    }
+
     public function test_update_last_guru_salary_request_sends_auto_thanks_when_all_completed(): void
     {
         $payload = $this->seedCompletedGurusForAutoThanks();
