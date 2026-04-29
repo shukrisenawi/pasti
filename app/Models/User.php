@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use App\Models\AdminMessage;
 use App\Models\AdminMessageReply;
 use App\Models\Announcement;
+use App\Models\Guru;
 use App\Notifications\AdminMessageReceivedNotification;
 use App\Notifications\AdminMessageReplyNotification;
 use App\Models\FcmToken;
@@ -217,11 +218,11 @@ class User extends Authenticatable
             return false;
         }
 
-        if ($this->hasRole('guru') && ($this->relationLoaded('guru') ? (bool) $this->guru : $this->guru()->exists())) {
+        if ($this->resolvedGuruProfile() !== null) {
             return true;
         }
 
-        return Guru::query()->where('email', $this->email)->exists();
+        return false;
     }
 
     public function isInGuruMode(): bool
@@ -245,6 +246,38 @@ class User extends Authenticatable
 
     public function isOperatingAsGuru(): bool
     {
-        return $this->hasRole('guru') && (! $this->hasAdminRole() || $this->isInGuruMode());
+        if ($this->hasAdminRole()) {
+            return $this->isInGuruMode() && $this->resolvedGuruProfile() !== null;
+        }
+
+        return $this->hasRole('guru');
+    }
+
+    public function operatingGuruProfile(): ?Guru
+    {
+        if (! $this->isOperatingAsGuru()) {
+            return null;
+        }
+
+        return $this->resolvedGuruProfile();
+    }
+
+    public function resolvedGuruProfile(): ?Guru
+    {
+        if ($this->relationLoaded('guru') && $this->guru) {
+            return $this->guru;
+        }
+
+        $guru = $this->guru()->first();
+
+        if (! $guru && filled($this->email)) {
+            $guru = Guru::query()->where('email', $this->email)->first();
+        }
+
+        if ($guru) {
+            $this->setRelation('guru', $guru);
+        }
+
+        return $guru;
     }
 }

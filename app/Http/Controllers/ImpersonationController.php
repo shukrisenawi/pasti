@@ -99,6 +99,7 @@ class ImpersonationController extends Controller
             403
         );
 
+        $this->syncGuruModeIdentity($user);
         $request->session()->put(self::ACTIVE_ROLE_MODE_SESSION, 'guru');
 
         return redirect()->route('dashboard')->with('status', 'Anda kini melihat sistem sebagai guru.');
@@ -143,5 +144,26 @@ class ImpersonationController extends Controller
         ], now()->addHours(2));
 
         return redirect()->route('dashboard')->with('status', $statusMessage);
+    }
+
+    private function syncGuruModeIdentity(User $user): void
+    {
+        $guru = Guru::query()
+            ->where('email', $user->email)
+            ->first();
+
+        if (! $guru) {
+            return;
+        }
+
+        if (! $user->hasRole('guru')) {
+            $user->assignRole('guru');
+        }
+
+        if ((int) ($guru->user_id ?? 0) !== (int) $user->id) {
+            $guru->update(['user_id' => $user->id]);
+        }
+
+        $user->setRelation('guru', $guru->fresh());
     }
 }

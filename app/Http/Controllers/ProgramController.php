@@ -108,9 +108,10 @@ class ProgramController extends Controller
     public function show(Request $request, Program $program): View
     {
         $user = $request->user();
+        $operatingGuru = $user->operatingGuruProfile();
 
         if ($this->isGuruOnly($user)) {
-            $guruId = $user->guru?->id;
+            $guruId = $operatingGuru?->id;
             abort_unless($guruId && $program->gurus()->where('gurus.id', $guruId)->exists(), 403);
         }
 
@@ -125,7 +126,7 @@ class ProgramController extends Controller
             ->filter(fn ($participation) => filled($participation->program_status_id))
             ->values();
         $pendingReminderGurus = $this->pendingReminderGurusForProgram($program);
-        $currentGuruId = $user->guru?->id;
+        $currentGuruId = $operatingGuru?->id;
         $currentParticipation = $currentGuruId
             ? $allParticipations->firstWhere('guru_id', $currentGuruId)
             : null;
@@ -152,7 +153,7 @@ class ProgramController extends Controller
             'canManage' => $user->hasRole('master_admin') || $user->hasRole('admin'),
             'canRequestReminder' => ($user->hasRole('master_admin') || $user->hasRole('admin')) && $pendingReminderGurus->isNotEmpty(),
             'programPendingReminderCount' => $pendingReminderGurus->count(),
-            'canUpdateOwn' => $user->isOperatingAsGuru() && (bool) $user->guru,
+            'canUpdateOwn' => $user->isOperatingAsGuru() && (bool) $operatingGuru,
             'currentGuruId' => $currentGuruId,
             'currentParticipation' => $currentParticipation,
             'adminPendingReviewParticipations' => $adminPendingReviewParticipations,
