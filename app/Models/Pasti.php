@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
@@ -55,6 +56,11 @@ class Pasti extends Model
     public function informationRequests(): HasMany
     {
         return $this->hasMany(PastiInformationRequest::class);
+    }
+
+    public function latestInformationRequest(): HasOne
+    {
+        return $this->hasOne(PastiInformationRequest::class)->latestOfMany();
     }
 
     public function scores(): HasMany

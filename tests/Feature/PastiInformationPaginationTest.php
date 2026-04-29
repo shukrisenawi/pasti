@@ -191,6 +191,24 @@ class PastiInformationPaginationTest extends TestCase
         $this->seedPastisForPagination();
 
         \DB::table('pasti_information_requests')->insert([
+            'pasti_id' => Pasti::query()->where('name', 'PASTI Ujian 10')->value('id'),
+            'requested_by' => null,
+            'requested_at' => now()->subHour(),
+            'completed_by' => null,
+            'completed_at' => now()->subHour(),
+            'jumlah_guru' => 1,
+            'jumlah_pembantu_guru' => 1,
+            'murid_lelaki_4_tahun' => 1,
+            'murid_perempuan_4_tahun' => 1,
+            'murid_lelaki_5_tahun' => 1,
+            'murid_perempuan_5_tahun' => 1,
+            'murid_lelaki_6_tahun' => 1,
+            'murid_perempuan_6_tahun' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        \DB::table('pasti_information_requests')->insert([
             'pasti_id' => Pasti::query()->where('name', 'PASTI Ujian 03')->value('id'),
             'requested_by' => null,
             'requested_at' => now()->subHour(),
@@ -208,8 +226,27 @@ class PastiInformationPaginationTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        Livewire::test(PastiInformationIndex::class)
+        Livewire::withQueryParams(['tab' => 'responded'])
+            ->test(PastiInformationIndex::class)
+            ->assertSet('activeTab', 'responded')
             ->assertSeeInOrder(['PASTI Ujian 03', 'PASTI Ujian 10']);
+    }
+
+    public function test_pasti_information_tabs_separate_pending_and_responded_pastis(): void
+    {
+        $this->seedPastisForReminder();
+        $this->actingAs($this->masterAdmin());
+
+        Livewire::test(PastiInformationIndex::class)
+            ->assertSet('activeTab', 'pending')
+            ->assertSee('PASTI Alpha')
+            ->assertSee('PASTI Gamma')
+            ->assertDontSee('PASTI Beta')
+            ->call('switchTab', 'responded')
+            ->assertSet('activeTab', 'responded')
+            ->assertSee('PASTI Beta')
+            ->assertDontSee('PASTI Alpha')
+            ->assertDontSee('PASTI Gamma');
     }
 
     public function test_admin_pasti_information_page_uses_dedicated_pagination_query_string(): void

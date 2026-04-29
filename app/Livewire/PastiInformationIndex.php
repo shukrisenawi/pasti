@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Pasti;
 use App\Models\PastiInformationRequest;
 use App\Models\User;
+use Livewire\Attributes\Url;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -16,11 +17,41 @@ class PastiInformationIndex extends Component
 
     private const PAGE_NAME = 'pastiInfoPage';
 
+    #[Url(as: 'tab', except: 'pending')]
+    public string $activeTab = 'pending';
+
     public string $search = '';
+
+    public function mount(): void
+    {
+        if (! in_array($this->activeTab, $this->allowedTabs(), true)) {
+            $this->activeTab = 'pending';
+        }
+    }
 
     public function updatingSearch(): void
     {
         $this->resetPage(self::PAGE_NAME);
+    }
+
+    public function updatedActiveTab(): void
+    {
+        if (! in_array($this->activeTab, $this->allowedTabs(), true)) {
+            $this->activeTab = 'pending';
+        }
+
+        $this->resetPage(self::PAGE_NAME);
+    }
+
+    public function switchTab(string $tab): void
+    {
+        if (! in_array($tab, $this->allowedTabs(), true)) {
+            return;
+        }
+
+        if ($this->activeTab !== $tab) {
+            $this->activeTab = $tab;
+        }
     }
 
     public function render()
@@ -37,21 +68,7 @@ class PastiInformationIndex extends Component
                 ->whereNull('completed_at')
                 ->exists();
 
-        $pastis = (clone $accessiblePastisQuery)
-            ->select('pastis.*')
-            ->selectSub(
-                PastiInformationRequest::query()
-                    ->selectRaw('MAX(completed_at)')
-                    ->whereColumn('pasti_information_requests.pasti_id', 'pastis.id'),
-                'latest_response_at'
-            )
-            ->with('kawasan')
-            ->when(
-                trim($this->search) !== '',
-                fn (Builder $query) => $query->where('name', 'like', '%' . trim($this->search) . '%')
-            )
-            ->orderByDesc('latest_response_at')
-            ->orderByDesc('id')
+        $pastis = $this->pastisQueryForActiveTab($accessiblePastisQuery)
             ->paginate(9, ['*'], self::PAGE_NAME);
 
         $pastiIds = collect($pastis->items())->pluck('id')->all();
@@ -72,7 +89,39 @@ class PastiInformationIndex extends Component
             'hasPendingRequests' => $hasPendingRequests,
             'isGuru' => $user->isOperatingAsGuru(),
             'guruPastiId' => $user->guru?->pasti_id,
+            'activeTab' => $this->activeTab,
         ]);
+    }
+
+    private function pastisQueryForActiveTab(Builder $accessiblePastisQuery): Builder
+    {
+        $query = (clone $accessiblePastisQuery)
+            ->select('pastis.*')
+            ->selectSub(
+                PastiInformationRequest::query()
+                    ->selectRaw('MAX(id)')
+                    ->whereColumn('pasti_information_requests.pasti_id', 'pastis.id'),
+                'latest_request_id'
+            )
+            ->with(['kawasan', 'latestInformationRequest'])
+            ->when(
+                trim($this->search) !== '',
+                fn (Builder $query) => $query->where('name', 'like', '%' . trim($this->search) . '%')
+            );
+
+        if ($this->activeTab === 'responded') {
+            $query->whereHas('latestInformationRequest', fn (Builder $requestQuery) => $requestQuery->whereNotNull('completed_at'));
+        } else {
+            $query->where(function (Builder $tabQuery): void {
+                $tabQuery
+                    ->whereDoesntHave('latestInformationRequest')
+                    ->orWhereHas('latestInformationRequest', fn (Builder $requestQuery) => $requestQuery->whereNull('completed_at'));
+            });
+        }
+
+        return $query
+            ->orderByRaw('COALESCE(latest_request_id, pastis.id) DESC')
+            ->orderBy('name');
     }
 
     private function accessiblePastisQueryForUser(User $user): Builder
@@ -91,5 +140,13 @@ class PastiInformationIndex extends Component
     private function assignedPastiIds(User $user): array
     {
         return $user->assignedPastis()->pluck('pastis.id')->all();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function allowedTabs(): array
+    {
+        return ['pending', 'responded'];
     }
 }
