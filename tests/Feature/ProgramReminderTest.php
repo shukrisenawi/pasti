@@ -176,22 +176,13 @@ class ProgramReminderTest extends TestCase
         $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
-    public function test_updating_last_real_program_participation_sends_auto_thanks_even_with_test_pending(): void
+    public function test_updating_last_real_program_participation_does_not_send_auto_thanks_even_with_test_pending(): void
     {
         $payload = $this->seedProgramWithCompletedGurusExceptTest();
 
         $webhookService = \Mockery::mock(N8nWebhookService::class);
-        $webhookService->shouldReceive('toActionUrl')
-            ->once()
-            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/programs/' . $payload['program']->id)))
-            ->andReturn('https://example.test/programs/' . $payload['program']->id);
-        $webhookService->shouldReceive('sendByTemplate')
-            ->once()
-            ->with(
-                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
-                ['perkara' => 'status program'],
-                'https://example.test/programs/' . $payload['program']->id
-            );
+        $webhookService->shouldReceive('toActionUrl')->never();
+        $webhookService->shouldReceive('sendByTemplate')->never();
 
         $this->app->instance(N8nWebhookService::class, $webhookService);
         $kpiService = \Mockery::mock(KpiCalculationService::class);
@@ -208,22 +199,13 @@ class ProgramReminderTest extends TestCase
         $this->assertSame(302, $response->getStatusCode());
     }
 
-    public function test_repeated_updates_after_program_is_complete_do_not_resend_auto_thanks(): void
+    public function test_repeated_updates_after_program_is_complete_still_do_not_send_auto_thanks(): void
     {
         $payload = $this->seedProgramWithCompletedGurusExceptTest();
 
         $webhookService = \Mockery::mock(N8nWebhookService::class);
-        $webhookService->shouldReceive('toActionUrl')
-            ->once()
-            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/programs/' . $payload['program']->id)))
-            ->andReturn('https://example.test/programs/' . $payload['program']->id);
-        $webhookService->shouldReceive('sendByTemplate')
-            ->once()
-            ->with(
-                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
-                ['perkara' => 'status program'],
-                'https://example.test/programs/' . $payload['program']->id
-            );
+        $webhookService->shouldReceive('toActionUrl')->never();
+        $webhookService->shouldReceive('sendByTemplate')->never();
         $this->app->instance(N8nWebhookService::class, $webhookService);
         $kpiService = \Mockery::mock(KpiCalculationService::class);
         $kpiService->shouldReceive('recalculateForGuru')->twice();
@@ -243,7 +225,7 @@ class ProgramReminderTest extends TestCase
         $this->assertSame(302, $secondResponse->getStatusCode());
     }
 
-    public function test_pending_absence_review_does_not_send_auto_thanks_until_admin_completes_review(): void
+    public function test_pending_absence_review_and_admin_review_do_not_send_auto_thanks(): void
     {
         $payload = $this->seedProgramAwaitingAbsenceReview();
 
@@ -269,21 +251,6 @@ class ProgramReminderTest extends TestCase
         );
 
         $this->assertSame(302, $guruResponse->getStatusCode());
-
-        $reviewWebhookService = \Mockery::mock(N8nWebhookService::class);
-        $reviewWebhookService->shouldReceive('toActionUrl')
-            ->once()
-            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/programs/' . $payload['program']->id)))
-            ->andReturn('https://example.test/programs/' . $payload['program']->id);
-        $reviewWebhookService->shouldReceive('sendByTemplate')
-            ->once()
-            ->with(
-                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
-                ['perkara' => 'status program'],
-                'https://example.test/programs/' . $payload['program']->id
-            );
-        $this->app->instance(N8nWebhookService::class, $reviewWebhookService);
-        $this->app->forgetInstance(\App\Http\Controllers\ProgramParticipationController::class);
 
         $adminRequest = Request::create('/programs/' . $payload['program']->id . '/teachers/' . $payload['pendingGuruId'] . '/absence-review', 'POST', [
             'decision' => 'approved',
