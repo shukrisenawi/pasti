@@ -230,6 +230,97 @@ class AdminGuruProgramAccessTest extends TestCase
         ]);
     }
 
+    public function test_admin_switched_to_guru_mode_with_multiple_guru_profiles_can_see_program_from_any_linked_profile(): void
+    {
+        [$admin, $primaryGuru, $secondaryGuru] = $this->seedAdminWithTwoLinkedGuruProfiles('dua-profil-list@example.test');
+
+        Program::query()->create([
+            'title' => 'Program Profil Kedua',
+            'program_date' => now()->addDay()->toDateString(),
+            'location' => 'Dewan C',
+            'created_by' => $admin->id,
+        ])->gurus()->sync([$secondaryGuru->id]);
+
+        Program::query()->create([
+            'title' => 'Program Guru Lain',
+            'program_date' => now()->addDays(2)->toDateString(),
+            'location' => 'Dewan D',
+            'created_by' => $admin->id,
+        ])->gurus()->sync([Guru::query()->create([
+            'name' => 'Guru Luar',
+            'email' => 'guru-luar@example.test',
+            'active' => true,
+        ])->id]);
+
+        $this->actingAs($admin)
+            ->withSession([
+                'login_using_admin_role' => true,
+                'active_role_mode' => 'guru',
+            ]);
+
+        $session = app('session')->driver();
+        $session->start();
+        $session->put([
+            'login_using_admin_role' => true,
+            'active_role_mode' => 'guru',
+        ]);
+
+        $request = Request::create('/programs', 'GET');
+        $request->setLaravelSession($session);
+        app()->instance('request', $request);
+        auth()->setUser($admin->fresh());
+
+        $response = app(ProgramIndex::class)->render();
+        $programs = $response->getData()['programs'];
+
+        $this->assertInstanceOf(LengthAwarePaginator::class, $programs);
+        $this->assertSame(['Program Profil Kedua'], $programs->pluck('title')->all());
+        $this->assertNotEquals($primaryGuru->id, $secondaryGuru->id);
+    }
+
+    public function test_admin_switched_to_guru_mode_with_multiple_guru_profiles_can_update_attendance_on_secondary_profile(): void
+    {
+        [$admin, $primaryGuru, $secondaryGuru] = $this->seedAdminWithTwoLinkedGuruProfiles('dua-profil-update@example.test');
+
+        $program = Program::query()->create([
+            'title' => 'Program Profil Kedua Kehadiran',
+            'program_date' => now()->addDay()->toDateString(),
+            'location' => 'Dewan E',
+            'created_by' => $admin->id,
+        ]);
+
+        \DB::table('program_teacher')->insert([
+            'program_id' => $program->id,
+            'guru_id' => $secondaryGuru->id,
+            'program_status_id' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $hadirStatusId = (int) ProgramStatus::query()->where('code', 'HADIR')->value('id');
+        $kpiService = \Mockery::mock(KpiCalculationService::class);
+        $kpiService->shouldReceive('recalculateForGuru')->once();
+        $this->app->instance(KpiCalculationService::class, $kpiService);
+
+        $this->actingAs($admin)
+            ->withSession([
+                'login_using_admin_role' => true,
+                'active_role_mode' => 'guru',
+            ])
+            ->post(route('programs.teachers.status.update', [$program, $secondaryGuru->id]), [
+                'program_status_id' => $hadirStatusId,
+            ])
+            ->assertStatus(302);
+
+        $this->assertDatabaseHas('program_teacher', [
+            'program_id' => $program->id,
+            'guru_id' => $secondaryGuru->id,
+            'program_status_id' => $hadirStatusId,
+            'updated_by' => $admin->id,
+        ]);
+        $this->assertNotEquals($primaryGuru->id, $secondaryGuru->id);
+    }
+
     /**
      * @return array{0: User, 1: Guru}
      */
@@ -249,6 +340,36 @@ class AdminGuruProgramAccessTest extends TestCase
         ]);
 
         return [$admin, $guru];
+    }
+
+    /**
+     * @return array{0: User, 1: Guru, 2: Guru}
+     */
+    private function seedAdminWithTwoLinkedGuruProfiles(string $email): array
+    {
+        $admin = User::query()->create([
+            'name' => 'Admin Dua Profil',
+            'nama_samaran' => 'Admin Dua Profil',
+            'email' => $email,
+        ]);
+        $this->attachRole($admin, 'admin');
+        $this->attachRole($admin, 'guru');
+
+        $primaryGuru = Guru::query()->create([
+            'user_id' => $admin->id,
+            'name' => 'Guru Utama',
+            'email' => $email,
+            'active' => true,
+        ]);
+
+        $secondaryGuru = Guru::query()->create([
+            'user_id' => $admin->id,
+            'name' => 'Guru Kedua',
+            'email' => $email,
+            'active' => true,
+        ]);
+
+        return [$admin, $primaryGuru, $secondaryGuru];
     }
 
     private function attachRole(User $user, string $roleName): void

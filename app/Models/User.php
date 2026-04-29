@@ -13,6 +13,7 @@ use App\Notifications\AdminMessageReplyNotification;
 use App\Models\FcmToken;
 use App\Support\NameFormatter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -259,7 +260,48 @@ class User extends Authenticatable
             return null;
         }
 
-        return $this->resolvedGuruProfile();
+        return $this->operatingGuruProfiles()->first();
+    }
+
+    /**
+     * @return Collection<int, Guru>
+     */
+    public function operatingGuruProfiles(): Collection
+    {
+        if (! $this->isOperatingAsGuru()) {
+            return collect();
+        }
+
+        $linkedByUserId = Guru::query()
+            ->where('user_id', $this->id)
+            ->orderBy('id')
+            ->get();
+
+        if ($linkedByUserId->isNotEmpty()) {
+            return $linkedByUserId;
+        }
+
+        if (blank($this->email)) {
+            return collect();
+        }
+
+        return Guru::query()
+            ->where('email', $this->email)
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function operatingGuruIds(): array
+    {
+        return $this->operatingGuruProfiles()
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id): bool => $id > 0)
+            ->values()
+            ->all();
     }
 
     public function resolvedGuruProfile(): ?Guru

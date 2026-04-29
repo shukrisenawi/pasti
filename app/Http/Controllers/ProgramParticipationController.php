@@ -25,11 +25,10 @@ class ProgramParticipationController extends Controller
     public function updateStatus(Request $request, Program $program, int $guruId): RedirectResponse
     {
         $user = $request->user();
-        $operatingGuru = $user->operatingGuruProfile();
+        $operatingGuruIds = $user->operatingGuruIds();
         if ($this->isGuruOnly($user)) {
-            $currentGuruId = $operatingGuru?->id;
-            abort_unless($currentGuruId && $currentGuruId === $guruId, 403);
-            abort_unless($program->gurus()->where('gurus.id', $currentGuruId)->exists(), 403);
+            abort_unless(in_array($guruId, $operatingGuruIds, true), 403);
+            abort_unless($program->gurus()->where('gurus.id', $guruId)->exists(), 403);
         }
 
         $data = $request->validate([

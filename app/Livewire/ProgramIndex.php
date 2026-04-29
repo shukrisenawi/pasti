@@ -24,7 +24,7 @@ class ProgramIndex extends Component
     {
         /** @var User $user */
         $user = auth()->user();
-        $guruId = $user->operatingGuruProfile()?->id ?? 0;
+        $guruIds = $user->operatingGuruIds();
 
         $query = Program::query()
             ->withCount([
@@ -33,7 +33,7 @@ class ProgramIndex extends Component
             ])
             ->when(
                 $this->isGuruOnly($user),
-                fn (Builder $q) => $q->whereHas('gurus', fn ($gq) => $gq->where('gurus.id', $guruId))
+                fn (Builder $q) => $q->whereHas('gurus', fn ($gq) => $gq->whereIn('gurus.id', $guruIds))
             )
             ->when(
                 trim($this->search) !== '',

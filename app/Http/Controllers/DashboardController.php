@@ -25,6 +25,7 @@ class DashboardController extends Controller
         $latestInboxMessage = null;
         $activeAnnouncements = collect();
         $guruId = null;
+        $guruIds = [];
         $isGuruOnly = $this->isGuruOnly($user);
         $adminCashBalance = 0.0;
         $adminBankBalance = 0.0;
@@ -43,7 +44,8 @@ class DashboardController extends Controller
             ->values();
 
         if ($isGuruOnly) {
-            $guruId = $user->guru?->id;
+            $guruIds = $user->operatingGuruIds();
+            $guruId = $guruIds[0] ?? null;
 
             // Fetch pending PASTI information requests for this guru
             if ($guruId) {
@@ -56,7 +58,7 @@ class DashboardController extends Controller
                 $pendingPastiInfoCount = $pendingPastiInfoRequest ? 1 : 0;
 
                 $pendingGuruSalaryRequest = GuruSalaryRequest::query()
-                    ->where('guru_id', $guruId)
+                    ->whereIn('guru_id', $guruIds)
                     ->whereNull('completed_at')
                     ->latest('id')
                     ->first();
@@ -154,12 +156,12 @@ class DashboardController extends Controller
             ->with(['participations.status'])
             ->when(
                 $isGuruOnly,
-                fn ($query) => $query->where(function($q) use ($guruId) {
-                    $q->whereHas('gurus', fn ($vg) => $vg->where('gurus.id', $guruId ?? 0))
+                fn ($query) => $query->where(function($q) use ($guruIds) {
+                    $q->whereHas('gurus', fn ($vg) => $vg->whereIn('gurus.id', $guruIds))
                       ->orWhereNull('pasti_id'); // Show assigned OR global programs
-                })->whereDoesntHave('participations', function ($participationQuery) use ($guruId): void {
+                })->whereDoesntHave('participations', function ($participationQuery) use ($guruIds): void {
                     $participationQuery
-                        ->where('guru_id', $guruId ?? 0)
+                        ->whereIn('guru_id', $guruIds)
                         ->whereNotNull('program_status_id');
                 })
             );
@@ -188,12 +190,14 @@ class DashboardController extends Controller
 
         $latestProgram = $latestPrograms->first();
 
-        $currentGuruId = $user->guru?->id;
+        $currentGuruId = $guruIds[0] ?? null;
         $currentParticipation = null;
         $statuses = collect();
 
-        if ($user->isOperatingAsGuru() && $latestProgram && $currentGuruId) {
-            $currentParticipation = $latestProgram->participations->firstWhere('guru_id', $currentGuruId);
+        if ($user->isOperatingAsGuru() && $latestProgram && $guruIds !== []) {
+            $currentParticipation = $latestProgram->participations->first(
+                fn ($participation) => in_array((int) $participation->guru_id, $guruIds, true)
+            );
             $statuses = ProgramStatus::query()
                 ->whereIn('code', ['HADIR', 'TIDAK_HADIR'])
                 ->orderBy('is_hadir', 'desc')

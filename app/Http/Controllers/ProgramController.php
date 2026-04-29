@@ -108,11 +108,13 @@ class ProgramController extends Controller
     public function show(Request $request, Program $program): View
     {
         $user = $request->user();
-        $operatingGuru = $user->operatingGuruProfile();
+        $operatingGurus = $user->operatingGuruProfiles();
+        $operatingGuruIds = $operatingGurus->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $operatingGuru = $operatingGurus->first();
 
         if ($this->isGuruOnly($user)) {
-            $guruId = $operatingGuru?->id;
-            abort_unless($guruId && $program->gurus()->where('gurus.id', $guruId)->exists(), 403);
+            abort_unless($operatingGuruIds !== [], 403);
+            abort_unless($program->gurus()->whereIn('gurus.id', $operatingGuruIds)->exists(), 403);
         }
 
         $program->load([
@@ -127,8 +129,8 @@ class ProgramController extends Controller
             ->values();
         $pendingReminderGurus = $this->pendingReminderGurusForProgram($program);
         $currentGuruId = $operatingGuru?->id;
-        $currentParticipation = $currentGuruId
-            ? $allParticipations->firstWhere('guru_id', $currentGuruId)
+        $currentParticipation = $operatingGuruIds !== []
+            ? $allParticipations->first(fn ($participation) => in_array((int) $participation->guru_id, $operatingGuruIds, true))
             : null;
         $adminPendingReviewParticipations = $allParticipations
             ->filter(fn ($participation) => $participation->absence_reason_status === ProgramParticipationService::ABSENCE_REASON_PENDING)
