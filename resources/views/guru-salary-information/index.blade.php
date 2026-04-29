@@ -1,7 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex items-start justify-between gap-4">
             <h2 class="text-lg font-bold">{{ __('messages.guru_salary_information') }}</h2>
+            @if(! empty($pendingReminderGuruNames ?? []))
+                <div class="float-right max-w-sm rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-right text-xs text-amber-900 shadow-sm">
+                    <p class="font-semibold">Guru belum respond</p>
+                    <p class="mt-1 leading-5">
+                        {{ collect($pendingReminderGuruNames)->implode(', ') }}
+                    </p>
+                </div>
+            @endif
         </div>
     </x-slot>
 
@@ -31,15 +39,6 @@
                     Minta respond
                 </button>
             </form>
-
-            @if(! empty($pendingReminderGuruNames ?? []))
-                <div class="ml-auto max-w-sm rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-right text-xs text-amber-900 shadow-sm">
-                    <p class="font-semibold">Guru belum respond</p>
-                    <p class="mt-1 leading-5">
-                        {{ collect($pendingReminderGuruNames)->implode(', ') }}
-                    </p>
-                </div>
-            @endif
         @endif
     </div>
 
