@@ -75,7 +75,6 @@ class GuruSalaryInformationController extends Controller
             'canRequest' => $user->isOperatingAsAdmin(),
             'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
             'canRequestReminder' => $user->isOperatingAsAdmin() && $pendingReminderGurus->isNotEmpty(),
-            'canSendThanks' => $user->isOperatingAsAdmin() && $allAccessibleGuruIds->isNotEmpty() && $pendingReminderGurus->isEmpty(),
             'hasPendingRequests' => $hasPendingRequests,
             'pendingReminderCount' => $pendingReminderGurus->count(),
             'isGuru' => $user->isOperatingAsGuru(),
@@ -156,34 +155,6 @@ class GuruSalaryInformationController extends Controller
         return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
     }
 
-    public function sendThanks(Request $request): RedirectResponse
-    {
-        $user = $request->user();
-        abort_unless($user->isOperatingAsAdmin(), 403);
-
-        $accessibleGurusQuery = $this->accessibleGurusQueryForUser($user);
-        $allAccessibleGuruIds = (clone $accessibleGurusQuery)->pluck('gurus.id');
-
-        if ($allAccessibleGuruIds->isEmpty()) {
-            return back()->with('status', 'Tiada guru untuk dihantar.');
-        }
-
-        if ($this->pendingReminderGurusForAdmin($allAccessibleGuruIds)->isNotEmpty()) {
-            return back()->with('status', 'Masih ada guru yang belum hantar respon.');
-        }
-
-        $this->n8nWebhookService->sendByTemplate(
-            N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
-            [
-                'perkara' => 'maklumat gaji guru',
-                'tarikh' => now()->format('d/m/Y H:i'),
-            ],
-            $this->n8nWebhookService->toActionUrl(route('guru-salary-information.index'))
-        );
-
-        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
-    }
-
     public function edit(Request $request, GuruSalaryRequest $guruSalaryRequest): View|RedirectResponse
     {
         $user = $request->user();
@@ -247,6 +218,14 @@ class GuruSalaryInformationController extends Controller
             $this->n8nWebhookService->sendGroup2ByTemplate(
                 N8nWebhookService::KEY_TEXT_ALL_GURU_SALARY_COMPLETED,
                 ['tarikh' => now()->format('d/m/Y H:i')],
+                $this->n8nWebhookService->toActionUrl(route('guru-salary-information.index'))
+            );
+
+            $this->n8nWebhookService->sendByTemplate(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                [
+                    'perkara' => 'maklumat gaji guru',
+                ],
                 $this->n8nWebhookService->toActionUrl(route('guru-salary-information.index'))
             );
         }

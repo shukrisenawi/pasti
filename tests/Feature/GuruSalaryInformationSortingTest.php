@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Middleware\EnsureGuruWebOnboardingCompleted;
 use App\Http\Controllers\GuruSalaryInformationController;
 use App\Models\Guru;
+use App\Models\GuruSalaryRequest;
 use App\Models\Kawasan;
 use App\Models\Pasti;
 use App\Models\User;
@@ -148,32 +149,36 @@ class GuruSalaryInformationSortingTest extends TestCase
             ->assertSessionHas('status', 'Mesej telah berjaya dihantar ke group guru.');
     }
 
-    public function test_send_thanks_sends_thank_you_message_when_test_is_ignored(): void
+    public function test_update_last_guru_salary_request_sends_auto_thanks_when_all_completed(): void
     {
-        $this->seedCompletedGurusForThanks();
+        $payload = $this->seedCompletedGurusForAutoThanks();
 
         $webhookService = \Mockery::mock(N8nWebhookService::class);
         $webhookService->shouldReceive('toActionUrl')
-            ->once()
+            ->twice()
             ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/maklumat-gaji-guru')))
             ->andReturn('https://example.test/maklumat-gaji-guru');
+        $webhookService->shouldReceive('sendGroup2ByTemplate')
+            ->once();
         $webhookService->shouldReceive('sendByTemplate')
             ->once()
             ->with(
                 N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
-                \Mockery::on(fn (array $variables) => ($variables['perkara'] ?? null) === 'maklumat gaji guru' && filled($variables['tarikh'] ?? null)),
+                ['perkara' => 'maklumat gaji guru'],
                 'https://example.test/maklumat-gaji-guru'
             );
 
         $this->app->instance(N8nWebhookService::class, $webhookService);
 
-        $request = Request::create('/maklumat-gaji-guru/send-thanks', 'POST');
-        $request->setUserResolver(fn (): User => $this->masterAdmin());
+        $request = Request::create('/maklumat-gaji-guru/' . $payload['request']->id . '/isi', 'POST', [
+            'gaji' => 1200,
+            'elaun' => 150,
+        ]);
+        $request->setUserResolver(fn (): User => $payload['user']);
 
-        $response = app(GuruSalaryInformationController::class)->sendThanks($request);
+        $response = app(GuruSalaryInformationController::class)->update($request, $payload['request']);
 
         $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
     private function masterAdmin(): User
@@ -289,7 +294,7 @@ class GuruSalaryInformationSortingTest extends TestCase
         }
     }
 
-    private function seedCompletedGurusForThanks(): void
+    private function seedCompletedGurusForAutoThanks(): array
     {
         $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
         $pasti = Pasti::query()->create([
@@ -303,6 +308,7 @@ class GuruSalaryInformationSortingTest extends TestCase
                 'nama_samaran' => $name,
                 'email' => strtolower($name).uniqid().'@example.test',
             ]);
+            $this->attachRole($user, 'guru');
 
             $guru = Guru::query()->create([
                 'user_id' => $user->id,
@@ -317,13 +323,32 @@ class GuruSalaryInformationSortingTest extends TestCase
                 'guru_id' => $guru->id,
                 'requested_by' => null,
                 'requested_at' => now()->subDays(4 - $index),
-                'completed_by' => $index === 0 ? null : 1,
-                'completed_at' => $index === 0 ? null : now()->subDays(4 - $index),
-                'gaji' => $index === 0 ? null : 1000 + ($index * 100),
-                'elaun' => $index === 0 ? null : 100 + ($index * 10),
+                'completed_by' => $index < 3 ? $user->id : null,
+                'completed_at' => $index < 3 ? now()->subDays(4 - $index) : null,
+                'gaji' => $index < 3 ? 1000 + ($index * 100) : null,
+                'elaun' => $index < 3 ? 100 + ($index * 10) : null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
+
+        $pendingUser = User::query()->where('name', 'Nurul')->firstOrFail();
+        $pendingRequest = GuruSalaryRequest::query()->whereHas('guru', fn ($q) => $q->where('name', 'Nurul'))->firstOrFail();
+
+        return [
+            'user' => $pendingUser,
+            'request' => $pendingRequest,
+        ];
+    }
+
+    private function attachRole(User $user, string $roleName): void
+    {
+        $roleId = (int) \DB::table('roles')->where('name', $roleName)->value('id');
+
+        \DB::table('model_has_roles')->insert([
+            'role_id' => $roleId,
+            'model_type' => User::class,
+            'model_id' => $user->id,
+        ]);
     }
 }

@@ -59,7 +59,6 @@ class GuruCourseController extends Controller
             'latestOffers' => $latestOffers,
             'canRequestReminder' => $user->isOperatingAsAdmin() && $pendingReminderGurus->isNotEmpty(),
             'pendingReminderCount' => $pendingReminderGurus->count(),
-            'canSendThanks' => $user->isOperatingAsAdmin() && $latestOffers->isNotEmpty() && $pendingReminderGurus->isEmpty(),
             'pendingResponses' => $pendingResponses,
             'historyResponses' => $historyResponses,
             'canSendOffer' => $user->isOperatingAsAdmin(),
@@ -201,34 +200,6 @@ class GuruCourseController extends Controller
         return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
     }
 
-    public function sendThanks(Request $request): RedirectResponse
-    {
-        $user = $request->user();
-        abort_unless($user->isOperatingAsAdmin(), 403);
-
-        $latestOffers = $this->latestOffersBySemester();
-        $pendingReminderGurus = $this->pendingReminderGurusForAdmin($latestOffers);
-
-        if ($latestOffers->isEmpty()) {
-            return back()->with('status', 'Tiada kursus untuk dihantar.');
-        }
-
-        if ($pendingReminderGurus->isNotEmpty()) {
-            return back()->with('status', 'Masih ada guru yang belum hantar respon.');
-        }
-
-        $this->n8nWebhookService->sendByTemplate(
-            N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
-            [
-                'perkara' => 'respon sambung kursus guru',
-                'tarikh' => now()->format('d/m/Y H:i'),
-            ],
-            $this->n8nWebhookService->toActionUrl(route('kursus-guru.index'))
-        );
-
-        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
-    }
-
     public function respond(Request $request, GuruCourseOfferResponse $response): RedirectResponse
     {
         $user = $request->user();
@@ -258,6 +229,24 @@ class GuruCourseController extends Controller
                 ]);
             }
         });
+
+        $realCourseResponses = GuruCourseOfferResponse::query()
+            ->with('guru.user')
+            ->get()
+            ->filter(fn (GuruCourseOfferResponse $response): bool => $response->guru && ! $this->isTestReminderAccount($response->guru));
+
+        $realCourseResponsesCompleted = $realCourseResponses->isNotEmpty()
+            && $realCourseResponses->contains(fn (GuruCourseOfferResponse $response): bool => $response->responded_at === null) === false;
+
+        if ($realCourseResponsesCompleted) {
+            $this->n8nWebhookService->sendByTemplate(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                [
+                    'perkara' => 'respon sambung kursus guru',
+                ],
+                $this->n8nWebhookService->toActionUrl(route('kursus-guru.index'))
+            );
+        }
 
         return redirect()->route('kursus-guru.index')->with('status', __('messages.saved'));
     }

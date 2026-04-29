@@ -73,7 +73,6 @@ class GuruSalaryInformationIndex extends Component
             'canRequest' => $user->isOperatingAsAdmin(),
             'canRequestAll' => $user->isOperatingAsAdmin() && ! $hasPendingRequests && $allAccessibleGuruIds->isNotEmpty(),
             'canRequestReminder' => $user->isOperatingAsAdmin() && $pendingReminderGurus->isNotEmpty(),
-            'canSendThanks' => $user->isOperatingAsAdmin() && $allAccessibleGuruIds->isNotEmpty() && $pendingReminderGurus->isEmpty(),
             'hasPendingRequests' => $hasPendingRequests,
             'pendingReminderCount' => $pendingReminderGurus->count(),
             'isGuru' => $user->isOperatingAsGuru(),

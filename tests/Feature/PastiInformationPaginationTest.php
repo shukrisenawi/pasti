@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Http\Middleware\EnsureGuruWebOnboardingCompleted;
 use App\Http\Controllers\PastiInformationController;
 use App\Livewire\PastiInformationIndex;
+use App\Models\Guru;
 use App\Models\Kawasan;
 use App\Models\Pasti;
+use App\Models\PastiInformationRequest;
 use App\Models\User;
 use App\Services\N8nWebhookService;
 use Illuminate\Database\Schema\Blueprint;
@@ -222,33 +224,43 @@ class PastiInformationPaginationTest extends TestCase
         $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
-    public function test_send_thanks_sends_thank_you_message_when_all_pasti_completed(): void
+    public function test_update_last_pasti_request_sends_auto_thanks_when_all_completed(): void
     {
-        $this->seedPastisForThanks();
+        $payload = $this->seedPastisForAutoThanks();
 
         $webhookService = \Mockery::mock(N8nWebhookService::class);
         $webhookService->shouldReceive('toActionUrl')
-            ->once()
+            ->twice()
             ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/maklumat-pasti')))
             ->andReturn('https://example.test/maklumat-pasti');
+        $webhookService->shouldReceive('sendGroup2ByTemplate')
+            ->once();
         $webhookService->shouldReceive('sendByTemplate')
             ->once()
             ->with(
                 N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
-                \Mockery::on(fn (array $variables) => ($variables['perkara'] ?? null) === 'maklumat PASTI' && filled($variables['tarikh'] ?? null)),
+                ['perkara' => 'maklumat PASTI'],
                 'https://example.test/maklumat-pasti'
             );
 
         $this->app->instance(N8nWebhookService::class, $webhookService);
 
-        $admin = $this->adminUserWithAssignedPastis();
-        $request = Request::create('/maklumat-pasti/send-thanks', 'POST');
-        $request->setUserResolver(fn (): User => $admin);
+        $request = Request::create('/maklumat-pasti/' . $payload['request']->id . '/isi', 'POST', [
+            'jumlah_guru' => 3,
+            'jumlah_pembantu_guru' => 1,
+            'murid_lelaki_4_tahun' => 5,
+            'murid_perempuan_4_tahun' => 4,
+            'murid_lelaki_5_tahun' => 6,
+            'murid_perempuan_5_tahun' => 7,
+            'murid_lelaki_6_tahun' => 8,
+            'murid_perempuan_6_tahun' => 9,
+        ]);
+        $request->setUserResolver(fn (): User => $payload['user']);
 
-        $response = app(PastiInformationController::class)->sendThanks($request);
+        $response = app(PastiInformationController::class)->update($request, $payload['request']);
 
         $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
+        $this->assertSame('Data berjaya disimpan.', $response->getSession()->get('status'));
     }
 
     private function attachRole(User $user, string $roleName): void
@@ -313,22 +325,47 @@ class PastiInformationPaginationTest extends TestCase
         }
     }
 
-    private function seedPastisForThanks(): void
+    private function seedPastisForAutoThanks(): array
     {
         $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
+        $pastiComplete = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Alpha',
+        ]);
+        $pastiPending = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Beta',
+        ]);
 
-        foreach (['PASTI Alpha', 'PASTI Beta'] as $name) {
-            $pasti = Pasti::query()->create([
-                'kawasan_id' => $kawasan->id,
-                'name' => $name,
-            ]);
+        $completeUser = User::query()->create([
+            'name' => 'Guru Lengkap',
+            'nama_samaran' => 'Guru Lengkap',
+            'email' => 'lengkap'.uniqid().'@example.test',
+        ]);
+        $this->attachRole($completeUser, 'guru');
+        Guru::query()->create([
+            'user_id' => $completeUser->id,
+            'pasti_id' => $pastiComplete->id,
+        ]);
 
-            \DB::table('pasti_information_requests')->insert([
-                'pasti_id' => $pasti->id,
+        $pendingUser = User::query()->create([
+            'name' => 'Guru Pending',
+            'nama_samaran' => 'Guru Pending',
+            'email' => 'pending'.uniqid().'@example.test',
+        ]);
+        $this->attachRole($pendingUser, 'guru');
+        Guru::query()->create([
+            'user_id' => $pendingUser->id,
+            'pasti_id' => $pastiPending->id,
+        ]);
+
+        PastiInformationRequest::query()->insert([
+            [
+                'pasti_id' => $pastiComplete->id,
                 'requested_by' => null,
                 'requested_at' => now()->subHours(2),
-                'completed_by' => 1,
-                'completed_at' => now(),
+                'completed_by' => $completeUser->id,
+                'completed_at' => now()->subHour(),
                 'jumlah_guru' => 2,
                 'jumlah_pembantu_guru' => 1,
                 'murid_lelaki_4_tahun' => 1,
@@ -339,8 +376,30 @@ class PastiInformationPaginationTest extends TestCase
                 'murid_perempuan_6_tahun' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
-        }
+            ],
+            [
+                'pasti_id' => $pastiPending->id,
+                'requested_by' => null,
+                'requested_at' => now()->subHour(),
+                'completed_by' => null,
+                'completed_at' => null,
+                'jumlah_guru' => null,
+                'jumlah_pembantu_guru' => null,
+                'murid_lelaki_4_tahun' => null,
+                'murid_perempuan_4_tahun' => null,
+                'murid_lelaki_5_tahun' => null,
+                'murid_perempuan_5_tahun' => null,
+                'murid_lelaki_6_tahun' => null,
+                'murid_perempuan_6_tahun' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        return [
+            'user' => $pendingUser,
+            'request' => PastiInformationRequest::query()->where('pasti_id', $pastiPending->id)->firstOrFail(),
+        ];
     }
 
     private function adminUserWithAssignedPastis(): User

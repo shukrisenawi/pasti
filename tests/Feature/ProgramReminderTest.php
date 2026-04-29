@@ -7,7 +7,9 @@ use App\Models\Guru;
 use App\Models\Kawasan;
 use App\Models\Pasti;
 use App\Models\Program;
+use App\Models\ProgramStatus;
 use App\Models\User;
+use App\Services\KpiCalculationService;
 use App\Services\N8nWebhookService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
@@ -92,16 +94,30 @@ class ProgramReminderTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('program_statuses', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->string('code')->unique();
+            $table->boolean('is_hadir')->default(false);
+            $table->timestamps();
+        });
+
         \DB::table('roles')->insert([
             ['name' => 'master_admin', 'guard_name' => 'web'],
             ['name' => 'admin', 'guard_name' => 'web'],
             ['name' => 'guru', 'guard_name' => 'web'],
+        ]);
+
+        ProgramStatus::query()->insert([
+            ['name' => 'Hadir', 'code' => 'HADIR', 'is_hadir' => true, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Tidak Hadir', 'code' => 'TIDAK_HADIR', 'is_hadir' => false, 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 
     protected function tearDown(): void
     {
         Schema::dropIfExists('program_teacher');
+        Schema::dropIfExists('program_statuses');
         Schema::dropIfExists('programs');
         Schema::dropIfExists('gurus');
         Schema::dropIfExists('pastis');
@@ -144,32 +160,36 @@ class ProgramReminderTest extends TestCase
         $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
-    public function test_send_thanks_sends_thank_you_message_when_test_is_ignored(): void
+    public function test_updating_last_real_program_participation_sends_auto_thanks_even_with_test_pending(): void
     {
-        $program = $this->seedProgramWithCompletedGurusExceptTest();
+        $payload = $this->seedProgramWithCompletedGurusExceptTest();
 
         $webhookService = \Mockery::mock(N8nWebhookService::class);
         $webhookService->shouldReceive('toActionUrl')
             ->once()
-            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/programs/' . $program->id)))
-            ->andReturn('https://example.test/programs/' . $program->id);
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/programs/' . $payload['program']->id)))
+            ->andReturn('https://example.test/programs/' . $payload['program']->id);
         $webhookService->shouldReceive('sendByTemplate')
             ->once()
             ->with(
                 N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
-                \Mockery::on(fn (array $variables) => ($variables['perkara'] ?? null) === 'status program' && filled($variables['tarikh'] ?? null)),
-                'https://example.test/programs/' . $program->id
+                ['perkara' => 'status program'],
+                'https://example.test/programs/' . $payload['program']->id
             );
 
         $this->app->instance(N8nWebhookService::class, $webhookService);
+        $kpiService = \Mockery::mock(KpiCalculationService::class);
+        $kpiService->shouldReceive('recalculateForGuru')->once();
+        $this->app->instance(KpiCalculationService::class, $kpiService);
 
-        $request = Request::create('/programs/' . $program->id . '/send-thanks', 'POST');
-        $request->setUserResolver(fn (): User => $this->masterAdmin());
+        $request = Request::create('/programs/' . $payload['program']->id . '/guru/' . $payload['guruId'] . '/status', 'POST', [
+            'program_status_id' => $payload['hadirStatusId'],
+        ]);
+        $request->setUserResolver(fn (): User => $payload['user']);
 
-        $response = app(ProgramController::class)->sendThanks($request, $program);
+        $response = app(\App\Http\Controllers\ProgramParticipationController::class)->updateStatus($request, $payload['program'], $payload['guruId']);
 
         $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
     private function masterAdmin(): User
@@ -243,7 +263,7 @@ class ProgramReminderTest extends TestCase
         return $program;
     }
 
-    private function seedProgramWithCompletedGurusExceptTest(): Program
+    private function seedProgramWithCompletedGurusExceptTest(): array
     {
         $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
         $pasti = Pasti::query()->create([
@@ -263,12 +283,16 @@ class ProgramReminderTest extends TestCase
             'created_by' => 1,
         ]);
 
+        $realGuruIds = [];
+        $hadirStatusId = ProgramStatus::query()->where('code', 'HADIR')->value('id');
+
         foreach (['Test', 'Ahmad', 'Siti', 'Nurul'] as $index => $name) {
             $user = User::query()->create([
                 'name' => $name,
                 'nama_samaran' => $name,
                 'email' => strtolower($name).uniqid().'@example.test',
             ]);
+            $this->attachRole($user, 'guru');
 
             $guru = Guru::query()->create([
                 'user_id' => $user->id,
@@ -282,7 +306,7 @@ class ProgramReminderTest extends TestCase
             \DB::table('program_teacher')->insert([
                 'program_id' => $program->id,
                 'guru_id' => $guru->id,
-                'program_status_id' => $index === 0 ? null : 1,
+                'program_status_id' => $index < 3 ? $hadirStatusId : null,
                 'absence_reason' => null,
                 'absence_reason_status' => null,
                 'absence_reason_reviewed_by' => null,
@@ -291,8 +315,29 @@ class ProgramReminderTest extends TestCase
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            if ($name !== 'Test') {
+                $realGuruIds[$name] = $guru->id;
+            }
         }
 
-        return $program;
+        $pendingUser = User::query()->where('name', 'Nurul')->firstOrFail();
+
+        return [
+            'program' => $program,
+            'user' => $pendingUser,
+            'guruId' => $realGuruIds['Nurul'],
+            'hadirStatusId' => ProgramStatus::query()->where('code', 'HADIR')->value('id'),
+        ];
+    }
+
+    private function attachRole(User $user, string $roleName): void
+    {
+        $roleId = (int) \DB::table('roles')->where('name', $roleName)->value('id');
+        \DB::table('model_has_roles')->insert([
+            'role_id' => $roleId,
+            'model_type' => User::class,
+            'model_id' => $user->id,
+        ]);
     }
 }

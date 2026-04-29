@@ -83,13 +83,6 @@
                     Minta respond
                 </button>
             </form>
-
-            <form method="POST" action="{{ route('kursus-guru.send-thanks') }}" class="mt-3">
-                @csrf
-                <button class="btn btn-outline" @disabled(! ($canSendThanks ?? false))>
-                    Ucapan terima kasih
-                </button>
-            </form>
         </section>
     @endif
 

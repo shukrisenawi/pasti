@@ -119,39 +119,6 @@ class PastiInformationController extends Controller
         return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
     }
 
-    public function sendThanks(Request $request): RedirectResponse
-    {
-        $user = $request->user();
-        abort_unless($user->isOperatingAsAdmin(), 403);
-
-        $accessiblePastisQuery = $this->accessiblePastisQueryForUser($user);
-        $pastiIds = (clone $accessiblePastisQuery)->pluck('pastis.id');
-
-        if ($pastiIds->isEmpty()) {
-            return back()->with('status', 'Tiada PASTI untuk dihantar.');
-        }
-
-        $hasPendingRequests = PastiInformationRequest::query()
-            ->whereIn('pasti_id', $pastiIds->all())
-            ->whereNull('completed_at')
-            ->exists();
-
-        if ($hasPendingRequests) {
-            return back()->with('status', 'Masih ada PASTI yang belum hantar respon.');
-        }
-
-        $this->n8nWebhookService->sendByTemplate(
-            N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
-            [
-                'perkara' => 'maklumat PASTI',
-                'tarikh' => now()->format('d/m/Y H:i'),
-            ],
-            $this->n8nWebhookService->toActionUrl(route('pasti-information.index'))
-        );
-
-        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
-    }
-
     public function edit(Request $request, PastiInformationRequest $pastiInformationRequest): View|RedirectResponse
     {
         $user = $request->user();
@@ -220,6 +187,12 @@ class PastiInformationController extends Controller
             $this->n8nWebhookService->sendGroup2ByTemplate(
                 N8nWebhookService::KEY_TEXT_ALL_PASTI_INFO_COMPLETED,
                 ['tarikh' => now()->format('d/m/Y H:i')],
+                $this->n8nWebhookService->toActionUrl(route('pasti-information.index'))
+            );
+
+            $this->n8nWebhookService->sendByTemplate(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                ['perkara' => 'maklumat PASTI'],
                 $this->n8nWebhookService->toActionUrl(route('pasti-information.index'))
             );
         }

@@ -21,13 +21,6 @@
                     Minta respond
                 </button>
             </form>
-
-            <form method="POST" action="{{ route('guru-salary-information.send-thanks') }}">
-                @csrf
-                <button class="btn btn-outline" @disabled(! ($canSendThanks ?? false))>
-                    Ucapan terima kasih
-                </button>
-            </form>
         @endif
     </div>
 

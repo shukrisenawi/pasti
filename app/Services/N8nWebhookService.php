@@ -44,9 +44,9 @@ class N8nWebhookService
     private const DEFAULT_TEXT_PROGRAM_RESPONSE_REMINDER = "Sila hantar respon program segera.\n\nGuru yang belum respon:\n{senarai_guru}";
     private const DEFAULT_TEXT_LEAVE_NOTICE_SUBMITTED = '{nama_guru} hantar notis cuti pada {tarikh_cuti} hingga {tarikh_hingga}. Sebab: {sebab}.';
     private const DEFAULT_TEXT_CLAIM_SUBMITTED = '{nama_guru} hantar claim sebanyak RM{jumlah} pada {tarikh_claim}. Catatan: {catatan}.';
-    private const DEFAULT_TEXT_ALL_PASTI_INFO_COMPLETED = 'Semua PASTI telah hantar maklumat PASTI. Dikemaskini pada {tarikh}.';
-    private const DEFAULT_TEXT_ALL_GURU_SALARY_COMPLETED = 'Semua guru telah hantar maklumat elaun semasa. Dikemaskini pada {tarikh}.';
-    private const DEFAULT_TEXT_ALL_GURU_COMPLETED_THANKS = 'Terima kasih kepada semua guru kerana telah menghantar {perkara}. Dikemaskini pada {tarikh}.';
+    private const DEFAULT_TEXT_ALL_PASTI_INFO_COMPLETED = 'Semua PASTI telah hantar maklumat PASTI.';
+    private const DEFAULT_TEXT_ALL_GURU_SALARY_COMPLETED = 'Semua guru telah hantar maklumat elaun semasa.';
+    private const DEFAULT_TEXT_ALL_GURU_COMPLETED_THANKS = 'Terima kasih kepada semua guru kerana telah menghantar {perkara}.';
     private const DEFAULT_TEXT_GURU_SALARY_RESPONSE_REMINDER = "Sila hantar respon maklumat gaji guru segera.\n\nGuru yang belum respon:\n{senarai_guru}";
     private const DEFAULT_TEXT_ADMIN_BROADCAST = '{nama_penghantar} hantar hebahan kepada {jumlah_guru} guru. Mesej: {mesej}.';
     private const DEFAULT_TEXT_GURU_MESSAGE_TO_ADMIN = '{nama_guru} dari {pasti} hantar mesej kepada admin. Mesej: {mesej}.';

@@ -8,7 +8,9 @@ use App\Models\ProgramStatus;
 use App\Models\User;
 use App\Notifications\ProgramAbsenceReasonSubmittedNotification;
 use App\Services\KpiCalculationService;
+use App\Services\N8nWebhookService;
 use App\Services\ProgramParticipationService;
+use App\Models\Guru;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -18,6 +20,7 @@ class ProgramParticipationController extends Controller
     public function __construct(
         private readonly ProgramParticipationService $participationService,
         private readonly KpiCalculationService $kpiCalculationService,
+        private readonly N8nWebhookService $n8nWebhookService,
     ) {
     }
 
@@ -103,6 +106,25 @@ class ProgramParticipationController extends Controller
 
         $this->kpiCalculationService->recalculateForGuru($participation->guru);
 
+        $realProgramParticipations = ProgramParticipation::query()
+            ->with('guru.user')
+            ->where('program_id', $program->id)
+            ->get()
+            ->filter(fn (ProgramParticipation $participation): bool => $participation->guru && ! $this->isTestReminderAccount($participation->guru));
+
+        $realProgramCompleted = $realProgramParticipations->isNotEmpty()
+            && $realProgramParticipations->contains(fn (ProgramParticipation $participation): bool => $participation->program_status_id === null) === false;
+
+        if ($realProgramCompleted) {
+            $this->n8nWebhookService->sendByTemplate(
+                N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
+                [
+                    'perkara' => 'status program',
+                ],
+                $this->n8nWebhookService->toActionUrl(route('programs.show', $program))
+            );
+        }
+
         return back()
             ->with('status', __('messages.saved'))
             ->with('program_status_success_message', 'Dah berjaya update')
@@ -160,5 +182,13 @@ class ProgramParticipationController extends Controller
     private function isGuruOnly($user): bool
     {
         return $user->isOperatingAsGuru();
+    }
+
+    private function isTestReminderAccount(Guru $guru): bool
+    {
+        $displayName = trim(mb_strtolower((string) $guru->display_name));
+        $guruName = trim(mb_strtolower((string) $guru->name));
+
+        return in_array('test', [$displayName, $guruName], true);
     }
 }

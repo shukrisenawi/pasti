@@ -138,7 +138,6 @@ class ProgramController extends Controller
                 ->get(),
             'canManage' => $user->hasRole('master_admin') || $user->hasRole('admin'),
             'canRequestReminder' => ($user->hasRole('master_admin') || $user->hasRole('admin')) && $pendingReminderGurus->isNotEmpty(),
-            'canSendThanks' => ($user->hasRole('master_admin') || $user->hasRole('admin')) && $program->participations->isNotEmpty() && $pendingReminderGurus->isEmpty(),
             'programPendingReminderCount' => $pendingReminderGurus->count(),
             'canUpdateOwn' => $user->isOperatingAsGuru() && (bool) $user->guru,
             'currentGuruId' => $user->guru?->id,
@@ -262,34 +261,6 @@ class ProgramController extends Controller
             [
                 'program_title' => trim((string) $program->title),
                 'senarai_guru' => $senaraiGuru,
-            ],
-            $this->n8nWebhookService->toActionUrl(route('programs.show', $program))
-        );
-
-        return back()->with('status', 'Mesej telah berjaya dihantar ke group guru.');
-    }
-
-    public function sendThanks(Request $request, Program $program): RedirectResponse
-    {
-        $user = $request->user();
-        abort_unless($user->hasAnyRole(['master_admin', 'admin']), 403);
-
-        $program->loadMissing('participations.guru.user');
-        $pendingGurus = $this->pendingReminderGurusForProgram($program);
-
-        if ($program->participations->isEmpty()) {
-            return back()->with('status', 'Tiada program untuk dihantar.');
-        }
-
-        if ($pendingGurus->isNotEmpty()) {
-            return back()->with('status', 'Masih ada guru yang belum hantar respon.');
-        }
-
-        $this->n8nWebhookService->sendByTemplate(
-            N8nWebhookService::KEY_TEXT_ALL_GURU_COMPLETED_THANKS,
-            [
-                'perkara' => 'status program',
-                'tarikh' => now()->format('d/m/Y H:i'),
             ],
             $this->n8nWebhookService->toActionUrl(route('programs.show', $program))
         );
