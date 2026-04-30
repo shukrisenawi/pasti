@@ -70,12 +70,10 @@
                         @endforeach
                     </select>
                 </div>
-                <template x-if="isAssistant === 0">
-                    <div>
-                        <label class="label-base">{{ __('messages.phone') }}</label>
-                        <input class="input-base" name="phone" value="{{ old('phone', $guru->phone) }}">
-                    </div>
-                </template>
+                <div>
+                    <label class="label-base">{{ __('messages.phone') }}</label>
+                    <input class="input-base" name="phone" value="{{ old('phone', $guru->phone) }}" :required="isAssistant === 1">
+                </div>
                 <div>
                     <label class="label-base">{{ __('messages.kad_pengenalan') }}</label>
                     <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $guru->kad_pengenalan) }}" required data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####">

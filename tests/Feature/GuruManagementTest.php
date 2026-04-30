@@ -266,6 +266,8 @@ class GuruManagementTest extends TestCase
         $this->actingAs($admin)
             ->get(route('users.gurus.create'))
             ->assertOk()
+            ->assertSee('name="phone"', false)
+            ->assertSee(':required="isAssistant === 1"', false)
             ->assertSee('name="elaun"', false)
             ->assertSee('name="elaun_transit"', false)
             ->assertSee('name="elaun_lain"', false)
