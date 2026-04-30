@@ -260,7 +260,6 @@ class GuruSalaryInformationSortingTest extends TestCase
         $request = Request::create('/maklumat-gaji-guru/' . $payload['request']->id . '/isi', 'POST', [
             'gaji' => 1200,
             'elaun' => 150,
-            'elaun_transit' => 50,
             'elaun_lain' => 30,
         ]);
         $request->setUserResolver(fn (): User => $payload['user']);
@@ -274,12 +273,6 @@ class GuruSalaryInformationSortingTest extends TestCase
     {
         $payload = $this->seedCompletedGurusForAutoThanks();
 
-        $request = Request::create('/maklumat-gaji-guru/' . $payload['request']->id . '/isi', 'POST', [
-            'gaji' => 1200,
-            'elaun' => 150,
-        ]);
-        $request->setUserResolver(fn (): User => $payload['user']);
-
         $response = $this
             ->actingAs($payload['user'])
             ->from(route('guru-salary-information.edit', $payload['request']))
@@ -288,7 +281,7 @@ class GuruSalaryInformationSortingTest extends TestCase
                 'elaun' => 150,
             ]);
 
-        $response->assertSessionHasErrors(['elaun_transit', 'elaun_lain']);
+        $response->assertSessionHasErrors(['elaun_lain']);
     }
 
     public function test_guru_salary_page_displays_transit_and_other_allowance_values(): void
@@ -302,6 +295,17 @@ class GuruSalaryInformationSortingTest extends TestCase
             ->assertSee('Elaun Lain')
             ->assertSee('RM 35.00')
             ->assertSee('RM 15.00');
+    }
+
+    public function test_guru_salary_form_uses_existing_elaun_field_as_transit_label(): void
+    {
+        $template = file_get_contents(resource_path('views/guru-salary-information/form.blade.php'));
+
+        $this->assertIsString($template);
+        $this->assertStringContainsString('name="elaun"', $template);
+        $this->assertStringContainsString("__('messages.elaun_transit')", $template);
+        $this->assertStringContainsString("__('messages.elaun_lain')", $template);
+        $this->assertStringNotContainsString('name="elaun_transit"', $template);
     }
 
     private function masterAdmin(): User
@@ -360,8 +364,7 @@ class GuruSalaryInformationSortingTest extends TestCase
                 'completed_by' => null,
                 'completed_at' => now()->subDays(3 - $index),
                 'gaji' => 1000 + ($index * 100),
-                'elaun' => 100 + ($index * 10),
-                'elaun_transit' => 25 + ($index * 5),
+                'elaun' => 25 + ($index * 5),
                 'elaun_lain' => 10 + ($index * 5),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -459,8 +462,7 @@ class GuruSalaryInformationSortingTest extends TestCase
                     'completed_by' => $user->id,
                     'completed_at' => $item['completed_at'],
                     'gaji' => 1000,
-                    'elaun' => 100,
-                    'elaun_transit' => 35,
+                    'elaun' => 35,
                     'elaun_lain' => 15,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -529,8 +531,7 @@ class GuruSalaryInformationSortingTest extends TestCase
                 'completed_by' => $index < 3 ? $user->id : null,
                 'completed_at' => $index < 3 ? now()->subDays(4 - $index) : null,
                 'gaji' => $index < 3 ? 1000 + ($index * 100) : null,
-                'elaun' => $index < 3 ? 100 + ($index * 10) : null,
-                'elaun_transit' => $index < 3 ? 20 + ($index * 10) : null,
+                'elaun' => $index < 3 ? 20 + ($index * 10) : null,
                 'elaun_lain' => $index < 3 ? 5 + ($index * 5) : null,
                 'created_at' => now(),
                 'updated_at' => now(),

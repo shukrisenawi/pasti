@@ -86,8 +86,7 @@
                         @if($latestCompleted)
                             <div class="mt-1 grid grid-cols-2 gap-2">
                                 <p>{{ __('messages.gaji') }}:<br><span class="font-bold text-slate-800">RM {{ number_format((float) $latestCompleted->gaji, 2) }}</span></p>
-                                <p>{{ __('messages.elaun') }}:<br><span class="font-bold text-slate-800">RM {{ number_format((float) $latestCompleted->elaun, 2) }}</span></p>
-                                <p>{{ __('messages.elaun_transit') }}:<br><span class="font-bold text-slate-800">RM {{ number_format((float) ($latestCompleted->elaun_transit ?? 0), 2) }}</span></p>
+                                <p>{{ __('messages.elaun_transit') }}:<br><span class="font-bold text-slate-800">RM {{ number_format((float) $latestCompleted->elaun, 2) }}</span></p>
                                 <p>{{ __('messages.elaun_lain') }}:<br><span class="font-bold text-slate-800">RM {{ number_format((float) ($latestCompleted->elaun_lain ?? 0), 2) }}</span></p>
                             </div>
                             <p class="mt-1 text-slate-500">{{ __('messages.updated_at_label') }}: {{ optional($latestCompleted->completed_at)->format('d/m/Y H:i') }}</p>
