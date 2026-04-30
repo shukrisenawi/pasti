@@ -456,6 +456,34 @@ class ProgramParticipationApprovalTest extends TestCase
             });
     }
 
+    public function test_program_show_page_for_admin_lists_guru_hadir_in_complete_tab(): void
+    {
+        Notification::fake();
+
+        [$program, , $absentStatus, $admin, $latestGuruUser] = $this->createProgramFixtures(withSecondGuru: true);
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $latestGuruUser->guru->id)
+            ->update([
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Sakit.',
+                'absence_reason_status' => 'approved',
+            ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('adminCompletedParticipations', function ($participations): bool {
+                $names = $participations->pluck('guru.display_name')->sort()->values()->all();
+
+                return $participations->count() === 2
+                    && $names === ['Cikgu Kedua', 'Cikgu Program'];
+            });
+    }
+
     public function test_program_menu_badge_uses_pending_absence_reason_approval_count(): void
     {
         Notification::fake();

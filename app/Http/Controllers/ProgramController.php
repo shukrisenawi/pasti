@@ -141,10 +141,13 @@ class ProgramController extends Controller
             ->filter(fn ($participation) => $participation->absence_reason_status === ProgramParticipationService::ABSENCE_REASON_PENDING)
             ->values();
         $adminCompletedParticipations = $allParticipations
-            ->filter(fn ($participation) => in_array($participation->absence_reason_status, [
-                ProgramParticipationService::ABSENCE_REASON_APPROVED,
-                ProgramParticipationService::ABSENCE_REASON_REJECTED,
-            ], true))
+            ->filter(function ($participation) {
+                if (blank($participation->program_status_id)) {
+                    return false;
+                }
+
+                return $participation->absence_reason_status !== ProgramParticipationService::ABSENCE_REASON_PENDING;
+            })
             ->values();
 
         $program->setRelation('participations', $allParticipations);
