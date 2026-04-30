@@ -506,12 +506,42 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertOk()
             ->assertSee('class="grid items-start gap-3 md:grid-cols-2"', false)
             ->assertSee('data-testid="program-complete-card"', false)
+            ->assertSee('data-testid="program-complete-avatar-button"', false)
+            ->assertSee('data-testid="program-complete-edit-modal"', false)
+            ->assertSee('Kemaskini Kehadiran')
+            ->assertSee('name="admin_tab" value="complete"', false)
             ->assertSee('self-start', false)
             ->assertSee('Cikgu Program')
             ->assertSee('Hadir')
             ->assertSee('Sakit.')
             ->assertDontSee('Semakan Alasan')
             ->assertDontSee('Alasan Tidak Hadir: -');
+    }
+
+    public function test_admin_status_update_from_complete_tab_redirects_back_to_complete_tab(): void
+    {
+        Notification::fake();
+
+        [$program, $guruUser, $absentStatus, $admin] = $this->createProgramFixtures();
+
+        $response = $this->actingAs($admin)
+            ->post(route('programs.teachers.status.update', [$program, $guruUser->guru->id]), [
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Ada hal keluarga.',
+                'admin_tab' => 'complete',
+            ]);
+
+        $response->assertRedirect(route('programs.show', [
+            'program' => $program,
+            'admin_tab' => 'complete',
+        ]));
+
+        $this->assertDatabaseHas('program_teacher', [
+            'program_id' => $program->id,
+            'guru_id' => $guruUser->guru->id,
+            'program_status_id' => $absentStatus->id,
+            'absence_reason' => 'Ada hal keluarga.',
+        ]);
     }
 
     public function test_program_show_page_excludes_guru_named_test_from_display_lists(): void

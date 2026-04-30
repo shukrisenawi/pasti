@@ -191,7 +191,7 @@
                 </div>
             </section>
         @else
-            <section class="space-y-4" x-data="{ activeAdminTab: @js($adminPendingReviewParticipations->isNotEmpty() ? 'pending' : 'complete') }">
+            <section class="space-y-4" x-data="{ activeAdminTab: @js(in_array(request()->query('admin_tab'), ['pending', 'complete'], true) ? request()->query('admin_tab') : ($adminPendingReviewParticipations->isNotEmpty() ? 'pending' : 'complete')) }">
                 <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <h3 class="ml-[20px] text-sm font-black text-slate-900">Guru Terlibat</h3>
@@ -253,6 +253,7 @@
                     @include('programs.partials.complete-participation-cards', [
                         'participations' => $adminCompletedParticipations,
                         'emptyMessage' => 'Tiada rekod complete untuk dipaparkan.',
+                        'statusCodeById' => $statusCodeById,
                     ])
                 </div>
             </section>

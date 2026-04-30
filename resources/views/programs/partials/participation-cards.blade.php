@@ -77,6 +77,7 @@
                             }"
                         >
                             @csrf
+                            <input type="hidden" name="admin_tab" value="pending">
                             <select name="program_status_id" class="input-base max-w-xs text-xs" x-model="selectedStatusId" @disabled($shouldDisableAdminStatusForm)>
                                 <option value="">-</option>
                                 @foreach($statuses as $status)
@@ -106,11 +107,13 @@
                             <div class="flex flex-wrap gap-2 {{ $shouldDisableAdminReviewButtons ? 'opacity-70' : '' }}" @if($shouldDisableAdminReviewButtons) data-testid="program-admin-review-buttons-disabled" @endif>
                                 <form method="POST" action="{{ route('programs.teachers.absence-review', [$program, $participation->guru_id]) }}">
                                     @csrf
+                                    <input type="hidden" name="admin_tab" value="pending">
                                     <input type="hidden" name="decision" value="approved">
                                     <button class="btn btn-success btn-xs" @disabled($shouldDisableAdminReviewButtons)>{{ __('messages.approve_reason') }}</button>
                                 </form>
                                 <form method="POST" action="{{ route('programs.teachers.absence-review', [$program, $participation->guru_id]) }}">
                                     @csrf
+                                    <input type="hidden" name="admin_tab" value="pending">
                                     <input type="hidden" name="decision" value="rejected">
                                     <button class="btn btn-error btn-xs" @disabled($shouldDisableAdminReviewButtons)>{{ __('messages.reject_reason') }}</button>
                                 </form>

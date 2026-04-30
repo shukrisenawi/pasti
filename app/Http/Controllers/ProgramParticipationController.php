@@ -36,6 +36,7 @@ class ProgramParticipationController extends Controller
         $data = $request->validate([
             'program_status_id' => ['nullable', 'integer', 'exists:program_statuses,id'],
             'absence_reason' => ['nullable', 'string', 'max:1000'],
+            'admin_tab' => ['nullable', 'in:pending,complete'],
         ]);
 
         $selectedStatus = null;
@@ -106,7 +107,9 @@ class ProgramParticipationController extends Controller
 
         $this->kpiCalculationService->recalculateForGuru($participation->guru);
 
-        return back()
+        $redirect = $this->programRedirectResponse($program, $user, $data['admin_tab'] ?? null);
+
+        return $redirect
             ->with('status', __('messages.saved'))
             ->with('program_status_success_message', 'Dah berjaya update')
             ->with('program_status_success_actor', $user->isOperatingAsAdmin() ? 'admin' : 'guru')
@@ -120,6 +123,7 @@ class ProgramParticipationController extends Controller
 
         $data = $request->validate([
             'decision' => ['required', 'in:approved,rejected'],
+            'admin_tab' => ['nullable', 'in:pending,complete'],
         ]);
 
         $participation = ProgramParticipation::query()
@@ -153,7 +157,10 @@ class ProgramParticipationController extends Controller
         $this->kpiCalculationService->recalculateForGuru($participation->guru);
 
         return redirect()
-            ->route('programs.show', $program)
+            ->route('programs.show', [
+                'program' => $program,
+                ...($data['admin_tab'] ? ['admin_tab' => $data['admin_tab']] : []),
+            ])
             ->with('status', __('messages.saved'))
             ->with('program_status_success_message', 'Dah berjaya update')
             ->with('program_status_success_actor', 'admin')
@@ -171,5 +178,17 @@ class ProgramParticipationController extends Controller
         $guruName = trim(mb_strtolower((string) $guru->name));
 
         return in_array('test', [$displayName, $guruName], true);
+    }
+
+    private function programRedirectResponse(Program $program, User $user, ?string $adminTab): RedirectResponse
+    {
+        if ($user->isOperatingAsAdmin()) {
+            return redirect()->route('programs.show', [
+                'program' => $program,
+                ...($adminTab ? ['admin_tab' => $adminTab] : []),
+            ]);
+        }
+
+        return back();
     }
 }
