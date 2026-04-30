@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\N8nWebhookService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -149,6 +150,28 @@ class GuruSalaryInformationSortingTest extends TestCase
             ->post(route('guru-salary-information.request-reminder'))
             ->assertRedirect('/maklumat-gaji-guru')
             ->assertSessionHas('status', 'Mesej telah berjaya dihantar ke group guru.');
+    }
+
+    public function test_request_all_updates_ignores_test_guru(): void
+    {
+        $this->seedPendingGurusForReminder();
+        Notification::fake();
+
+        GuruSalaryRequest::query()->delete();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')->once()->andReturn('https://example.test/maklumat-gaji-guru');
+        $webhookService->shouldReceive('sendByTemplate')->once();
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $request = Request::create('/maklumat-gaji-guru/request-all', 'POST');
+        $request->setUserResolver(fn (): User => $this->masterAdmin());
+
+        $response = app(GuruSalaryInformationController::class)->requestAllUpdates($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame(0, GuruSalaryRequest::query()->whereHas('guru', fn ($query) => $query->where('name', 'Test'))->count());
+        $this->assertSame(3, GuruSalaryRequest::query()->count());
     }
 
     public function test_guru_salary_tabs_separate_pending_and_responded_gurus(): void

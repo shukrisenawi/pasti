@@ -34,7 +34,7 @@ class PastiInformationController extends Controller
         $user = $request->user();
         abort_unless($user->isOperatingAsAdmin(), 403);
 
-        $pastis = $this->accessiblePastisQueryForUser($user)->get(['pastis.id', 'pastis.name']);
+        $pastis = $this->accessibleRealPastisQueryForUser($user)->get(['pastis.id', 'pastis.name']);
         if ($pastis->isEmpty()) {
             return back();
         }
@@ -80,7 +80,7 @@ class PastiInformationController extends Controller
         $user = $request->user();
         abort_unless($user->isOperatingAsAdmin(), 403);
 
-        $accessiblePastisQuery = $this->accessiblePastisQueryForUser($user);
+        $accessiblePastisQuery = $this->accessibleRealPastisQueryForUser($user);
         $pastiIds = (clone $accessiblePastisQuery)->pluck('pastis.id');
 
         if ($pastiIds->isEmpty()) {
@@ -211,6 +211,12 @@ class PastiInformationController extends Controller
         return $query;
     }
 
+    private function accessibleRealPastisQueryForUser(User $user): Builder
+    {
+        return $this->accessiblePastisQueryForUser($user)
+            ->whereDoesntHave('gurus.user', fn (Builder $userQuery) => $this->applyTestUserScope($userQuery));
+    }
+
     private function ensureGuruCanFill(User $user, PastiInformationRequest $infoRequest): void
     {
         $guruPastiId = $user->guru?->pasti_id;
@@ -240,7 +246,7 @@ class PastiInformationController extends Controller
     private function hasOutstandingRealLatestPastiInformationRequest(): bool
     {
         return Pasti::query()
-            ->whereHas('gurus.user', fn (Builder $userQuery) => $this->applyNonTestUserScope($userQuery))
+            ->whereDoesntHave('gurus.user', fn (Builder $userQuery) => $this->applyTestUserScope($userQuery))
             ->where(function (Builder $query): void {
                 $query
                     ->whereDoesntHave('latestInformationRequest')
@@ -249,9 +255,12 @@ class PastiInformationController extends Controller
             ->exists();
     }
 
-    private function applyNonTestUserScope(Builder $query): Builder
+    private function applyTestUserScope(Builder $query): Builder
     {
-        return $query->whereRaw('lower(coalesce(name, \'\')) <> ?', ['test'])
-            ->whereRaw('lower(coalesce(nama_samaran, \'\')) <> ?', ['test']);
+        return $query->where(function (Builder $nameQuery): void {
+            $nameQuery
+                ->whereRaw('lower(coalesce(name, \'\')) = ?', ['test'])
+                ->orWhereRaw('lower(coalesce(nama_samaran, \'\')) = ?', ['test']);
+        });
     }
 }

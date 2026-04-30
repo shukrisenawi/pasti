@@ -307,6 +307,57 @@ class PastiInformationPaginationTest extends TestCase
         $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
+    public function test_request_pending_responses_ignores_test_pasti(): void
+    {
+        $this->seedPastisForReminderWithTestPasti();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->andReturn('https://example.test/maklumat-pasti');
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_PASTI_INFO_RESPONSE_REMINDER,
+                ['senarai_pasti' => "1- PASTI Alpha\n2- PASTI Gamma"],
+                'https://example.test/maklumat-pasti'
+            );
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $admin = $this->adminUserWithAssignedPastis();
+        $request = Request::create('/maklumat-pasti/request-reminder', 'POST');
+        $request->setUserResolver(fn (): User => $admin);
+
+        $response = app(PastiInformationController::class)->requestPendingResponses($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+    }
+
+    public function test_request_all_updates_ignores_pending_test_pasti_request(): void
+    {
+        $this->seedPastisForRequestAllIgnoringTest();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->andReturn('https://example.test/maklumat-pasti');
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once();
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $admin = $this->masterAdmin();
+        $request = Request::create('/maklumat-pasti/request', 'POST');
+        $request->setUserResolver(fn (): User => $admin);
+
+        $response = app(PastiInformationController::class)->requestAllUpdates($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame(1, PastiInformationRequest::query()->where('pasti_id', Pasti::query()->where('name', 'PASTI Sebenar')->value('id'))->count());
+        $this->assertSame(1, PastiInformationRequest::query()->where('pasti_id', Pasti::query()->where('name', 'PASTI Test')->value('id'))->count());
+    }
+
     public function test_menu_badge_for_pasti_information_ignores_test_account(): void
     {
         $this->seedPastisForMenuBadgeCount();
@@ -463,6 +514,81 @@ class PastiInformationPaginationTest extends TestCase
                 'updated_at' => now(),
             ]);
         }
+    }
+
+    private function seedPastisForReminderWithTestPasti(): void
+    {
+        $this->seedPastisForReminder();
+
+        $testPasti = Pasti::query()->create([
+            'kawasan_id' => Kawasan::query()->value('id'),
+            'name' => 'PASTI Test',
+        ]);
+
+        $testUser = User::query()->create([
+            'name' => 'Test',
+            'nama_samaran' => 'Test',
+            'email' => 'test' . uniqid() . '@example.test',
+        ]);
+        $this->attachRole($testUser, 'guru');
+
+        Guru::query()->create([
+            'user_id' => $testUser->id,
+            'pasti_id' => $testPasti->id,
+        ]);
+
+        PastiInformationRequest::query()->create([
+            'pasti_id' => $testPasti->id,
+            'requested_by' => null,
+            'requested_at' => now()->subMinutes(30),
+            'completed_by' => null,
+            'completed_at' => null,
+        ]);
+    }
+
+    private function seedPastisForRequestAllIgnoringTest(): void
+    {
+        $kawasan = Kawasan::query()->create(['name' => 'Kawasan Sik']);
+
+        $realPasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Sebenar',
+        ]);
+
+        $testPasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Test',
+        ]);
+
+        $realUser = User::query()->create([
+            'name' => 'Guru Sebenar',
+            'nama_samaran' => 'Guru Sebenar',
+            'email' => 'gurusebenar' . uniqid() . '@example.test',
+        ]);
+        $this->attachRole($realUser, 'guru');
+        Guru::query()->create([
+            'user_id' => $realUser->id,
+            'pasti_id' => $realPasti->id,
+        ]);
+
+        $testUser = User::query()->create([
+            'name' => 'Test',
+            'nama_samaran' => 'Test',
+            'email' => 'test' . uniqid() . '@example.test',
+        ]);
+        $this->attachRole($testUser, 'guru');
+        Guru::query()->create([
+            'user_id' => $testUser->id,
+            'pasti_id' => $testPasti->id,
+        ]);
+
+        PastiInformationRequest::query()->create([
+            'pasti_id' => $testPasti->id,
+            'requested_by' => null,
+            'requested_at' => now()->subHour(),
+            'completed_by' => null,
+            'completed_at' => null,
+        ]);
     }
 
     private function seedPastisForAutoThanks(): array

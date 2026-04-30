@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\N8nWebhookService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -118,6 +119,46 @@ class GuruCourseReminderTest extends TestCase
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
+    }
+
+    public function test_send_offer_ignores_test_guru(): void
+    {
+        Notification::fake();
+
+        foreach (['Test', 'Ahmad', 'Siti'] as $name) {
+            $user = User::query()->create([
+                'name' => $name,
+                'nama_samaran' => $name,
+                'email' => strtolower($name).uniqid().'@example.test',
+            ]);
+            $this->attachRole($user, 'guru');
+
+            Guru::query()->create([
+                'user_id' => $user->id,
+                'name' => $name,
+                'email' => $user->email,
+                'kursus_guru' => 'belum_kursus',
+                'is_assistant' => false,
+                'active' => true,
+            ]);
+        }
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toActionUrl')->once()->andReturn('https://example.test/kursus-guru');
+        $webhookService->shouldReceive('sendByTemplate')->once();
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $request = Request::create('/kursus-guru/send-offer', 'POST', [
+            'deadlines' => [1 => now()->addWeek()->toDateString()],
+            'notes' => [1 => 'Ujian'],
+        ]);
+        $request->setUserResolver(fn (): User => $this->masterAdmin());
+
+        $response = app(GuruCourseController::class)->sendOffer($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame(0, GuruCourseOfferResponse::query()->whereHas('guru', fn ($query) => $query->where('name', 'Test'))->count());
+        $this->assertSame(2, GuruCourseOfferResponse::query()->count());
     }
 
     public function test_responding_last_real_guru_course_request_sends_auto_thanks_even_with_test_pending(): void

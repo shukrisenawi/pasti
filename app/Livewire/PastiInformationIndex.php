@@ -65,6 +65,11 @@ class PastiInformationIndex extends Component
         $hasPendingRequests = $allAccessiblePastiIds->isNotEmpty()
             && PastiInformationRequest::query()
                 ->whereIn('pasti_id', $allAccessiblePastiIds->all())
+                ->whereDoesntHave('pasti.gurus.user', function (Builder $userQuery): void {
+                    $userQuery
+                        ->whereRaw('lower(coalesce(name, \'\')) = ?', ['test'])
+                        ->orWhereRaw('lower(coalesce(nama_samaran, \'\')) = ?', ['test']);
+                })
                 ->whereNull('completed_at')
                 ->exists();
 

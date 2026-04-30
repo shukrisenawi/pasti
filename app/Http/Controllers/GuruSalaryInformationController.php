@@ -237,7 +237,8 @@ class GuruSalaryInformationController extends Controller
         $query = Guru::query()
             ->where('is_assistant', false)
             ->where('active', true)
-            ->whereNotNull('user_id');
+            ->whereNotNull('user_id')
+            ->whereHas('user', fn (Builder $userQuery) => $this->applyNonTestUserScope($userQuery));
 
         if ($user->isOperatingAsGuru()) {
             $query->whereKey($user->guru?->id ?: 0);

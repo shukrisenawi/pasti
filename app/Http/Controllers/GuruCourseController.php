@@ -254,6 +254,7 @@ class GuruCourseController extends Controller
             ->with('user')
             ->where('active', true)
             ->whereNotNull('user_id')
+            ->whereHas('user', fn (Builder $userQuery) => $this->applyNonTestUserScope($userQuery))
             ->when(
                 $targetSemester === self::MIN_SEMESTER,
                 fn (Builder $query) => $query->where(fn (Builder $subQuery) => $subQuery
@@ -314,6 +315,12 @@ class GuruCourseController extends Controller
         $guruName = trim(mb_strtolower((string) $guru->name));
 
         return in_array('test', [$displayName, $guruName], true);
+    }
+
+    private function applyNonTestUserScope(Builder $query): Builder
+    {
+        return $query->whereRaw('lower(coalesce(name, \'\')) <> ?', ['test'])
+            ->whereRaw('lower(coalesce(nama_samaran, \'\')) <> ?', ['test']);
     }
 
     /**
