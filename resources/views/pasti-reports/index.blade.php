@@ -29,7 +29,7 @@
                             <td class="px-4 py-3 font-bold {{ $report->active ? 'text-emerald-700' : 'text-rose-700' }}">
                                 {{ $report->active ? 'GURU' : 'BERHENTI' }}
                             </td>
-                            <td class="px-4 py-3 font-semibold">{{ mb_strtoupper((string) ($report->display_name ?: '-')) }}</td>
+                            <td class="px-4 py-3 font-semibold">{{ mb_strtoupper((string) ($report->name ?: '-')) }}</td>
                             <td class="px-4 py-3">{{ mb_strtoupper((string) ($report->kad_pengenalan ?: '-')) }}</td>
                             <td class="px-4 py-3">{{ mb_strtoupper((string) ($report->phone ?: '-')) }}</td>
                             <td class="px-4 py-3">{{ filled($latestSalary?->elaun) ? 'RM ' . number_format((float) $latestSalary->elaun, 2) : '-' }}</td>

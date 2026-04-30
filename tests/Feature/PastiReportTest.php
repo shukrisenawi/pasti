@@ -117,7 +117,7 @@ class PastiReportTest extends TestCase
 
         $this->assertSame(
             ['Amina', 'Zainab', 'Badrul'],
-            collect($reports->items())->pluck('display_name')->all()
+            collect($reports->items())->pluck('name')->all()
         );
         $this->assertSame('180.00', $reports->items()[1]->latestCompletedSalaryRequest?->elaun);
         $this->assertSame('1400.00', $reports->items()[1]->latestCompletedSalaryRequest?->gaji);
@@ -148,7 +148,7 @@ class PastiReportTest extends TestCase
         $view = app(PastiReportController::class)->index();
         $reports = $view->getData()['reports'];
 
-        $this->assertSame(['Guru Nampak'], collect($reports->items())->pluck('display_name')->all());
+        $this->assertSame(['Guru Nampak'], collect($reports->items())->pluck('name')->all());
     }
 
     private function setAuthenticatedUser(User $user): void
