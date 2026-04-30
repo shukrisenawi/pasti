@@ -269,6 +269,28 @@ class GuruSalaryInformationSortingTest extends TestCase
         $this->assertSame(302, $response->getStatusCode());
     }
 
+    public function test_update_guru_salary_request_does_not_send_auto_thanks_when_other_real_guru_has_no_latest_request(): void
+    {
+        $payload = $this->seedCompletedGurusForAutoThanksWithAnotherRealGuruWithoutRequest();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldNotReceive('sendGroup2ByTemplate');
+        $webhookService->shouldNotReceive('sendByTemplate');
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $request = Request::create('/maklumat-gaji-guru/' . $payload['request']->id . '/isi', 'POST', [
+            'gaji' => 1200,
+            'elaun' => 150,
+            'elaun_lain' => 30,
+        ]);
+        $request->setUserResolver(fn (): User => $payload['user']);
+
+        $response = app(GuruSalaryInformationController::class)->update($request, $payload['request']);
+
+        $this->assertSame(302, $response->getStatusCode());
+    }
+
     public function test_guru_salary_form_requires_transit_and_other_allowance_fields(): void
     {
         $payload = $this->seedCompletedGurusForAutoThanks();
@@ -545,6 +567,30 @@ class GuruSalaryInformationSortingTest extends TestCase
             'user' => $pendingUser,
             'request' => $pendingRequest,
         ];
+    }
+
+    private function seedCompletedGurusForAutoThanksWithAnotherRealGuruWithoutRequest(): array
+    {
+        $payload = $this->seedCompletedGurusForAutoThanks();
+
+        $pastiId = Pasti::query()->value('id');
+        $user = User::query()->create([
+            'name' => 'Guru Belum Diminta',
+            'nama_samaran' => 'Guru Belum Diminta',
+            'email' => 'belumdiminta' . uniqid() . '@example.test',
+        ]);
+        $this->attachRole($user, 'guru');
+
+        Guru::query()->create([
+            'user_id' => $user->id,
+            'pasti_id' => $pastiId,
+            'name' => 'Guru Belum Diminta',
+            'email' => $user->email,
+            'is_assistant' => false,
+            'active' => true,
+        ]);
+
+        return $payload;
     }
 
     private function attachRole(User $user, string $roleName): void

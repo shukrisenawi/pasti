@@ -178,6 +178,25 @@ class GuruCourseReminderTest extends TestCase
         $this->assertSame(302, $response->getStatusCode());
     }
 
+    public function test_responding_guru_course_request_does_not_send_auto_thanks_when_another_real_latest_response_is_pending(): void
+    {
+        $payload = $this->seedLatestGuruCourseResponsesWithAnotherPendingRealGuru();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldNotReceive('sendByTemplate');
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $request = Request::create('/kursus-guru/' . $payload['response']->id . '/respond', 'POST', [
+            'decision' => 'continue',
+        ]);
+        $request->setUserResolver(fn (): User => $payload['user']);
+
+        $response = app(GuruCourseController::class)->respond($request, $payload['response']);
+
+        $this->assertSame(302, $response->getStatusCode());
+    }
+
     private function masterAdmin(): User
     {
         $user = User::query()->create([
@@ -344,6 +363,54 @@ class GuruCourseReminderTest extends TestCase
         return [
             'user' => $pendingUser,
             'response' => $pendingResponse,
+        ];
+    }
+
+    private function seedLatestGuruCourseResponsesWithAnotherPendingRealGuru(): array
+    {
+        $offer = GuruCourseOffer::query()->create([
+            'target_semester' => 1,
+            'registration_deadline' => now()->addWeek()->toDateString(),
+            'sent_by' => null,
+            'sent_at' => now(),
+            'note' => null,
+        ]);
+
+        foreach (['Ahmad', 'Siti', 'Nurul'] as $index => $name) {
+            $user = User::query()->create([
+                'name' => $name,
+                'nama_samaran' => $name,
+                'email' => strtolower($name).uniqid().'@example.test',
+            ]);
+            $this->attachRole($user, 'guru');
+
+            $guru = Guru::query()->create([
+                'user_id' => $user->id,
+                'name' => $name,
+                'email' => $user->email,
+                'kursus_guru' => 'belum_kursus',
+                'is_assistant' => false,
+                'active' => true,
+            ]);
+
+            GuruCourseOfferResponse::query()->create([
+                'guru_course_offer_id' => $offer->id,
+                'guru_id' => $guru->id,
+                'user_id' => $user->id,
+                'decision' => $name === 'Siti' ? 'continue' : null,
+                'stop_reason' => null,
+                'responded_at' => $name === 'Siti' ? now()->subMinutes(10 - $index) : null,
+            ]);
+        }
+
+        $responseUser = User::query()->where('name', 'Ahmad')->firstOrFail();
+        $response = GuruCourseOfferResponse::query()
+            ->whereHas('guru', fn ($query) => $query->where('name', 'Ahmad'))
+            ->firstOrFail();
+
+        return [
+            'user' => $responseUser,
+            'response' => $response,
         ];
     }
 

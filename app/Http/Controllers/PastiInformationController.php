@@ -179,9 +179,7 @@ class PastiInformationController extends Controller
             Notification::send($adminRecipients, new PastiInformationUpdatedNotification($pastiInformationRequest));
         }
 
-        $allPastiInfoCompleted = ! PastiInformationRequest::query()
-            ->whereNull('completed_at')
-            ->exists();
+        $allPastiInfoCompleted = ! $this->hasOutstandingRealLatestPastiInformationRequest();
 
         if ($allPastiInfoCompleted) {
             $this->n8nWebhookService->sendGroup2ByTemplate(
@@ -237,5 +235,23 @@ class PastiInformationController extends Controller
                 ->where('active', true)
             )
             ->get();
+    }
+
+    private function hasOutstandingRealLatestPastiInformationRequest(): bool
+    {
+        return Pasti::query()
+            ->whereHas('gurus.user', fn (Builder $userQuery) => $this->applyNonTestUserScope($userQuery))
+            ->where(function (Builder $query): void {
+                $query
+                    ->whereDoesntHave('latestInformationRequest')
+                    ->orWhereHas('latestInformationRequest', fn (Builder $requestQuery) => $requestQuery->whereNull('completed_at'));
+            })
+            ->exists();
+    }
+
+    private function applyNonTestUserScope(Builder $query): Builder
+    {
+        return $query->whereRaw('lower(coalesce(name, \'\')) <> ?', ['test'])
+            ->whereRaw('lower(coalesce(nama_samaran, \'\')) <> ?', ['test']);
     }
 }

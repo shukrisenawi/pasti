@@ -211,9 +211,7 @@ class GuruSalaryInformationController extends Controller
             Notification::send($adminRecipients, new GuruSalaryUpdatedNotification($guruSalaryRequest));
         }
 
-        $allGuruSalaryCompleted = ! GuruSalaryRequest::query()
-            ->whereNull('completed_at')
-            ->exists();
+        $allGuruSalaryCompleted = ! $this->hasOutstandingRealLatestGuruSalaryRequest();
 
         if ($allGuruSalaryCompleted) {
             $this->n8nWebhookService->sendGroup2ByTemplate(
@@ -271,6 +269,21 @@ class GuruSalaryInformationController extends Controller
         return in_array('test', [$displayName, $guruName], true);
     }
 
+    private function hasOutstandingRealLatestGuruSalaryRequest(): bool
+    {
+        return Guru::query()
+            ->where('is_assistant', false)
+            ->where('active', true)
+            ->whereNotNull('user_id')
+            ->whereHas('user', fn (Builder $userQuery) => $this->applyNonTestUserScope($userQuery))
+            ->where(function (Builder $query): void {
+                $query
+                    ->whereDoesntHave('latestSalaryRequest')
+                    ->orWhereHas('latestSalaryRequest', fn (Builder $requestQuery) => $requestQuery->whereNull('completed_at'));
+            })
+            ->exists();
+    }
+
     private function pendingReminderGurusForAdmin(Collection $guruIds): Collection
     {
         if ($guruIds->isEmpty()) {
@@ -288,5 +301,11 @@ class GuruSalaryInformationController extends Controller
             ->unique('id')
             ->sortBy(fn (Guru $guru) => $guru->display_name)
             ->values();
+    }
+
+    private function applyNonTestUserScope(Builder $query): Builder
+    {
+        return $query->whereRaw('lower(coalesce(name, \'\')) <> ?', ['test'])
+            ->whereRaw('lower(coalesce(nama_samaran, \'\')) <> ?', ['test']);
     }
 }

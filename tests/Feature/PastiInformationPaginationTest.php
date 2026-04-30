@@ -363,6 +363,34 @@ class PastiInformationPaginationTest extends TestCase
         $this->assertSame('Data berjaya disimpan.', $response->getSession()->get('status'));
     }
 
+    public function test_update_pasti_request_does_not_send_auto_thanks_when_other_real_pasti_has_no_latest_response(): void
+    {
+        $payload = $this->seedPastisForAutoThanksWithAnotherRealPastiWithoutRequest();
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldNotReceive('sendGroup2ByTemplate');
+        $webhookService->shouldNotReceive('sendByTemplate');
+
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $request = Request::create('/maklumat-pasti/' . $payload['request']->id . '/isi', 'POST', [
+            'jumlah_guru' => 3,
+            'jumlah_pembantu_guru' => 1,
+            'murid_lelaki_4_tahun' => 5,
+            'murid_perempuan_4_tahun' => 4,
+            'murid_lelaki_5_tahun' => 6,
+            'murid_perempuan_5_tahun' => 7,
+            'murid_lelaki_6_tahun' => 8,
+            'murid_perempuan_6_tahun' => 9,
+        ]);
+        $request->setUserResolver(fn (): User => $payload['user']);
+
+        $response = app(PastiInformationController::class)->update($request, $payload['request']);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('Data berjaya disimpan.', $response->getSession()->get('status'));
+    }
+
     private function attachRole(User $user, string $roleName): void
     {
         $roleId = (int) \DB::table('roles')->where('name', $roleName)->value('id');
@@ -512,6 +540,30 @@ class PastiInformationPaginationTest extends TestCase
             'user' => $pendingUser,
             'request' => PastiInformationRequest::query()->where('pasti_id', $pastiPending->id)->firstOrFail(),
         ];
+    }
+
+    private function seedPastisForAutoThanksWithAnotherRealPastiWithoutRequest(): array
+    {
+        $payload = $this->seedPastisForAutoThanks();
+
+        $extraPasti = Pasti::query()->create([
+            'kawasan_id' => Kawasan::query()->value('id'),
+            'name' => 'PASTI Gamma',
+        ]);
+
+        $extraUser = User::query()->create([
+            'name' => 'Guru Belum Diminta',
+            'nama_samaran' => 'Guru Belum Diminta',
+            'email' => 'belumdiminta' . uniqid() . '@example.test',
+        ]);
+        $this->attachRole($extraUser, 'guru');
+
+        Guru::query()->create([
+            'user_id' => $extraUser->id,
+            'pasti_id' => $extraPasti->id,
+        ]);
+
+        return $payload;
     }
 
     private function adminUserWithAssignedPastis(): User
