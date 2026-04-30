@@ -504,8 +504,9 @@ class ProgramParticipationApprovalTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('class="grid gap-3 md:grid-cols-2"', false)
+            ->assertSee('class="grid items-start gap-3 md:grid-cols-2"', false)
             ->assertSee('data-testid="program-complete-card"', false)
+            ->assertSee('self-start', false)
             ->assertSee('Cikgu Program')
             ->assertSee('Hadir')
             ->assertSee('Sakit.')

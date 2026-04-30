@@ -1,7 +1,7 @@
-<div class="grid gap-3 md:grid-cols-2">
+<div class="grid items-start gap-3 md:grid-cols-2">
     @forelse($participations as $participation)
-        <article data-testid="program-complete-card" class="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
-            <div class="flex items-center gap-3">
+        <article data-testid="program-complete-card" class="self-start rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
+            <div class="flex items-start gap-3">
                 <div class="shrink-0">
                     <x-avatar :guru="$participation->guru" size="h-10 w-10" rounded="rounded-xl" border="border border-slate-200" />
                 </div>
