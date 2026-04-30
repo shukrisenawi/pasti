@@ -56,6 +56,7 @@ return [
     'pasti' => 'PASTI Branches',
     'kelas' => 'Classes',
     'maklumat_pasti' => 'PASTI Information',
+    'laporan_pasti' => 'PASTI Report',
     'guru_salary_information' => 'Teacher Salary Information',
     'program_statuses' => 'Program Statuses',
     'kpi_guru' => 'Teacher KPI',

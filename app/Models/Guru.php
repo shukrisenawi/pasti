@@ -94,6 +94,13 @@ class Guru extends Model
         return $this->hasOne(GuruSalaryRequest::class)->latestOfMany();
     }
 
+    public function latestCompletedSalaryRequest(): HasOne
+    {
+        return $this->hasOne(GuruSalaryRequest::class)
+            ->whereNotNull('completed_at')
+            ->latestOfMany('completed_at');
+    }
+
     public function scopeWithLeaveDaysForYear(Builder $query, int $year, string $alias = 'leave_notices_current_year_count'): Builder
     {
         $yearStart = sprintf('%d-01-01', $year);

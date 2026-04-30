@@ -56,6 +56,7 @@ return [
     'pasti' => 'PASTI',
     'kelas' => 'Kelas',
     'maklumat_pasti' => 'Maklumat PASTI',
+    'laporan_pasti' => 'Laporan PASTI',
     'guru_salary_information' => 'Maklumat Elaun Guru',
     'program_statuses' => 'Status Program',
     'kpi_guru' => 'KPI Guru',

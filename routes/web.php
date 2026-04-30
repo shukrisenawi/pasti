@@ -20,6 +20,7 @@ use App\Http\Controllers\N8nSettingController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PastiController;
 use App\Http\Controllers\PastiInformationController;
+use App\Http\Controllers\PastiReportController;
 use App\Http\Controllers\PemarkahanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgramController;
@@ -83,6 +84,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/kewangan', [FinancialController::class, 'store'])->name('financial.store');
         Route::get('/leave-notices/{leaveNotice}/edit', [LeaveNoticeController::class, 'edit'])->name('leave-notices.edit');
         Route::put('/leave-notices/{leaveNotice}', [LeaveNoticeController::class, 'update'])->name('leave-notices.update');
+        Route::get('/laporan-pasti', [PastiReportController::class, 'index'])->name('pasti-reports.index');
     });
 
     Route::middleware('role:guru')->group(function () {
