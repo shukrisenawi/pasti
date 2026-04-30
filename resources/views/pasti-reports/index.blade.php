@@ -132,7 +132,6 @@
                             <th class="border-b border-slate-200 px-4 py-3 text-left">No HP</th>
                             <th class="border-b border-slate-200 px-4 py-3 text-right">Elaun Transit</th>
                             <th class="border-b border-slate-200 px-4 py-3 text-right">Elaun Lain</th>
-                            <th class="border-b border-slate-200 px-4 py-3 text-left">Nama PASTI</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white text-slate-700">
@@ -154,11 +153,10 @@
                                 <td class="border-b border-slate-100 px-4 py-3 font-medium">{{ mb_strtoupper((string) ($report->phone ?: '-')) }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun) ? 'RM ' . number_format((float) $latestSalary->elaun, 2) : '-' }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun_lain) ? 'RM ' . number_format((float) $latestSalary->elaun_lain, 2) : '-' }}</td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-slate-600">{{ mb_strtoupper((string) ($report->pasti?->name ?: '-')) }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-10 text-center text-slate-400">-</td>
+                                <td colspan="6" class="px-4 py-10 text-center text-slate-400">-</td>
                             </tr>
                         @endforelse
                     </tbody>

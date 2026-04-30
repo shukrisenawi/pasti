@@ -148,6 +148,7 @@ class PastiReportTest extends TestCase
         $this->assertStringContainsString('Elaun Transit', $template);
         $this->assertStringContainsString('Elaun Lain', $template);
         $this->assertStringNotContainsString('Elaun Tambahan', $template);
+        $this->assertStringNotContainsString('Nama PASTI', $template);
     }
 
     public function test_pasti_report_includes_maklumat_pasti_tab_with_latest_completed_information(): void
