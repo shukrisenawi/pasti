@@ -151,6 +151,25 @@ class PastiReportTest extends TestCase
         $this->assertSame(['Guru Nampak'], collect($reports->items())->pluck('name')->all());
     }
 
+    public function test_pasti_report_excludes_guru_named_test(): void
+    {
+        $admin = $this->createAdmin('master_admin');
+        $this->setAuthenticatedUser($admin);
+
+        $pasti = Pasti::query()->create(['name' => 'PASTI UJIAN', 'address' => 'JALAN UJIAN']);
+
+        $testGuru = $this->createGuru($pasti, 'Test', true, '900101-01-9999', '0199999999');
+        $realGuru = $this->createGuru($pasti, 'Guru Sebenar', true, '900101-01-8888', '0188888888');
+
+        $this->insertSalary($testGuru->id, now()->subDay(), 1000, 100);
+        $this->insertSalary($realGuru->id, now()->subDay(), 1100, 120);
+
+        $view = app(PastiReportController::class)->index();
+        $reports = $view->getData()['reports'];
+
+        $this->assertSame(['Guru Sebenar'], collect($reports->items())->pluck('name')->all());
+    }
+
     private function setAuthenticatedUser(User $user): void
     {
         $request = Request::create('/laporan-pasti', 'GET');

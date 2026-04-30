@@ -17,6 +17,7 @@ class PastiReportController extends Controller
 
         $reports = Guru::query()
             ->where('is_assistant', false)
+            ->whereRaw('lower(coalesce(gurus.name, \'\')) <> ?', ['test'])
             ->with(['pasti', 'latestCompletedSalaryRequest'])
             ->when(
                 $user->hasRole('admin') && ! $user->hasRole('master_admin'),
