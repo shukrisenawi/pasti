@@ -1,8 +1,8 @@
 # Graphify: `lr_pasti`
 
-Ringkasan visual untuk folder semasa (`.`) berdasarkan struktur repo Laravel ini.
+Ringkasan visual untuk folder semasa (`.`) berdasarkan struktur repo Laravel yang aktif pada 1 Mei 2026.
 
-## Peta Struktur
+## Peta Struktur Repo
 
 ```mermaid
 graph TD
@@ -17,32 +17,38 @@ graph TD
     ROOT --> TESTS["tests/"]
     ROOT --> DOCS["docs/"]
 
-    APP --> CTRL["Http/Controllers"]
-    APP --> MW["Http/Middleware"]
-    APP --> REQ["Http/Requests"]
-    APP --> LIVE["Livewire"]
-    APP --> MODELS["Models"]
-    APP --> SERVICES["Services"]
-    APP --> NOTIF["Notifications"]
-    APP --> LISTENERS["Listeners"]
-    APP --> SUPPORT["Support"]
-    APP --> VIEWCOMP["View/Components"]
-    APP --> CONSOLE["Console/Commands"]
+    APP --> HTTP["Http/"]
+    APP --> LIVE["Livewire/"]
+    APP --> MODELS["Models/"]
+    APP --> SERVICES["Services/"]
+    APP --> NOTIF["Notifications/"]
+    APP --> LISTENERS["Listeners/"]
+    APP --> SUPPORT["Support/"]
+    APP --> PROVIDERS["Providers/"]
+    APP --> CONSOLE["Console/"]
+    APP --> VIEWCOMP["View/"]
+
+    HTTP --> CTRL["Controllers/"]
+    CTRL --> APICTRL["Api/"]
+    CTRL --> AUTHCTRL["Auth/"]
+    HTTP --> MW["Middleware/"]
+    HTTP --> REQ["Requests/"]
 
     ROUTES --> WEB["web.php"]
     ROUTES --> API["api.php"]
     ROUTES --> AUTH["auth.php"]
     ROUTES --> AI["ai.php"]
-    ROUTES --> RCONSOLE["console.php"]
+    ROUTES --> CLI["console.php"]
 
     RES --> CSS["css/app.css"]
     RES --> JS["js/app.js"]
-    RES --> BLADE["views/"]
+    RES --> VIEWS["views/"]
 
-    BLADE --> LAYOUTS["layouts/"]
-    BLADE --> AUTHV["auth/"]
-    BLADE --> MODULES["modul-modul operasi"]
-    BLADE --> LWV["livewire/"]
+    VIEWS --> LAYOUTS["layouts/"]
+    VIEWS --> AUTHV["auth/"]
+    VIEWS --> COMPONENTS["components/"]
+    VIEWS --> LIVEV["livewire/"]
+    VIEWS --> OPS["modul operasi domain"]
 
     DB --> MIG["migrations/"]
     DB --> FACT["factories/"]
@@ -52,8 +58,40 @@ graph TD
     PUBLIC --> IMAGES["images/"]
     PUBLIC --> UPLOADS["uploads/"]
 
-    DOCS --> SPECS["superpowers/specs/"]
-    DOCS --> PLANS["superpowers/plans/"]
+    DOCS --> GRAPH["graphify-lr-pasti.md"]
+    DOCS --> SUPER["superpowers/"]
+```
+
+## Peta Domain UI
+
+```mermaid
+graph TD
+    VIEWS["resources/views/"] --> ADMIN["admin-users/"]
+    VIEWS --> AJK["ajk-program/"]
+    VIEWS --> ANN["announcements/"]
+    VIEWS --> CLAIMS["claims/"]
+    VIEWS --> DIRFILES["directory-files/"]
+    VIEWS --> FIN["financial/"]
+    VIEWS --> GDIR["guru-directory/"]
+    VIEWS --> GURU["gurus/"]
+    VIEWS --> GCOURSE["guru-course/"]
+    VIEWS --> GSALARY["guru-salary-information/"]
+    VIEWS --> KAWASAN["kawasan/"]
+    VIEWS --> KELAS["kelas/"]
+    VIEWS --> KPI["kpi/"]
+    VIEWS --> LEAVE["leave-notices/"]
+    VIEWS --> MSG["messages/"]
+    VIEWS --> MCP["mcp/"]
+    VIEWS --> N8N["n8n-settings/"]
+    VIEWS --> PASTI["pasti/"]
+    VIEWS --> PASTIINFO["pasti-information/"]
+    VIEWS --> PREPORT["pasti-reports/"]
+    VIEWS --> PMARK["pemarkahan/"]
+    VIEWS --> PROFILE["profile/"]
+    VIEWS --> PROGRAM["programs/"]
+    VIEWS --> PSTAT["program-statuses/"]
+    VIEWS --> STATIC["privacy-policy.blade.php"]
+    VIEWS --> HOME["welcome.blade.php"]
 ```
 
 ## Peta Aliran Aplikasi
@@ -61,43 +99,48 @@ graph TD
 ```mermaid
 graph LR
     USER["Pengguna"] --> ROUTE["routes/*.php"]
-    ROUTE --> CTRL["Controllers"]
+    ROUTE --> CTRL["HTTP Controllers"]
     ROUTE --> LIVE["Livewire Components"]
 
     CTRL --> REQ["Form Requests"]
     CTRL --> MW["Middleware"]
     CTRL --> SERVICES["Services"]
     CTRL --> MODELS["Models"]
-    CTRL --> VIEWS["Blade Views"]
+    CTRL --> BLADE["Blade Views"]
 
     LIVE --> MODELS
-    LIVE --> VIEWS
+    LIVE --> BLADE
 
     SERVICES --> MODELS
     MODELS --> DB["Database"]
 
     MODELS --> NOTIF["Notifications"]
-    NOTIF --> LISTENERS["Listeners"]
-    LISTENERS --> FCM["FCM / Firebase"]
+    NOTIF --> LISTENER["Listeners"]
+    LISTENER --> FCM["Firebase / FCM"]
 
-    APICTRL["API Controllers"] --> SERVICES
+    ROUTE --> APICTRL["API endpoints"]
+    ROUTE --> AIROUTE["AI / MCP routes"]
+    APICTRL --> SERVICES
     APICTRL --> MODELS
-    ROUTE --> APICTRL
+    AIROUTE --> SERVICES
 ```
 
-## Modul Utama Yang Kelihatan
+## Modul Utama Yang Dapat Dikenal Pasti
 
-- Pengurusan pengguna dan profil: `AdminUserController`, `ProfileController`, `User`, `Guru`
-- Operasi PASTI: `PastiController`, `PastiInformationController`, `PastiReportController`
-- Program dan penyertaan: `ProgramController`, `ProgramParticipationController`, `ProgramStatusController`
-- Kewangan dan tuntutan: `FinancialController`, `ClaimController`, `GuruSalaryInformationController`
-- Komunikasi dan notifikasi: `AdminMessageController`, `NotificationController`, `FcmNotificationService`
-- Integrasi luaran: `N8nSettingController`, `N8nWebhookService`, API controller berkaitan `n8n`
-- Penilaian dan KPI: `PemarkahanController`, `KpiController`, `KpiCalculationService`, `RecalculateKpiSnapshots`
+- Pengurusan pengguna dan akses: `AdminUserController`, `ProfileController`, `ImpersonationController`, model `User`
+- Operasi guru dan kelas: `GuruController`, `GuruCourseController`, `GuruSalaryInformationController`, `KelasController`, model `Guru`, `Kelas`
+- Operasi PASTI: `PastiController`, `PastiInformationController`, `PastiReportController`, model `Pasti`, `PastiInformationRequest`
+- Program dan penyertaan: `ProgramController`, `ProgramParticipationController`, `ProgramStatusController`, `AjkProgramController`
+- Kewangan dan tuntutan: `FinancialController`, `ClaimController`, model `FinancialTransaction`, `Claim`, `GuruSalaryRequest`
+- Direktori dan fail: `DirectoryFileController`, model `DirectoryFile`, paparan `resources/views/directory-files/` dan `resources/views/guru-directory/`
+- Penilaian dan KPI: `PemarkahanController`, `KpiController`, `KpiCalculationService`, model `KpiSnapshot`, `PastiScore`
+- Komunikasi dan notifikasi: `AdminMessageController`, `AnnouncementController`, `NotificationController`, `FcmNotificationService`
+- Integrasi luaran dan automasi: `N8nSettingController`, `N8nWebhookService`, `FirebaseAccessTokenService`, konfigurasi `config/mcp.php`
 
-## Nota Ringkas
+## Ringkasan Pemerhatian
 
-- Ini ialah aplikasi Laravel dengan gabungan `Blade`, `Livewire`, dan aset `Vite`.
-- Folder `resources/views/` memegang banyak modul domain, menunjukkan aplikasi ini berorientasikan operasi dalaman.
-- Notifikasi bergerak melalui model/notifikasi/listener dan disambungkan ke Firebase FCM.
-- Kehadiran `routes/ai.php` dan `config/mcp.php` menunjukkan ada integrasi AI/MCP dalam repo ini.
+- Aplikasi ini ialah projek Laravel berasaskan `Blade`, dengan `Livewire` untuk komponen interaktif dan `Vite` untuk binaan aset hadapan.
+- Struktur `resources/views/` menunjukkan repo ini disusun mengikut domain operasi dalaman, bukan sekadar lapisan teknikal.
+- Folder `app/Http/Controllers/` dibahagi lagi kepada aliran web biasa, API mudah alih, dan auth bawaan Laravel.
+- Laluan `routes/ai.php` bersama paparan `resources/views/mcp/` dan konfigurasi `config/mcp.php` menunjukkan ada integrasi AI atau MCP yang aktif.
+- Sistem notifikasi nampak bergerak melalui model token, notifikasi, listener, dan servis Firebase/FCM.
