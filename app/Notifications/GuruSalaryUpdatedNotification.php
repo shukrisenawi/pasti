@@ -37,7 +37,7 @@ class GuruSalaryUpdatedNotification extends Notification
             'pasti_name' => $pastiName,
             'notification_title' => 'Maklumat elaun guru dikemaskini',
             'notification_meta' => $guruName . ' · ' . $pastiName,
-            'notification_message' => 'Maklumat elaun dan elaun tambahan semasa telah dihantar.',
+            'notification_message' => 'Maklumat elaun, elaun transit dan elaun lain semasa telah dihantar.',
             'url' => route('guru-salary-information.index'),
         ];
     }

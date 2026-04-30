@@ -34,8 +34,8 @@ class GuruSalaryRequestedNotification extends Notification
             'guru_id' => $this->salaryRequest->guru_id,
             'pasti_name' => $pastiName,
             'notification_title' => 'Permintaan maklumat elaun guru',
-            'notification_meta' => $pastiName . ' | Kemas kini elaun dan elaun tambahan semasa',
-            'notification_message' => 'Sila isi maklumat elaun dan elaun tambahan semasa anda.',
+            'notification_meta' => $pastiName . ' | Kemas kini elaun, elaun transit dan elaun lain semasa',
+            'notification_message' => 'Sila isi maklumat elaun, elaun transit dan elaun lain semasa anda.',
             'url' => route('guru-salary-information.index'),
         ];
     }

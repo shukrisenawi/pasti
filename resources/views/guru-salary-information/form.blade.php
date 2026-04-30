@@ -18,6 +18,14 @@
                     <label class="label-base">{{ __('messages.elaun') }} <span class="text-red-600">*</span></label>
                     <input type="number" step="0.01" min="0" name="elaun" value="{{ old('elaun', $salaryRequest->elaun ?? '') }}" class="input-base" required>
                 </div>
+                <div>
+                    <label class="label-base">{{ __('messages.elaun_transit') }} <span class="text-red-600">*</span></label>
+                    <input type="number" step="0.01" min="0" name="elaun_transit" value="{{ old('elaun_transit', $salaryRequest->elaun_transit ?? '') }}" class="input-base" required>
+                </div>
+                <div>
+                    <label class="label-base">{{ __('messages.elaun_lain') }} <span class="text-red-600">*</span></label>
+                    <input type="number" step="0.01" min="0" name="elaun_lain" value="{{ old('elaun_lain', $salaryRequest->elaun_lain ?? '') }}" class="input-base" required>
+                </div>
             </div>
 
             <div class="flex gap-2">

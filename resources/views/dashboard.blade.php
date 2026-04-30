@@ -140,7 +140,7 @@
                         <div class="rounded-2xl border border-sky-200 bg-white p-4 shadow-sm">
                             <p class="text-xs font-bold uppercase tracking-[0.16em] text-sky-700">Maklumat Elaun</p>
                             <h4 class="mt-2 text-lg font-black text-slate-900">Isi maklumat elaun</h4>
-                            <p class="mt-2 text-sm leading-6 text-slate-600">Kemaskini maklumat gaji dan elaun semasa anda supaya rekod kewangan guru sentiasa terkini.</p>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">Kemaskini maklumat gaji, elaun, elaun transit dan elaun lain semasa anda supaya rekod kewangan guru sentiasa terkini.</p>
                             <a href="{{ route('guru-salary-information.edit', $pendingGuruSalaryRequest) }}" class="btn mt-4 rounded-2xl border-none bg-sky-600 px-4 text-sm font-bold text-white hover:bg-sky-700 shadow-lg shadow-sky-200/50">
                                 Isi sekarang
                             </a>

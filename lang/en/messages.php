@@ -153,6 +153,8 @@ return [
     'request_latest_guru_salary_info_all' => 'Request Latest Salary Information (All Teachers)',
     'fill_pasti_info' => 'Fill PASTI Information',
     'fill_guru_salary_info' => 'Fill Teacher Salary Information',
+    'elaun_transit' => 'Transit Allowance',
+    'elaun_lain' => 'Other Allowance',
     'update_pasti_info' => 'Update PASTI Information',
     'gaji' => 'Salary',
     'elaun' => 'Allowance',

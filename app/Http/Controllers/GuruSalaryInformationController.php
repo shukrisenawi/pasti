@@ -181,6 +181,8 @@ class GuruSalaryInformationController extends Controller
         $data = $request->validate([
             'gaji' => ['required', 'numeric', 'min:0'],
             'elaun' => ['required', 'numeric', 'min:0'],
+            'elaun_transit' => ['required', 'numeric', 'min:0'],
+            'elaun_lain' => ['required', 'numeric', 'min:0'],
         ]);
 
         $affectedRows = GuruSalaryRequest::query()

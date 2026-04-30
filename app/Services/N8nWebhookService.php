@@ -36,7 +36,7 @@ class N8nWebhookService
     public const KEY_TEXT_ANNOUNCEMENT_ALL_GURU = 'n8n_text_announcement_all_guru';
 
     private const DEFAULT_TEXT_PROGRAM_CREATED = '{tajuk} akan diadakan pada {tarikh} ({hari}){masa}{lokasi}.';
-    private const DEFAULT_TEXT_SALARY_REQUEST = 'Permintaan kemaskini elaun guru telah dihantar pada {tarikh}. Sila kemaskini elaun dan elaun tambahan semasa.';
+    private const DEFAULT_TEXT_SALARY_REQUEST = 'Permintaan kemaskini elaun guru telah dihantar pada {tarikh}. Sila kemaskini elaun, elaun transit dan elaun lain semasa.';
     private const DEFAULT_TEXT_PASTI_INFO_REQUEST = 'Permintaan kemaskini maklumat PASTI telah dihantar pada {tarikh}. Sila lengkapkan maklumat terkini PASTI.';
     private const DEFAULT_TEXT_PASTI_INFO_RESPONSE_REMINDER = "Sila hantar respon maklumat PASTI segera.\n\nPASTI yang belum respon:\n{senarai_pasti}";
     private const DEFAULT_TEXT_GURU_COURSE_OFFER = 'Permintaan sambung Kursus Guru ke Semester {semester} telah dihantar. Tarikh akhir pendaftaran: {tarikh_akhir}.{nota}';

@@ -15,6 +15,8 @@ class GuruSalaryRequest extends Model
         'completed_at',
         'gaji',
         'elaun',
+        'elaun_transit',
+        'elaun_lain',
     ];
 
     protected function casts(): array
@@ -24,6 +26,8 @@ class GuruSalaryRequest extends Model
             'completed_at' => 'datetime',
             'gaji' => 'decimal:2',
             'elaun' => 'decimal:2',
+            'elaun_transit' => 'decimal:2',
+            'elaun_lain' => 'decimal:2',
         ];
     }
 
@@ -42,4 +46,3 @@ class GuruSalaryRequest extends Model
         return $this->belongsTo(User::class, 'completed_by');
     }
 }
-
