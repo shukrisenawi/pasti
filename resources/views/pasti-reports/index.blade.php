@@ -20,7 +20,6 @@
                         <th class="px-4 py-3 text-left">Elaun</th>
                         <th class="px-4 py-3 text-left">Elaun Tambahan</th>
                         <th class="px-4 py-3 text-left">Nama PASTI</th>
-                        <th class="px-4 py-3 text-left">Alamat</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white text-slate-700">
@@ -36,11 +35,10 @@
                             <td class="px-4 py-3">{{ filled($latestSalary?->elaun) ? 'RM ' . number_format((float) $latestSalary->elaun, 2) : '-' }}</td>
                             <td class="px-4 py-3">{{ filled($latestSalary?->gaji) ? 'RM ' . number_format((float) $latestSalary->gaji, 2) : '-' }}</td>
                             <td class="px-4 py-3">{{ mb_strtoupper((string) ($report->pasti?->name ?: '-')) }}</td>
-                            <td class="px-4 py-3">{{ mb_strtoupper((string) ($report->pasti?->address ?: '-')) }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-8 text-center text-slate-500">-</td>
+                            <td colspan="7" class="px-4 py-8 text-center text-slate-500">-</td>
                         </tr>
                     @endforelse
                 </tbody>
