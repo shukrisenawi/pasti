@@ -484,6 +484,57 @@ class ProgramParticipationApprovalTest extends TestCase
             });
     }
 
+    public function test_program_show_page_excludes_guru_named_test_from_display_lists(): void
+    {
+        Notification::fake();
+
+        [$program, , $absentStatus, $admin, $latestGuruUser] = $this->createProgramFixtures(
+            withSecondGuru: true,
+            secondGuruHasStatus: false
+        );
+
+        $testUser = User::query()->create([
+            'name' => 'Test',
+            'nama_samaran' => 'Test',
+            'email' => 'test-guru-program@example.test',
+            'avatar_path' => 'avatars/test.jpg',
+        ]);
+        $this->attachRole($testUser, 'guru');
+
+        $testGuru = Guru::query()->create([
+            'user_id' => $testUser->id,
+            'pasti_id' => $latestGuruUser->guru->pasti_id,
+            'active' => true,
+        ]);
+
+        \DB::table('program_teacher')->insert([
+            'program_id' => $program->id,
+            'guru_id' => $testGuru->id,
+            'program_status_id' => $absentStatus->id,
+            'absence_reason' => 'Sakit.',
+            'absence_reason_status' => 'approved',
+            'updated_by' => $admin->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertDontSee('>Test<', false)
+            ->assertViewHas('pendingResponseParticipations', function ($participations) use ($latestGuruUser): bool {
+                return $participations->count() === 1
+                    && $participations->first()->guru->display_name === $latestGuruUser->display_name;
+            })
+            ->assertViewHas('adminCompletedParticipations', function ($participations): bool {
+                $names = $participations->pluck('guru.display_name')->sort()->values()->all();
+
+                return $names === ['Cikgu Program'];
+            });
+    }
+
     public function test_program_menu_badge_uses_pending_absence_reason_approval_count(): void
     {
         Notification::fake();

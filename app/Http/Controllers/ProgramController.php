@@ -126,10 +126,11 @@ class ProgramController extends Controller
         $allParticipations = $program->participations->sortByDesc(
             fn ($participation) => optional($participation->updated_at)->getTimestamp() ?? 0
         )->values();
-        $submittedParticipations = $allParticipations
+        $displayParticipations = $this->displayParticipations($allParticipations);
+        $submittedParticipations = $displayParticipations
             ->filter(fn ($participation) => filled($participation->program_status_id))
             ->values();
-        $pendingResponseParticipations = $allParticipations
+        $pendingResponseParticipations = $displayParticipations
             ->filter(fn ($participation) => blank($participation->program_status_id))
             ->values();
         $pendingReminderGurus = $this->pendingReminderGurusForProgram($program);
@@ -137,10 +138,10 @@ class ProgramController extends Controller
         $currentParticipation = $operatingGuruIds !== []
             ? $allParticipations->first(fn ($participation) => in_array((int) $participation->guru_id, $operatingGuruIds, true))
             : null;
-        $adminPendingReviewParticipations = $allParticipations
+        $adminPendingReviewParticipations = $displayParticipations
             ->filter(fn ($participation) => $participation->absence_reason_status === ProgramParticipationService::ABSENCE_REASON_PENDING)
             ->values();
-        $adminCompletedParticipations = $allParticipations
+        $adminCompletedParticipations = $displayParticipations
             ->filter(function ($participation) {
                 if (blank($participation->program_status_id)) {
                     return false;
@@ -154,7 +155,7 @@ class ProgramController extends Controller
 
         return view('programs.show', [
             'program' => $program,
-            'allParticipations' => $allParticipations,
+            'allParticipations' => $displayParticipations,
             'submittedParticipations' => $submittedParticipations,
             'pendingResponseParticipations' => $pendingResponseParticipations,
             'statuses' => ProgramStatus::query()
@@ -418,6 +419,17 @@ class ProgramController extends Controller
             ->reject(fn (Guru $guru): bool => $this->isTestReminderAccount($guru))
             ->unique('id')
             ->sortBy(fn (Guru $guru) => $guru->display_name)
+            ->values();
+    }
+
+    private function displayParticipations(Collection $participations): Collection
+    {
+        return $participations
+            ->reject(function ($participation): bool {
+                $guru = $participation->guru;
+
+                return $guru instanceof Guru && $this->isTestReminderAccount($guru);
+            })
             ->values();
     }
 
