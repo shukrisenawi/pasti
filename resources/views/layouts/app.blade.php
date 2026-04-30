@@ -257,11 +257,11 @@
                             <span>{{ __('messages.maklumat_pasti') }}</span>
                             @if($drawerPastiInfoPendingCount > 0)<span data-testid="menu-pasti-badge" class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerPastiInfoPendingCount > 99 ? '99+' : $drawerPastiInfoPendingCount }}</span>@endif
                         </a>
-                        <a href="{{ route('pasti-reports.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-reports.*') ? 'menu-link-active' : '' }}">{{ __('messages.laporan_pasti') }}</a>
                         <a href="{{ route('guru-salary-information.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.guru_salary_information') }}</span>
                             @if($drawerGuruSalaryPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerGuruSalaryPendingCount > 99 ? '99+' : $drawerGuruSalaryPendingCount }}</span>@endif
                         </a>
+                        <a href="{{ route('pasti-reports.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-reports.*') ? 'menu-link-active' : '' }}">{{ __('messages.laporan_pasti') }}</a>
                         <a href="{{ route('kursus-guru.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                         <a href="{{ route('programs.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                             <span>{{ __('messages.programs') }}</span>
@@ -615,13 +615,13 @@
                                     <span data-testid="menu-pasti-badge" class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuPastiInfoPendingCount ?? 0) > 99 ? '99+' : ($menuPastiInfoPendingCount ?? 0) }}</span>
                                 @endif
                             </a>
-                            <a href="{{ route('pasti-reports.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-reports.*') ? 'menu-link-active' : '' }}">{{ __('messages.laporan_pasti') }}</a>
                             <a href="{{ route('guru-salary-information.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('guru-salary-information.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
                                 <span>{{ __('messages.guru_salary_information') }}</span>
                                 @if(($menuGuruSalaryPendingCount ?? 0) > 0)
                                     <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuGuruSalaryPendingCount ?? 0) > 99 ? '99+' : ($menuGuruSalaryPendingCount ?? 0) }}</span>
                                 @endif
                             </a>
+                            <a href="{{ route('pasti-reports.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-reports.*') ? 'menu-link-active' : '' }}">{{ __('messages.laporan_pasti') }}</a>
                             <a href="{{ route('kursus-guru.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                             
                             <a href="{{ route('programs.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
