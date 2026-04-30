@@ -250,9 +250,8 @@
                 </div>
 
                 <div x-show="activeAdminTab === 'complete'" x-cloak>
-                    @include('programs.partials.participation-cards', [
+                    @include('programs.partials.complete-participation-cards', [
                         'participations' => $adminCompletedParticipations,
-                        'hideActions' => true,
                         'emptyMessage' => 'Tiada rekod complete untuk dipaparkan.',
                     ])
                 </div>

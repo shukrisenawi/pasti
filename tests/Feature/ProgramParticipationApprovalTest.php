@@ -484,6 +484,33 @@ class ProgramParticipationApprovalTest extends TestCase
             });
     }
 
+    public function test_program_show_page_for_admin_uses_compact_complete_cards(): void
+    {
+        Notification::fake();
+
+        [$program, , $absentStatus, $admin, $latestGuruUser] = $this->createProgramFixtures(withSecondGuru: true);
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $latestGuruUser->guru->id)
+            ->update([
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Sakit.',
+                'absence_reason_status' => 'approved',
+            ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('data-testid="program-complete-card"', false)
+            ->assertSee('Cikgu Program')
+            ->assertSee('Hadir')
+            ->assertSee('Sakit.')
+            ->assertDontSee('Semakan Alasan');
+    }
+
     public function test_program_show_page_excludes_guru_named_test_from_display_lists(): void
     {
         Notification::fake();
