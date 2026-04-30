@@ -378,6 +378,66 @@ class AdminGuruProgramAccessTest extends TestCase
         ]);
     }
 
+    public function test_guru_program_menu_uses_distinct_card_design_for_pending_and_responded_programs(): void
+    {
+        [$admin, $guru] = $this->seedAdminWithGuruProfileByEmailOnly('program-card-guru@example.test');
+
+        $pendingProgram = Program::query()->create([
+            'title' => 'Program Belum Respon',
+            'program_date' => now()->addDay()->toDateString(),
+            'location' => 'Dewan Pending',
+            'created_by' => $admin->id,
+        ]);
+
+        $respondedProgram = Program::query()->create([
+            'title' => 'Program Sudah Respon',
+            'program_date' => now()->addDays(2)->toDateString(),
+            'location' => 'Dewan Respond',
+            'created_by' => $admin->id,
+        ]);
+
+        $hadirStatusId = (int) ProgramStatus::query()->where('code', 'HADIR')->value('id');
+
+        \DB::table('program_teacher')->insert([
+            [
+                'program_id' => $pendingProgram->id,
+                'guru_id' => $guru->id,
+                'program_status_id' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'program_id' => $respondedProgram->id,
+                'guru_id' => $guru->id,
+                'program_status_id' => $hadirStatusId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $session = app('session')->driver();
+        $session->start();
+        $session->put([
+            'login_using_admin_role' => true,
+            'active_role_mode' => 'guru',
+        ]);
+
+        $request = Request::create('/programs', 'GET');
+        $request->setLaravelSession($session);
+        app()->instance('request', $request);
+        auth()->setUser($admin->fresh());
+
+        $view = app(ProgramIndex::class)->render();
+        $html = $view->render();
+
+        $this->assertStringContainsString('data-testid="program-card-pending-response"', $html);
+        $this->assertStringContainsString('data-testid="program-card-responded"', $html);
+        $this->assertStringContainsString('Perlu Respon', $html);
+        $this->assertStringContainsString('Sudah Respon', $html);
+        $this->assertStringContainsString('Program Belum Respon', $html);
+        $this->assertStringContainsString('Program Sudah Respon', $html);
+    }
+
     /**
      * @return array{0: User, 1: Guru}
      */

@@ -33,6 +33,13 @@ class ProgramIndex extends Component
             ])
             ->when(
                 $this->isGuruOnly($user),
+                fn (Builder $q) => $q->with([
+                    'participations' => fn ($participationQuery) => $participationQuery
+                        ->whereIn('guru_id', $guruIds),
+                ])
+            )
+            ->when(
+                $this->isGuruOnly($user),
                 fn (Builder $q) => $q->where(function (Builder $guruScope) use ($guruIds): void {
                     $guruScope
                         ->whereHas('gurus', fn ($gq) => $gq->whereIn('gurus.id', $guruIds))
