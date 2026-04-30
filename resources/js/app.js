@@ -102,8 +102,65 @@ function initRequiredAsteriskSync() {
     });
 }
 
+function formatKadPengenalan(value) {
+    const digits = value.replace(/\D/g, '').slice(0, 12);
+    const first = digits.slice(0, 6);
+    const second = digits.slice(6, 8);
+    const third = digits.slice(8, 12);
+
+    return [first, second, third].filter(Boolean).join('-');
+}
+
+function syncMaskedInputs() {
+    document.querySelectorAll('input[data-mask="kad-pengenalan"]').forEach((field) => {
+        field.value = formatKadPengenalan(field.value);
+
+        if (field.dataset.maskBound === 'true') {
+            return;
+        }
+
+        field.addEventListener('input', () => {
+            field.value = formatKadPengenalan(field.value);
+        });
+
+        field.dataset.maskBound = 'true';
+    });
+}
+
+const queueMaskedInputSync = (() => {
+    let scheduled = false;
+
+    return () => {
+        if (scheduled) return;
+        scheduled = true;
+
+        requestAnimationFrame(() => {
+            scheduled = false;
+            syncMaskedInputs();
+        });
+    };
+})();
+
+function initMaskedInputSync() {
+    queueMaskedInputSync();
+    document.addEventListener('livewire:navigated', queueMaskedInputSync);
+
+    const observer = new MutationObserver(() => {
+        queueMaskedInputSync();
+    });
+
+    observer.observe(document.body, {
+        subtree: true,
+        childList: true,
+    });
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initRequiredAsteriskSync, { once: true });
+    document.addEventListener('DOMContentLoaded', () => {
+        initRequiredAsteriskSync();
+        initMaskedInputSync();
+    }, { once: true });
 } else {
     initRequiredAsteriskSync();
+    initMaskedInputSync();
 }

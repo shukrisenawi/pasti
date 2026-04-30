@@ -60,7 +60,7 @@
 
             <div>
                 <x-input-label for="kad_pengenalan" :value="__('messages.kad_pengenalan')" />
-                <x-text-input id="kad_pengenalan" name="kad_pengenalan" type="text" class="mt-1 block w-full" :value="old('kad_pengenalan', $user->guru?->kad_pengenalan)" required />
+                <x-text-input id="kad_pengenalan" name="kad_pengenalan" type="text" class="mt-1 block w-full" :value="old('kad_pengenalan', $user->guru?->kad_pengenalan)" required data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####" />
                 <x-input-error class="mt-2" :messages="$errors->get('kad_pengenalan')" />
             </div>
 

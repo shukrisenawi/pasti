@@ -65,7 +65,7 @@
                 </div>
                 <div x-show="isAssistant === 0" x-cloak>
                     <label class="label-base">{{ __('messages.kad_pengenalan') }}</label>
-                    <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $guru->kad_pengenalan) }}" :required="isAssistant === 0">
+                    <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $guru->kad_pengenalan) }}" :required="isAssistant === 0" data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####">
                 </div>
                 <div>
                     <label class="label-base">{{ __('messages.marital_status') }}</label>
@@ -125,4 +125,3 @@
         </form>
     </div>
 </x-app-layout>
-
