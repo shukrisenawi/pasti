@@ -130,6 +130,7 @@
                             <th class="border-b border-slate-200 px-4 py-3 text-left">Nama Guru</th>
                             <th class="border-b border-slate-200 px-4 py-3 text-left">No Kad Pengenalan</th>
                             <th class="border-b border-slate-200 px-4 py-3 text-left">No HP</th>
+                            <th class="border-b border-slate-200 px-4 py-3 text-right">Elaun</th>
                             <th class="border-b border-slate-200 px-4 py-3 text-right">Elaun Transit</th>
                             <th class="border-b border-slate-200 px-4 py-3 text-right">Elaun Lain</th>
                         </tr>
@@ -152,11 +153,12 @@
                                 <td class="border-b border-slate-100 px-4 py-3 font-medium">{{ mb_strtoupper((string) ($report->kad_pengenalan ?: '-')) }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 font-medium">{{ mb_strtoupper((string) ($report->phone ?: '-')) }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun) ? 'RM ' . number_format((float) $latestSalary->elaun, 2) : '-' }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun_transit) ? 'RM ' . number_format((float) $latestSalary->elaun_transit, 2) : '-' }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun_lain) ? 'RM ' . number_format((float) $latestSalary->elaun_lain, 2) : '-' }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-4 py-10 text-center text-slate-400">-</td>
+                                <td colspan="7" class="px-4 py-10 text-center text-slate-400">-</td>
                             </tr>
                         @endforelse
                     </tbody>

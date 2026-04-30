@@ -74,6 +74,7 @@ class PastiReportTest extends TestCase
             $table->timestamp('completed_at')->nullable();
             $table->decimal('gaji', 10, 2)->nullable();
             $table->decimal('elaun', 10, 2)->nullable();
+            $table->decimal('elaun_transit', 10, 2)->nullable();
             $table->decimal('elaun_lain', 10, 2)->nullable();
             $table->timestamps();
         });
@@ -145,6 +146,7 @@ class PastiReportTest extends TestCase
         $this->assertSame('35.00', $reports->items()[1]->latestCompletedSalaryRequest?->elaun_lain);
         $this->assertFalse((bool) $reports->items()[1]->active);
         $this->assertIsString($template);
+        $this->assertStringContainsString('Elaun</th>', $template);
         $this->assertStringContainsString('Elaun Transit', $template);
         $this->assertStringContainsString('Elaun Lain', $template);
         $this->assertStringNotContainsString('Elaun Tambahan', $template);
