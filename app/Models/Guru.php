@@ -31,6 +31,9 @@ class Guru extends Model
         'email',
         'avatar_path',
         'kad_pengenalan',
+        'elaun',
+        'elaun_transit',
+        'elaun_lain',
         'is_assistant',
         'phone',
         'marital_status',
@@ -44,6 +47,9 @@ class Guru extends Model
     {
         return [
             'joined_at' => 'date',
+            'elaun' => 'decimal:2',
+            'elaun_transit' => 'decimal:2',
+            'elaun_lain' => 'decimal:2',
             'active' => 'boolean',
             'is_assistant' => 'boolean',
             'terima_anugerah' => 'boolean',

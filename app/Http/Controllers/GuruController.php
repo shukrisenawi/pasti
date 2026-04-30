@@ -121,6 +121,7 @@ class GuruController extends Controller
         $passwordRules = ['nullable', 'string', 'min:8', 'confirmed'];
         $avatarRules = ['image', 'mimes:jpg,jpeg,png,webp', 'max:7168'];
         $kadPengenalanRules = ['required', 'string', 'max:30'];
+        $assistantAllowanceRules = ['nullable', 'numeric', 'min:0'];
 
         if ($isAssistant) {
             $emailRules[] = 'nullable';
@@ -148,6 +149,9 @@ class GuruController extends Controller
             'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'phone' => ['nullable', 'string', 'max:30'],
             'kad_pengenalan' => $kadPengenalanRules,
+            'elaun' => $assistantAllowanceRules,
+            'elaun_transit' => $assistantAllowanceRules,
+            'elaun_lain' => $assistantAllowanceRules,
             'joined_at' => ['nullable', 'date'],
             'tarikh_lahir' => ['nullable', 'date'],
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
@@ -191,6 +195,9 @@ class GuruController extends Controller
             'email' => $data['email'] ?? null,
             'avatar_path' => null,
             'kad_pengenalan' => $data['kad_pengenalan'] ?? null,
+            'elaun' => $isAssistant ? ($data['elaun'] ?? null) : null,
+            'elaun_transit' => $isAssistant ? ($data['elaun_transit'] ?? null) : null,
+            'elaun_lain' => $isAssistant ? ($data['elaun_lain'] ?? null) : null,
             'is_assistant' => $isAssistant,
             'phone' => null,
             'joined_at' => null,
@@ -246,6 +253,7 @@ class GuruController extends Controller
         $emailRules = ['email', 'max:255'];
         $passwordRules = ['nullable', 'string', 'min:8', 'confirmed'];
         $kadPengenalanRules = ['required', 'string', 'max:30'];
+        $assistantAllowanceRules = ['nullable', 'numeric', 'min:0'];
 
         if ($isAssistant) {
             $emailRules[] = 'nullable';
@@ -272,6 +280,9 @@ class GuruController extends Controller
             'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'phone' => ['nullable', 'string', 'max:30'],
             'kad_pengenalan' => $kadPengenalanRules,
+            'elaun' => $assistantAllowanceRules,
+            'elaun_transit' => $assistantAllowanceRules,
+            'elaun_lain' => $assistantAllowanceRules,
             'joined_at' => ['nullable', 'date'],
             'tarikh_lahir' => ['nullable', 'date'],
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
@@ -354,6 +365,9 @@ class GuruController extends Controller
             'is_assistant' => $isAssistant,
             'avatar_path' => $isAssistant ? $users_guru->avatar_path : null,
             'kad_pengenalan' => $data['kad_pengenalan'] ?? null,
+            'elaun' => $isAssistant ? ($data['elaun'] ?? null) : null,
+            'elaun_transit' => $isAssistant ? ($data['elaun_transit'] ?? null) : null,
+            'elaun_lain' => $isAssistant ? ($data['elaun_lain'] ?? null) : null,
             'phone' => $data['phone'] ?? null,
             'joined_at' => $data['joined_at'] ?? null,
             'active' => (bool) ($data['active'] ?? false),
@@ -502,6 +516,9 @@ class GuruController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'kad_pengenalan' => ['required', 'string', 'max:30'],
+            'elaun' => ['nullable', 'numeric', 'min:0'],
+            'elaun_transit' => ['nullable', 'numeric', 'min:0'],
+            'elaun_lain' => ['nullable', 'numeric', 'min:0'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
@@ -513,6 +530,9 @@ class GuruController extends Controller
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
             'kad_pengenalan' => $data['kad_pengenalan'],
+            'elaun' => $data['elaun'] ?? null,
+            'elaun_transit' => $data['elaun_transit'] ?? null,
+            'elaun_lain' => $data['elaun_lain'] ?? null,
             'is_assistant' => true,
             'phone' => $data['phone'] ?? null,
             'joined_at' => $data['joined_at'] ?? null,
@@ -579,6 +599,9 @@ class GuruController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'kad_pengenalan' => ['required', 'string', 'max:30'],
+            'elaun' => ['nullable', 'numeric', 'min:0'],
+            'elaun_transit' => ['nullable', 'numeric', 'min:0'],
+            'elaun_lain' => ['nullable', 'numeric', 'min:0'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
@@ -590,6 +613,9 @@ class GuruController extends Controller
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
             'kad_pengenalan' => $data['kad_pengenalan'],
+            'elaun' => $data['elaun'] ?? null,
+            'elaun_transit' => $data['elaun_transit'] ?? null,
+            'elaun_lain' => $data['elaun_lain'] ?? null,
             'is_assistant' => true,
             'phone' => $data['phone'] ?? null,
             'joined_at' => $data['joined_at'] ?? null,
@@ -629,6 +655,9 @@ class GuruController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'kad_pengenalan' => ['required', 'string', 'max:30'],
+            'elaun' => ['nullable', 'numeric', 'min:0'],
+            'elaun_transit' => ['nullable', 'numeric', 'min:0'],
+            'elaun_lain' => ['nullable', 'numeric', 'min:0'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
@@ -640,6 +669,9 @@ class GuruController extends Controller
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
             'kad_pengenalan' => $data['kad_pengenalan'],
+            'elaun' => $data['elaun'] ?? null,
+            'elaun_transit' => $data['elaun_transit'] ?? null,
+            'elaun_lain' => $data['elaun_lain'] ?? null,
             'joined_at' => $data['joined_at'] ?? null,
             'active' => (bool) ($data['active'] ?? false),
         ]);

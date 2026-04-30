@@ -26,6 +26,18 @@
                     <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $assistant->kad_pengenalan) }}" required data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####">
                 </div>
                 <div>
+                    <label class="label-base">Elaun</label>
+                    <input class="input-base" type="number" step="0.01" min="0" name="elaun" value="{{ old('elaun', $assistant->elaun) }}">
+                </div>
+                <div>
+                    <label class="label-base">Elaun Transit</label>
+                    <input class="input-base" type="number" step="0.01" min="0" name="elaun_transit" value="{{ old('elaun_transit', $assistant->elaun_transit) }}">
+                </div>
+                <div>
+                    <label class="label-base">Elaun Lain</label>
+                    <input class="input-base" type="number" step="0.01" min="0" name="elaun_lain" value="{{ old('elaun_lain', $assistant->elaun_lain) }}">
+                </div>
+                <div>
                     <label class="label-base">Tarikh menjadi Pembantu Guru</label>
                     <input class="input-base" type="date" name="joined_at" value="{{ old('joined_at', optional($assistant->joined_at)->format('Y-m-d')) }}">
                 </div>

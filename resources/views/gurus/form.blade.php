@@ -67,6 +67,18 @@
                     <label class="label-base">{{ __('messages.kad_pengenalan') }}</label>
                     <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $guru->kad_pengenalan) }}" required data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####">
                 </div>
+                <div x-show="isAssistant === 1" x-cloak>
+                    <label class="label-base">Elaun</label>
+                    <input class="input-base" type="number" step="0.01" min="0" name="elaun" value="{{ old('elaun', $guru->elaun) }}">
+                </div>
+                <div x-show="isAssistant === 1" x-cloak>
+                    <label class="label-base">Elaun Transit</label>
+                    <input class="input-base" type="number" step="0.01" min="0" name="elaun_transit" value="{{ old('elaun_transit', $guru->elaun_transit) }}">
+                </div>
+                <div x-show="isAssistant === 1" x-cloak>
+                    <label class="label-base">Elaun Lain</label>
+                    <input class="input-base" type="number" step="0.01" min="0" name="elaun_lain" value="{{ old('elaun_lain', $guru->elaun_lain) }}">
+                </div>
                 <div>
                     <label class="label-base">{{ __('messages.marital_status') }}</label>
                     <select class="input-base" name="marital_status">

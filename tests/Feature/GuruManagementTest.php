@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Guru;
 use App\Models\Kawasan;
 use App\Models\Pasti;
 use App\Models\User;
@@ -93,7 +94,7 @@ class GuruManagementTest extends TestCase
             'code' => 'PUJ',
         ]);
 
-        $guruUtama = \App\Models\Guru::query()->create([
+        $guruUtama = Guru::query()->create([
             'pasti_id' => $pasti->id,
             'name' => 'Guru Utama',
             'email' => 'guru-utama@example.test',
@@ -111,5 +112,63 @@ class GuruManagementTest extends TestCase
                 'avatar' => UploadedFile::fake()->create('pembantu-sendiri.jpg', 100, 'image/jpeg'),
             ])
             ->assertSessionHasErrors('kad_pengenalan');
+    }
+
+    public function test_admin_can_store_assistant_with_allowance_fields(): void
+    {
+        Role::findOrCreate('master_admin');
+
+        $admin = User::factory()->create();
+        $admin->assignRole('master_admin');
+
+        $kawasan = Kawasan::query()->create([
+            'name' => 'Kawasan Ujian',
+            'code' => 'KUJ',
+        ]);
+
+        $pasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Ujian',
+            'code' => 'PUJ',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('users.gurus.store'), [
+                'name' => 'Pembantu Berelaun',
+                'email' => 'pembantu-elaun@example.test',
+                'pasti_id' => $pasti->id,
+                'is_assistant' => 1,
+                'kad_pengenalan' => '900101-01-1234',
+                'elaun' => 150,
+                'elaun_transit' => 40,
+                'elaun_lain' => 25,
+                'active' => 1,
+                'avatar' => UploadedFile::fake()->create('pembantu-elaun.jpg', 100, 'image/jpeg'),
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('gurus', [
+            'name' => 'Pembantu Berelaun',
+            'is_assistant' => true,
+            'elaun' => '150.00',
+            'elaun_transit' => '40.00',
+            'elaun_lain' => '25.00',
+        ]);
+    }
+
+    public function test_admin_guru_form_shows_allowance_fields_only_for_assistant_mode(): void
+    {
+        Role::findOrCreate('master_admin');
+
+        $admin = User::factory()->create();
+        $admin->assignRole('master_admin');
+
+        $this->actingAs($admin)
+            ->get(route('users.gurus.create'))
+            ->assertOk()
+            ->assertSee('name="elaun"', false)
+            ->assertSee('name="elaun_transit"', false)
+            ->assertSee('name="elaun_lain"', false)
+            ->assertSee('x-show="isAssistant === 1"', false);
     }
 }
