@@ -63,6 +63,13 @@ class Pasti extends Model
         return $this->hasOne(PastiInformationRequest::class)->latestOfMany();
     }
 
+    public function latestCompletedInformationRequest(): HasOne
+    {
+        return $this->hasOne(PastiInformationRequest::class)
+            ->whereNotNull('completed_at')
+            ->latestOfMany('completed_at');
+    }
+
     public function scores(): HasMany
     {
         return $this->hasMany(PastiScore::class);

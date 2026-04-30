@@ -40,6 +40,7 @@ class PastiReportTest extends TestCase
 
         Schema::create('pastis', function (Blueprint $table): void {
             $table->id();
+            $table->unsignedBigInteger('kawasan_id')->nullable();
             $table->string('name');
             $table->string('address')->nullable();
             $table->timestamps();
@@ -77,6 +78,24 @@ class PastiReportTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('pasti_information_requests', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('pasti_id')->nullable();
+            $table->unsignedBigInteger('requested_by')->nullable();
+            $table->timestamp('requested_at')->nullable();
+            $table->unsignedBigInteger('completed_by')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->unsignedInteger('jumlah_guru')->nullable();
+            $table->unsignedInteger('jumlah_pembantu_guru')->nullable();
+            $table->unsignedInteger('murid_lelaki_4_tahun')->nullable();
+            $table->unsignedInteger('murid_perempuan_4_tahun')->nullable();
+            $table->unsignedInteger('murid_lelaki_5_tahun')->nullable();
+            $table->unsignedInteger('murid_perempuan_5_tahun')->nullable();
+            $table->unsignedInteger('murid_lelaki_6_tahun')->nullable();
+            $table->unsignedInteger('murid_perempuan_6_tahun')->nullable();
+            $table->timestamps();
+        });
+
         \DB::table('roles')->insert([
             ['name' => 'master_admin', 'guard_name' => 'web'],
             ['name' => 'admin', 'guard_name' => 'web'],
@@ -85,6 +104,7 @@ class PastiReportTest extends TestCase
 
     protected function tearDown(): void
     {
+        Schema::dropIfExists('pasti_information_requests');
         Schema::dropIfExists('guru_salary_requests');
         Schema::dropIfExists('gurus');
         Schema::dropIfExists('admin_pasti');
@@ -128,6 +148,33 @@ class PastiReportTest extends TestCase
         $this->assertStringContainsString('Elaun Transit', $template);
         $this->assertStringContainsString('Elaun Lain', $template);
         $this->assertStringNotContainsString('Elaun Tambahan', $template);
+    }
+
+    public function test_pasti_report_includes_maklumat_pasti_tab_with_latest_completed_information(): void
+    {
+        $admin = $this->createAdmin('master_admin');
+        $this->setAuthenticatedUser($admin);
+
+        $pastiB = Pasti::query()->create(['name' => 'PASTI BETA']);
+        $pastiA = Pasti::query()->create(['name' => 'PASTI ALFA']);
+
+        $this->insertPastiInformation($pastiA->id, now()->subDays(3), 2, 1, 3, 4, 5, 6, 7, 8);
+        $this->insertPastiInformation($pastiA->id, now()->subDay(), 4, 2, 10, 11, 12, 13, 14, 15);
+        $this->insertPastiInformation($pastiB->id, now()->subDays(2), 3, 1, 1, 2, 3, 4, 5, 6);
+
+        $view = app(PastiReportController::class)->index();
+        $pastiReports = $view->getData()['pastiReports'];
+        $template = file_get_contents(resource_path('views/pasti-reports/index.blade.php'));
+
+        $this->assertSame(['PASTI ALFA', 'PASTI BETA'], collect($pastiReports->items())->pluck('name')->all());
+        $this->assertSame(4, $pastiReports->items()[0]->latestCompletedInformationRequest?->jumlah_guru);
+        $this->assertSame(2, $pastiReports->items()[0]->latestCompletedInformationRequest?->jumlah_pembantu_guru);
+        $this->assertSame(75, $pastiReports->items()[0]->maklumat_pasti_jumlah);
+        $this->assertIsString($template);
+        $this->assertStringContainsString('Maklumat PASTI', $template);
+        $this->assertStringContainsString('Elaun Guru', $template);
+        $this->assertStringContainsString('4 Tahun (L)', $template);
+        $this->assertStringContainsString('Jumlah', $template);
     }
 
     public function test_pasti_report_for_admin_is_limited_to_assigned_pasti(): void
@@ -226,6 +273,37 @@ class PastiReportTest extends TestCase
             'gaji' => $gaji,
             'elaun' => $elaun,
             'elaun_lain' => $elaunLain,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function insertPastiInformation(
+        int $pastiId,
+        $completedAt,
+        int $jumlahGuru,
+        int $jumlahPembantuGuru,
+        int $muridLelaki4Tahun,
+        int $muridPerempuan4Tahun,
+        int $muridLelaki5Tahun,
+        int $muridPerempuan5Tahun,
+        int $muridLelaki6Tahun,
+        int $muridPerempuan6Tahun
+    ): void {
+        \DB::table('pasti_information_requests')->insert([
+            'pasti_id' => $pastiId,
+            'requested_by' => null,
+            'requested_at' => now(),
+            'completed_by' => null,
+            'completed_at' => $completedAt,
+            'jumlah_guru' => $jumlahGuru,
+            'jumlah_pembantu_guru' => $jumlahPembantuGuru,
+            'murid_lelaki_4_tahun' => $muridLelaki4Tahun,
+            'murid_perempuan_4_tahun' => $muridPerempuan4Tahun,
+            'murid_lelaki_5_tahun' => $muridLelaki5Tahun,
+            'murid_perempuan_5_tahun' => $muridPerempuan5Tahun,
+            'murid_lelaki_6_tahun' => $muridLelaki6Tahun,
+            'murid_perempuan_6_tahun' => $muridPerempuan6Tahun,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
