@@ -63,9 +63,9 @@
                     <label class="label-base">{{ __('messages.phone') }}</label>
                     <input class="input-base" name="phone" value="{{ old('phone', $guru->phone) }}">
                 </div>
-                <div x-show="isAssistant === 0" x-cloak>
+                <div>
                     <label class="label-base">{{ __('messages.kad_pengenalan') }}</label>
-                    <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $guru->kad_pengenalan) }}" :required="isAssistant === 0" data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####">
+                    <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $guru->kad_pengenalan) }}" required data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####">
                 </div>
                 <div>
                     <label class="label-base">{{ __('messages.marital_status') }}</label>

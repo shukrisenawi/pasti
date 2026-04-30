@@ -22,6 +22,10 @@
                     <input class="input-base" name="phone" value="{{ old('phone', $assistant->phone) }}">
                 </div>
                 <div>
+                    <label class="label-base">{{ __('messages.kad_pengenalan') }}</label>
+                    <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $assistant->kad_pengenalan) }}" required data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####">
+                </div>
+                <div>
                     <label class="label-base">Tarikh menjadi Pembantu Guru</label>
                     <input class="input-base" type="date" name="joined_at" value="{{ old('joined_at', optional($assistant->joined_at)->format('Y-m-d')) }}">
                 </div>

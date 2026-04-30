@@ -120,13 +120,12 @@ class GuruController extends Controller
         $emailRules = ['email', 'max:255'];
         $passwordRules = ['nullable', 'string', 'min:8', 'confirmed'];
         $avatarRules = ['image', 'mimes:jpg,jpeg,png,webp', 'max:7168'];
-        $kadPengenalanRules = ['string', 'max:30'];
+        $kadPengenalanRules = ['required', 'string', 'max:30'];
 
         if ($isAssistant) {
             $emailRules[] = 'nullable';
             $passwordRules[] = 'nullable';
             array_unshift($avatarRules, 'required');
-            array_unshift($kadPengenalanRules, 'nullable');
         } else {
             $emailRules[] = 'required';
             $emailRules[] = function ($attribute, $value, $fail) {
@@ -137,7 +136,6 @@ class GuruController extends Controller
             };
             $passwordRules[] = 'nullable';
             array_unshift($avatarRules, 'nullable');
-            array_unshift($kadPengenalanRules, 'required');
         }
 
         $data = $request->validate([
@@ -247,12 +245,11 @@ class GuruController extends Controller
         $isAssistant = $request->boolean('is_assistant');
         $emailRules = ['email', 'max:255'];
         $passwordRules = ['nullable', 'string', 'min:8', 'confirmed'];
-        $kadPengenalanRules = ['string', 'max:30'];
+        $kadPengenalanRules = ['required', 'string', 'max:30'];
 
         if ($isAssistant) {
             $emailRules[] = 'nullable';
             $passwordRules[] = 'nullable';
-            array_unshift($kadPengenalanRules, 'nullable');
         } else {
             $emailRules[] = 'required';
             $emailRules[] = function ($attribute, $value, $fail) use ($users_guru) {
@@ -262,7 +259,6 @@ class GuruController extends Controller
                 }
             };
             $passwordRules[] = 'nullable';
-            array_unshift($kadPengenalanRules, 'required');
         }
 
         $data = $request->validate([
@@ -505,9 +501,10 @@ class GuruController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'kad_pengenalan' => ['required', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
-            'avatar' => $avatarRules,
+            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
         ]);
 
         $assistant = Guru::query()->create([
@@ -515,6 +512,7 @@ class GuruController extends Controller
             'pasti_id' => $users_guru->pasti_id,
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
+            'kad_pengenalan' => $data['kad_pengenalan'],
             'is_assistant' => true,
             'phone' => $data['phone'] ?? null,
             'joined_at' => $data['joined_at'] ?? null,
@@ -580,6 +578,7 @@ class GuruController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'kad_pengenalan' => ['required', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
@@ -590,6 +589,7 @@ class GuruController extends Controller
             'pasti_id' => $guru->pasti_id,
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
+            'kad_pengenalan' => $data['kad_pengenalan'],
             'is_assistant' => true,
             'phone' => $data['phone'] ?? null,
             'joined_at' => $data['joined_at'] ?? null,
@@ -628,6 +628,7 @@ class GuruController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'kad_pengenalan' => ['required', 'string', 'max:30'],
             'joined_at' => ['nullable', 'date'],
             'active' => ['nullable', 'boolean'],
             'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
@@ -638,6 +639,7 @@ class GuruController extends Controller
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
+            'kad_pengenalan' => $data['kad_pengenalan'],
             'joined_at' => $data['joined_at'] ?? null,
             'active' => (bool) ($data['active'] ?? false),
         ]);
