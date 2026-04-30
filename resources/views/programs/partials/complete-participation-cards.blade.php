@@ -1,4 +1,4 @@
-<div class="space-y-2">
+<div class="grid gap-3 md:grid-cols-2">
     @forelse($participations as $participation)
         <article data-testid="program-complete-card" class="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
             <div class="flex items-center gap-3">
@@ -14,15 +14,17 @@
                         </span>
                     </div>
 
-                    <p class="mt-1 truncate text-xs text-slate-500">
-                        <span class="font-semibold text-slate-600">{{ __('messages.absence_reason') }}:</span>
-                        {{ $participation->absence_reason ?? '-' }}
-                    </p>
+                    @if($participation->status?->code !== 'HADIR')
+                        <p class="mt-1 truncate text-xs text-slate-500">
+                            <span class="font-semibold text-slate-600">{{ __('messages.absence_reason') }}:</span>
+                            {{ $participation->absence_reason ?? '-' }}
+                        </p>
+                    @endif
                 </div>
             </div>
         </article>
     @empty
-        <div class="rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+        <div class="rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 md:col-span-2">
             {{ $emptyMessage ?? '-' }}
         </div>
     @endforelse

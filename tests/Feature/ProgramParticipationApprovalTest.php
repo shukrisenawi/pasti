@@ -504,11 +504,13 @@ class ProgramParticipationApprovalTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertSee('class="grid gap-3 md:grid-cols-2"', false)
             ->assertSee('data-testid="program-complete-card"', false)
             ->assertSee('Cikgu Program')
             ->assertSee('Hadir')
             ->assertSee('Sakit.')
-            ->assertDontSee('Semakan Alasan');
+            ->assertDontSee('Semakan Alasan')
+            ->assertDontSee('Alasan Tidak Hadir: -');
     }
 
     public function test_program_show_page_excludes_guru_named_test_from_display_lists(): void
