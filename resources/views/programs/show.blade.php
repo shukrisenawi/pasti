@@ -220,6 +220,27 @@
                     </div>
                 </div>
 
+                <div class="rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-white p-4 shadow-card">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-[0.16em] text-amber-700">Belum Hantar Respond</p>
+                            <p class="mt-1 text-lg font-black text-slate-900">{{ $pendingResponseParticipations->count() }} guru</p>
+                            <p class="mt-1 text-xs text-slate-500">Avatar guru yang masih belum beri maklum balas untuk program ini.</p>
+                        </div>
+                        <span class="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-amber-100 px-3 text-sm font-black text-amber-700">
+                            {{ $pendingResponseParticipations->count() }}
+                        </span>
+                    </div>
+
+                    <div class="mt-4 flex flex-wrap gap-2" data-testid="program-pending-response-avatars">
+                        @forelse($pendingResponseParticipations as $participation)
+                            <x-avatar :guru="$participation->guru" size="h-11 w-11" rounded="rounded-2xl" border="border border-amber-200" />
+                        @empty
+                            <span class="text-xs text-slate-400">Semua guru sudah hantar respond.</span>
+                        @endforelse
+                    </div>
+                </div>
+
                 <div x-show="activeAdminTab === 'pending'">
                     @include('programs.partials.participation-cards', [
                         'participations' => $adminPendingReviewParticipations,

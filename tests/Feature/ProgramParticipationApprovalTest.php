@@ -434,6 +434,28 @@ class ProgramParticipationApprovalTest extends TestCase
             });
     }
 
+    public function test_program_show_page_for_admin_displays_avatar_card_for_gurus_who_have_not_responded(): void
+    {
+        Notification::fake();
+
+        [$program, , , $admin, $latestGuruUser] = $this->createProgramFixtures(
+            withSecondGuru: true,
+            secondGuruHasStatus: false
+        );
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('Belum Hantar Respond')
+            ->assertSee('data-testid="program-pending-response-avatars"', false)
+            ->assertViewHas('pendingResponseParticipations', function ($participations) use ($latestGuruUser): bool {
+                return $participations->count() === 1
+                    && $participations->first()->guru->display_name === $latestGuruUser->display_name;
+            });
+    }
+
     public function test_program_menu_badge_uses_pending_absence_reason_approval_count(): void
     {
         Notification::fake();

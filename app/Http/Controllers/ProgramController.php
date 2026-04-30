@@ -129,6 +129,9 @@ class ProgramController extends Controller
         $submittedParticipations = $allParticipations
             ->filter(fn ($participation) => filled($participation->program_status_id))
             ->values();
+        $pendingResponseParticipations = $allParticipations
+            ->filter(fn ($participation) => blank($participation->program_status_id))
+            ->values();
         $pendingReminderGurus = $this->pendingReminderGurusForProgram($program);
         $currentGuruId = $operatingGuru?->id;
         $currentParticipation = $operatingGuruIds !== []
@@ -150,6 +153,7 @@ class ProgramController extends Controller
             'program' => $program,
             'allParticipations' => $allParticipations,
             'submittedParticipations' => $submittedParticipations,
+            'pendingResponseParticipations' => $pendingResponseParticipations,
             'statuses' => ProgramStatus::query()
                 ->whereIn('code', ['HADIR', 'TIDAK_HADIR'])
                 ->orderBy('is_hadir', 'desc')
