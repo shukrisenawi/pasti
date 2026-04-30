@@ -152,8 +152,8 @@
                                 </td>
                                 <td class="border-b border-slate-100 px-4 py-3 font-medium">{{ mb_strtoupper((string) ($report->kad_pengenalan ?: '-')) }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 font-medium">{{ mb_strtoupper((string) ($report->phone ?: '-')) }}</td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun) ? 'RM ' . number_format((float) $latestSalary->elaun, 2) : '-' }}</td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun_transit) ? 'RM ' . number_format((float) $latestSalary->elaun_transit, 2) : '-' }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($report->elaun) ? 'RM ' . number_format((float) $report->elaun, 2) : '-' }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun_transit) ? 'RM ' . number_format((float) $latestSalary->elaun_transit, 2) : (filled($latestSalary?->elaun) ? 'RM ' . number_format((float) $latestSalary->elaun, 2) : '-') }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun_lain) ? 'RM ' . number_format((float) $latestSalary->elaun_lain, 2) : '-' }}</td>
                             </tr>
                         @empty

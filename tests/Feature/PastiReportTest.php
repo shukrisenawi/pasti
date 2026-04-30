@@ -60,6 +60,9 @@ class PastiReportTest extends TestCase
             $table->string('email')->nullable();
             $table->string('kad_pengenalan')->nullable();
             $table->string('phone')->nullable();
+            $table->decimal('elaun', 10, 2)->nullable();
+            $table->decimal('elaun_transit', 10, 2)->nullable();
+            $table->decimal('elaun_lain', 10, 2)->nullable();
             $table->boolean('is_assistant')->default(false);
             $table->boolean('active')->default(true);
             $table->timestamps();
@@ -129,6 +132,10 @@ class PastiReportTest extends TestCase
         $amina = $this->createGuru($pastiA, 'Amina', true, '880202-02-2345', '0134000000');
         $badrul = $this->createGuru($pastiB, 'Badrul', true, '870303-03-3456', '0145000000');
 
+        $zainab->update(['elaun' => 250, 'elaun_transit' => 40, 'elaun_lain' => 15]);
+        $amina->update(['elaun' => 180, 'elaun_transit' => 30, 'elaun_lain' => 10]);
+        $badrul->update(['elaun' => 140, 'elaun_transit' => 20, 'elaun_lain' => 5]);
+
         $this->insertSalary($zainab->id, now()->subDays(3), 1200, 150, 25);
         $this->insertSalary($zainab->id, now()->subDay(), 1400, 180, 35);
         $this->insertSalary($amina->id, now()->subDays(2), 1000, 120, 15);
@@ -142,6 +149,7 @@ class PastiReportTest extends TestCase
             ['Amina', 'Zainab', 'Badrul'],
             collect($reports->items())->pluck('name')->all()
         );
+        $this->assertSame('180.00', $reports->items()[0]->elaun);
         $this->assertSame('180.00', $reports->items()[1]->latestCompletedSalaryRequest?->elaun);
         $this->assertSame('35.00', $reports->items()[1]->latestCompletedSalaryRequest?->elaun_lain);
         $this->assertFalse((bool) $reports->items()[1]->active);
