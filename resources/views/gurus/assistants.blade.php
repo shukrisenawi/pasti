@@ -49,13 +49,8 @@
                         <input class="input-base" name="name" value="{{ old('name') }}" required>
                     </div>
                     <div>
-                        <label class="label-base">{{ __('messages.email') }}</label>
-                        <input class="input-base" type="email" name="email" value="{{ old('email') }}">
-                        <p class="mt-1 text-xs text-slate-500">Opsyenal untuk pembantu guru.</p>
-                    </div>
-                    <div>
-                        <label class="label-base">{{ __('messages.phone') }}</label>
-                        <input class="input-base" name="phone" value="{{ old('phone') }}">
+                        <label class="label-base">{{ __('messages.pasti') }}</label>
+                        <input class="input-base" value="{{ $guru->pasti?->name ?? '-' }}" disabled>
                     </div>
                     <div>
                         <label class="label-base">{{ __('messages.kad_pengenalan') }}</label>
@@ -73,18 +68,10 @@
                         <label class="label-base">Elaun Lain</label>
                         <input class="input-base" type="number" step="0.01" min="0" name="elaun_lain" value="{{ old('elaun_lain') }}">
                     </div>
-                    <div>
-                        <label class="label-base">Tarikh menjadi Pembantu Guru</label>
-                        <input class="input-base" type="date" name="joined_at" value="{{ old('joined_at') }}">
-                    </div>
                     <div class="md:col-span-2">
                         <label class="label-base">Avatar</label>
                         <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp,image/*" class="file-input w-full" required>
                         <p class="mt-1 text-xs text-slate-500">Format: JPG, PNG, WEBP (maks 7MB).</p>
-                    </div>
-                    <div class="flex items-center gap-2 pt-1">
-                        <input id="active" type="checkbox" name="active" value="1" @checked(old('active', true))>
-                        <label for="active" class="label-base">{{ __('messages.active') }}</label>
                     </div>
                 </div>
                 <div class="flex gap-2">

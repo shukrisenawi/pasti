@@ -24,32 +24,43 @@
                     <label class="label-base">{{ __('messages.name') }}</label>
                     <input class="input-base" name="name" value="{{ old('name', $guru->name ?? $userModel?->name) }}" required>
                 </div>
-                <div x-show="isAssistant === 0" x-cloak>
-                    <label class="label-base">{{ __('messages.nama_samaran') }}</label>
-                    <input class="input-base" name="nama_samaran" value="{{ old('nama_samaran', $userModel?->nama_samaran) }}">
-                </div>
-                <div x-show="isAssistant === 0" x-cloak>
-                    <label class="label-base">{{ __('messages.tarikh_lahir') }}</label>
-                    <input class="input-base" type="date" name="tarikh_lahir" value="{{ old('tarikh_lahir', $userModel?->tarikh_lahir?->format('Y-m-d')) }}">
-                </div>
-                <div x-show="isAssistant === 0" x-cloak>
-                    <label class="label-base">{{ __('messages.tarikh_exp_skim_pas') }}</label>
-                    <input class="input-base" type="date" name="tarikh_exp_skim_pas" value="{{ old('tarikh_exp_skim_pas', $userModel?->tarikh_exp_skim_pas?->format('Y-m-d')) }}">
-                </div>
-                <div>
-                    <label class="label-base">{{ __('messages.email') }}</label>
-                    <input class="input-base" type="email" name="email" value="{{ old('email', $guru->email ?? $userModel?->email) }}" :required="isAssistant === 0">
-                    <p class="mt-1 text-xs text-slate-500" x-show="isAssistant === 1">{{ __('messages.optional_for_assistant') }}</p>
-                </div>
-                <div x-show="isAssistant === 0" x-cloak>
-                    <label class="label-base">{{ __('messages.password') }}</label>
-                    <input class="input-base" type="password" name="password">
-                    <p class="mt-1 text-xs text-slate-500">Jika dikosongkan, kata laluan default ialah <code>123</code>.</p>
-                </div>
-                <div x-show="isAssistant === 0" x-cloak>
-                    <label class="label-base">{{ __('messages.password_confirmation') }}</label>
-                    <input class="input-base" type="password" name="password_confirmation">
-                </div>
+                <template x-if="isAssistant === 0">
+                    <div>
+                        <label class="label-base">{{ __('messages.nama_samaran') }}</label>
+                        <input class="input-base" name="nama_samaran" value="{{ old('nama_samaran', $userModel?->nama_samaran) }}">
+                    </div>
+                </template>
+                <template x-if="isAssistant === 0">
+                    <div>
+                        <label class="label-base">{{ __('messages.tarikh_lahir') }}</label>
+                        <input class="input-base" type="date" name="tarikh_lahir" value="{{ old('tarikh_lahir', $userModel?->tarikh_lahir?->format('Y-m-d')) }}">
+                    </div>
+                </template>
+                <template x-if="isAssistant === 0">
+                    <div>
+                        <label class="label-base">{{ __('messages.tarikh_exp_skim_pas') }}</label>
+                        <input class="input-base" type="date" name="tarikh_exp_skim_pas" value="{{ old('tarikh_exp_skim_pas', $userModel?->tarikh_exp_skim_pas?->format('Y-m-d')) }}">
+                    </div>
+                </template>
+                <template x-if="isAssistant === 0">
+                    <div>
+                        <label class="label-base">{{ __('messages.email') }}</label>
+                        <input class="input-base" type="email" name="email" value="{{ old('email', $guru->email ?? $userModel?->email) }}" :required="isAssistant === 0">
+                    </div>
+                </template>
+                <template x-if="isAssistant === 0">
+                    <div>
+                        <label class="label-base">{{ __('messages.password') }}</label>
+                        <input class="input-base" type="password" name="password">
+                        <p class="mt-1 text-xs text-slate-500">Jika dikosongkan, kata laluan default ialah <code>123</code>.</p>
+                    </div>
+                </template>
+                <template x-if="isAssistant === 0">
+                    <div>
+                        <label class="label-base">{{ __('messages.password_confirmation') }}</label>
+                        <input class="input-base" type="password" name="password_confirmation">
+                    </div>
+                </template>
                 <div>
                     <label class="label-base">{{ __('messages.pasti') }}</label>
                     <select class="input-base" name="pasti_id">
@@ -59,10 +70,12 @@
                         @endforeach
                     </select>
                 </div>
-                <div>
-                    <label class="label-base">{{ __('messages.phone') }}</label>
-                    <input class="input-base" name="phone" value="{{ old('phone', $guru->phone) }}">
-                </div>
+                <template x-if="isAssistant === 0">
+                    <div>
+                        <label class="label-base">{{ __('messages.phone') }}</label>
+                        <input class="input-base" name="phone" value="{{ old('phone', $guru->phone) }}">
+                    </div>
+                </template>
                 <div>
                     <label class="label-base">{{ __('messages.kad_pengenalan') }}</label>
                     <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $guru->kad_pengenalan) }}" required data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####">
@@ -79,31 +92,35 @@
                     <label class="label-base">Elaun Lain</label>
                     <input class="input-base" type="number" step="0.01" min="0" name="elaun_lain" value="{{ old('elaun_lain', $guru->elaun_lain) }}">
                 </div>
-                <div>
-                    <label class="label-base">{{ __('messages.marital_status') }}</label>
-                    <select class="input-base" name="marital_status">
-                        <option value="">- {{ __('messages.select') }} -</option>
-                        <option value="single" @selected(old('marital_status', $guru->marital_status) === 'single')>{{ __('messages.single') }}</option>
-                        <option value="married" @selected(old('marital_status', $guru->marital_status) === 'married')>{{ __('messages.married') }}</option>
-                        <option value="widowed" @selected(old('marital_status', $guru->marital_status) === 'widowed')>{{ __('messages.widowed') }}</option>
-                        <option value="divorced" @selected(old('marital_status', $guru->marital_status) === 'divorced')>{{ __('messages.divorced') }}</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="label-base">{{ __('messages.kursus_guru') }}</label>
-                    <select class="input-base" name="kursus_guru">
-                        <option value="">- {{ __('messages.select') }} -</option>
-                        <option value="belum_kursus" @selected(old('kursus_guru', $guru->kursus_guru) === 'belum_kursus')>{{ __('messages.kursus_guru_belum_kursus') }}</option>
-                        <option value="semester_1" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_1')>{{ __('messages.kursus_guru_semester_1') }}</option>
-                        <option value="semester_2" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_2')>{{ __('messages.kursus_guru_semester_2') }}</option>
-                        <option value="semester_3" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_3')>{{ __('messages.kursus_guru_semester_3') }}</option>
-                        <option value="semester_4" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_4')>{{ __('messages.kursus_guru_semester_4') }}</option>
-                        <option value="semester_5" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_5')>{{ __('messages.kursus_guru_semester_5') }}</option>
-                        <option value="semester_6" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_6')>{{ __('messages.kursus_guru_semester_6') }}</option>
-                        <option value="semester_7" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_7')>{{ __('messages.kursus_guru_semester_7') }}</option>
-                        <option value="terima_anugerah" @selected(old('kursus_guru', $guru->kursus_guru) === 'terima_anugerah')>{{ __('messages.kursus_guru_terima_anugerah') }}</option>
-                    </select>
-                </div>
+                <template x-if="isAssistant === 0">
+                    <div>
+                        <label class="label-base">{{ __('messages.marital_status') }}</label>
+                        <select class="input-base" name="marital_status">
+                            <option value="">- {{ __('messages.select') }} -</option>
+                            <option value="single" @selected(old('marital_status', $guru->marital_status) === 'single')>{{ __('messages.single') }}</option>
+                            <option value="married" @selected(old('marital_status', $guru->marital_status) === 'married')>{{ __('messages.married') }}</option>
+                            <option value="widowed" @selected(old('marital_status', $guru->marital_status) === 'widowed')>{{ __('messages.widowed') }}</option>
+                            <option value="divorced" @selected(old('marital_status', $guru->marital_status) === 'divorced')>{{ __('messages.divorced') }}</option>
+                        </select>
+                    </div>
+                </template>
+                <template x-if="isAssistant === 0">
+                    <div>
+                        <label class="label-base">{{ __('messages.kursus_guru') }}</label>
+                        <select class="input-base" name="kursus_guru">
+                            <option value="">- {{ __('messages.select') }} -</option>
+                            <option value="belum_kursus" @selected(old('kursus_guru', $guru->kursus_guru) === 'belum_kursus')>{{ __('messages.kursus_guru_belum_kursus') }}</option>
+                            <option value="semester_1" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_1')>{{ __('messages.kursus_guru_semester_1') }}</option>
+                            <option value="semester_2" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_2')>{{ __('messages.kursus_guru_semester_2') }}</option>
+                            <option value="semester_3" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_3')>{{ __('messages.kursus_guru_semester_3') }}</option>
+                            <option value="semester_4" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_4')>{{ __('messages.kursus_guru_semester_4') }}</option>
+                            <option value="semester_5" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_5')>{{ __('messages.kursus_guru_semester_5') }}</option>
+                            <option value="semester_6" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_6')>{{ __('messages.kursus_guru_semester_6') }}</option>
+                            <option value="semester_7" @selected(old('kursus_guru', $guru->kursus_guru) === 'semester_7')>{{ __('messages.kursus_guru_semester_7') }}</option>
+                            <option value="terima_anugerah" @selected(old('kursus_guru', $guru->kursus_guru) === 'terima_anugerah')>{{ __('messages.kursus_guru_terima_anugerah') }}</option>
+                        </select>
+                    </div>
+                </template>
                 <div class="md:col-span-2">
                     <label class="label-base">Avatar</label>
                     <div class="mt-2 flex items-center gap-4">
@@ -120,14 +137,18 @@
                         </div>
                     </div>
                 </div>
-                <div>
-                    <label class="label-base" x-text="isAssistant === 1 ? 'Tarikh menjadi Pembantu Guru' : '{{ __('messages.joined_at') }}'">{{ __('messages.joined_at') }}</label>
-                    <input class="input-base" type="date" name="joined_at" value="{{ old('joined_at', optional($guru->joined_at)->format('Y-m-d')) }}">
-                </div>
-                <div class="flex items-center gap-2 pt-7">
-                    <input id="active" type="checkbox" name="active" value="1" @checked(old('active', $guru->exists ? $guru->active : true))>
-                    <label for="active" class="label-base">{{ __('messages.active') }}</label>
-                </div>
+                <template x-if="isAssistant === 0">
+                    <div>
+                        <label class="label-base">{{ __('messages.joined_at') }}</label>
+                        <input class="input-base" type="date" name="joined_at" value="{{ old('joined_at', optional($guru->joined_at)->format('Y-m-d')) }}">
+                    </div>
+                </template>
+                <template x-if="isAssistant === 0">
+                    <div class="flex items-center gap-2 pt-7">
+                        <input id="active" type="checkbox" name="active" value="1" @checked(old('active', $guru->exists ? $guru->active : true))>
+                        <label for="active" class="label-base">{{ __('messages.active') }}</label>
+                    </div>
+                </template>
             </div>
 
             <div class="flex gap-2">

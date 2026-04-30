@@ -146,7 +146,7 @@ class GuruController extends Controller
             'email' => $emailRules,
             'password' => $passwordRules,
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
-            'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
+            'pasti_id' => ['nullable', Rule::requiredIf($isAssistant), 'integer', 'exists:pastis,id'],
             'phone' => ['nullable', 'string', 'max:30'],
             'kad_pengenalan' => $kadPengenalanRules,
             'elaun' => $assistantAllowanceRules,
@@ -201,9 +201,9 @@ class GuruController extends Controller
             'is_assistant' => $isAssistant,
             'phone' => null,
             'joined_at' => null,
-            'active' => (bool) ($data['active'] ?? false),
-            'kursus_guru' => $data['kursus_guru'] ?? null,
-            'terima_anugerah' => ($data['kursus_guru'] ?? null) === 'terima_anugerah',
+            'active' => $isAssistant ? true : (bool) ($data['active'] ?? false),
+            'kursus_guru' => $isAssistant ? null : ($data['kursus_guru'] ?? null),
+            'terima_anugerah' => $isAssistant ? false : (($data['kursus_guru'] ?? null) === 'terima_anugerah'),
             'marital_status' => null,
         ]);
 
@@ -231,6 +231,15 @@ class GuruController extends Controller
         }
 
         $this->ensureGuruAllowed($user, $users_guru);
+
+        if ($users_guru->is_assistant) {
+            return view('gurus.assistant-form', [
+                'assistant' => $users_guru->loadMissing('pasti'),
+                'formAction' => route('users.gurus.update', $users_guru),
+                'cancelRoute' => route('users.gurus.index', ['tab' => 'assistant']),
+                'pastis' => $this->pastisForUser($user),
+            ]);
+        }
 
         return view('gurus.form', [
             'guru' => $users_guru,
@@ -277,7 +286,7 @@ class GuruController extends Controller
             'password' => $passwordRules,
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
             'remove_avatar' => ['nullable', 'boolean'],
-            'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
+            'pasti_id' => ['nullable', Rule::requiredIf($isAssistant), 'integer', 'exists:pastis,id'],
             'phone' => ['nullable', 'string', 'max:30'],
             'kad_pengenalan' => $kadPengenalanRules,
             'elaun' => $assistantAllowanceRules,
@@ -361,19 +370,19 @@ class GuruController extends Controller
         $users_guru->update([
             'pasti_id' => $data['pasti_id'] ?? null,
             'name' => $data['name'],
-            'email' => $data['email'] ?? null,
+            'email' => $isAssistant ? null : ($data['email'] ?? null),
             'is_assistant' => $isAssistant,
             'avatar_path' => $isAssistant ? $users_guru->avatar_path : null,
             'kad_pengenalan' => $data['kad_pengenalan'] ?? null,
             'elaun' => $isAssistant ? ($data['elaun'] ?? null) : null,
             'elaun_transit' => $isAssistant ? ($data['elaun_transit'] ?? null) : null,
             'elaun_lain' => $isAssistant ? ($data['elaun_lain'] ?? null) : null,
-            'phone' => $data['phone'] ?? null,
-            'joined_at' => $data['joined_at'] ?? null,
-            'active' => (bool) ($data['active'] ?? false),
-            'kursus_guru' => $data['kursus_guru'] ?? null,
-            'terima_anugerah' => ($data['kursus_guru'] ?? null) === 'terima_anugerah',
-            'marital_status' => $data['marital_status'] ?? null,
+            'phone' => $isAssistant ? null : ($data['phone'] ?? null),
+            'joined_at' => $isAssistant ? null : ($data['joined_at'] ?? null),
+            'active' => $isAssistant ? $users_guru->active : (bool) ($data['active'] ?? false),
+            'kursus_guru' => $isAssistant ? null : ($data['kursus_guru'] ?? null),
+            'terima_anugerah' => $isAssistant ? false : (($data['kursus_guru'] ?? null) === 'terima_anugerah'),
+            'marital_status' => $isAssistant ? null : ($data['marital_status'] ?? null),
         ]);
 
         if ($request->boolean('remove_avatar')) {
@@ -513,14 +522,10 @@ class GuruController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:30'],
             'kad_pengenalan' => ['required', 'string', 'max:30'],
             'elaun' => ['nullable', 'numeric', 'min:0'],
             'elaun_transit' => ['nullable', 'numeric', 'min:0'],
             'elaun_lain' => ['nullable', 'numeric', 'min:0'],
-            'joined_at' => ['nullable', 'date'],
-            'active' => ['nullable', 'boolean'],
             'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
         ]);
 
@@ -528,15 +533,15 @@ class GuruController extends Controller
             'user_id' => null,
             'pasti_id' => $users_guru->pasti_id,
             'name' => $data['name'],
-            'email' => $data['email'] ?? null,
+            'email' => null,
             'kad_pengenalan' => $data['kad_pengenalan'],
             'elaun' => $data['elaun'] ?? null,
             'elaun_transit' => $data['elaun_transit'] ?? null,
             'elaun_lain' => $data['elaun_lain'] ?? null,
             'is_assistant' => true,
-            'phone' => $data['phone'] ?? null,
-            'joined_at' => $data['joined_at'] ?? null,
-            'active' => (bool) ($data['active'] ?? true),
+            'phone' => null,
+            'joined_at' => null,
+            'active' => true,
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -596,14 +601,10 @@ class GuruController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:30'],
             'kad_pengenalan' => ['required', 'string', 'max:30'],
             'elaun' => ['nullable', 'numeric', 'min:0'],
             'elaun_transit' => ['nullable', 'numeric', 'min:0'],
             'elaun_lain' => ['nullable', 'numeric', 'min:0'],
-            'joined_at' => ['nullable', 'date'],
-            'active' => ['nullable', 'boolean'],
             'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
         ]);
 
@@ -611,15 +612,15 @@ class GuruController extends Controller
             'user_id' => null,
             'pasti_id' => $guru->pasti_id,
             'name' => $data['name'],
-            'email' => $data['email'] ?? null,
+            'email' => null,
             'kad_pengenalan' => $data['kad_pengenalan'],
             'elaun' => $data['elaun'] ?? null,
             'elaun_transit' => $data['elaun_transit'] ?? null,
             'elaun_lain' => $data['elaun_lain'] ?? null,
             'is_assistant' => true,
-            'phone' => $data['phone'] ?? null,
-            'joined_at' => $data['joined_at'] ?? null,
-            'active' => (bool) ($data['active'] ?? true),
+            'phone' => null,
+            'joined_at' => null,
+            'active' => true,
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -652,28 +653,24 @@ class GuruController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:30'],
             'kad_pengenalan' => ['required', 'string', 'max:30'],
             'elaun' => ['nullable', 'numeric', 'min:0'],
             'elaun_transit' => ['nullable', 'numeric', 'min:0'],
             'elaun_lain' => ['nullable', 'numeric', 'min:0'],
-            'joined_at' => ['nullable', 'date'],
-            'active' => ['nullable', 'boolean'],
             'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
             'remove_avatar' => ['nullable', 'boolean'],
         ]);
 
         $assistant->update([
             'name' => $data['name'],
-            'email' => $data['email'] ?? null,
-            'phone' => $data['phone'] ?? null,
+            'email' => null,
+            'phone' => null,
             'kad_pengenalan' => $data['kad_pengenalan'],
             'elaun' => $data['elaun'] ?? null,
             'elaun_transit' => $data['elaun_transit'] ?? null,
             'elaun_lain' => $data['elaun_lain'] ?? null,
-            'joined_at' => $data['joined_at'] ?? null,
-            'active' => (bool) ($data['active'] ?? false),
+            'joined_at' => null,
+            'active' => $assistant->active,
         ]);
 
         if ($request->boolean('remove_avatar') && $assistant->avatar_path) {
