@@ -52,7 +52,7 @@ return [
     'login' => 'Log Masuk',
     'admin_accounts' => 'Akaun Admin',
     'guru' => 'Guru',
-    'kawasan' => 'Cawangan',
+    'kawasan' => 'Dun',
     'pasti' => 'PASTI',
     'kelas' => 'Kelas',
     'maklumat_pasti' => 'Maklumat PASTI',
