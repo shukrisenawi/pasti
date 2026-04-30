@@ -192,12 +192,23 @@ class DashboardController extends Controller
 
         $currentGuruId = $guruIds[0] ?? null;
         $currentParticipation = null;
+        $participationByProgramId = collect();
         $statuses = collect();
 
-        if ($user->isOperatingAsGuru() && $latestProgram && $guruIds !== []) {
-            $currentParticipation = $latestProgram->participations->first(
-                fn ($participation) => in_array((int) $participation->guru_id, $guruIds, true)
-            );
+        if ($user->isOperatingAsGuru() && $guruIds !== []) {
+            $participationByProgramId = $latestPrograms
+                ->mapWithKeys(function (Program $program) use ($guruIds) {
+                    $participation = $program->participations->first(
+                        fn ($item) => in_array((int) $item->guru_id, $guruIds, true)
+                    );
+
+                    return [$program->id => $participation];
+                });
+
+            $currentParticipation = $latestProgram
+                ? $participationByProgramId->get($latestProgram->id)
+                : null;
+
             $statuses = ProgramStatus::query()
                 ->whereIn('code', ['HADIR', 'TIDAK_HADIR'])
                 ->orderBy('is_hadir', 'desc')
@@ -229,6 +240,7 @@ class DashboardController extends Controller
             'latestProgram' => $latestProgram,
             'currentGuruId' => $currentGuruId,
             'currentParticipation' => $currentParticipation,
+            'participationByProgramId' => $participationByProgramId,
             'statuses' => $statuses,
             'canUpdateOwnStatus' => $user->isOperatingAsGuru() && (bool) $latestProgram && (bool) $currentGuruId,
             'topKpiGurus' => $topKpiGurus,

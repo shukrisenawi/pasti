@@ -251,6 +251,7 @@
             <div class="grid gap-6 xl:grid-cols-[1fr_auto]">
                 <div class="space-y-4">
                     @foreach($latestPrograms as $p)
+                        @php($dashboardParticipation = $participationByProgramId->get($p->id))
                         <div class="group relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-4 shadow-card transition-all hover:shadow-lg sm:p-5 {{ $loop->first ? 'ring-2 ring-primary/20' : '' }}">
                             @if($loop->first)
                                 <div class="absolute top-0 right-0 rounded-bl-2xl bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">TERBARU</div>
@@ -284,7 +285,7 @@
                                 </div>
                             </div>
                             
-                            @if($loop->first && $canUpdateOwnStatus && $currentGuruId)
+                            @if($canUpdateOwnStatus && $currentGuruId && blank($dashboardParticipation?->program_status_id))
                                 <div class="mt-4 border-t border-slate-50 pt-4">
                                      @php($dashboardStatusCodeById = $statuses->mapWithKeys(fn ($status) => [(string) $status->id => $status->code]))
                                      <form
@@ -292,7 +293,7 @@
                                         action="{{ route('programs.teachers.status.update', [$p, $currentGuruId]) }}"
                                         class="flex flex-wrap items-center gap-2"
                                         x-data="{
-                                            selectedStatusId: @js((string) ($currentParticipation?->program_status_id ?? '')),
+                                            selectedStatusId: @js((string) ($dashboardParticipation?->program_status_id ?? '')),
                                             statusCodeById: @js($dashboardStatusCodeById),
                                             requiresAbsenceReason() {
                                                 return this.statusCodeById[this.selectedStatusId] === 'TIDAK_HADIR';
@@ -302,7 +303,7 @@
                                         @csrf
                                         <select name="program_status_id" class="text-xs font-bold rounded-xl border-slate-200 bg-slate-50 px-3 py-2 outline-none focus:ring-2 focus:ring-primary/20" x-model="selectedStatusId">
                                             @foreach($statuses as $status)
-                                                    <option value="{{ $status->id }}" @selected(($currentParticipation?->program_status_id) == $status->id)>
+                                                    <option value="{{ $status->id }}" @selected(($dashboardParticipation?->program_status_id) == $status->id)>
                                                     {{ $status->name }}
                                                 </option>
                                             @endforeach
@@ -315,7 +316,7 @@
                                                 name="absence_reason"
                                                 class="min-w-[220px] rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20"
                                                 placeholder="{{ __('messages.absence_reason_placeholder') }}"
-                                                value="{{ old('absence_reason', $currentParticipation?->absence_reason) }}"
+                                                value="{{ old('absence_reason', $dashboardParticipation?->absence_reason) }}"
                                             >
                                         @endif
                                         <button class="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all">

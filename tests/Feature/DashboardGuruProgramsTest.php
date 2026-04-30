@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureGuruWebOnboardingCompleted;
 use App\Models\Guru;
 use App\Models\Pasti;
 use App\Models\Program;
+use App\Models\ProgramStatus;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
@@ -54,6 +55,13 @@ class DashboardGuruProgramsTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('kawasan_id')->nullable();
             $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('admin_pasti', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('pasti_id');
             $table->timestamps();
         });
 
@@ -138,6 +146,15 @@ class DashboardGuruProgramsTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('notifications', function (Blueprint $table): void {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('announcements', function (Blueprint $table): void {
             $table->id();
             $table->string('title')->nullable();
@@ -199,6 +216,16 @@ class DashboardGuruProgramsTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('kpi_snapshots', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id')->unique();
+            $table->unsignedInteger('total_invited')->default(0);
+            $table->unsignedInteger('total_hadir')->default(0);
+            $table->decimal('score', 5, 2)->default(0);
+            $table->timestamp('calculated_at')->nullable();
+            $table->timestamps();
+        });
+
         \DB::table('roles')->insert([
             ['name' => 'guru', 'guard_name' => 'web'],
         ]);
@@ -239,6 +266,7 @@ class DashboardGuruProgramsTest extends TestCase
         Schema::dropIfExists('user_ajk_positions');
         Schema::dropIfExists('ajk_positions');
         Schema::dropIfExists('leave_notices');
+        Schema::dropIfExists('kpi_snapshots');
         Schema::dropIfExists('guru_salary_requests');
         Schema::dropIfExists('pasti_information_requests');
         Schema::dropIfExists('announcement_user');
@@ -246,10 +274,12 @@ class DashboardGuruProgramsTest extends TestCase
         Schema::dropIfExists('admin_message_replies');
         Schema::dropIfExists('admin_message_recipients');
         Schema::dropIfExists('admin_messages');
+        Schema::dropIfExists('notifications');
         Schema::dropIfExists('program_teacher');
         Schema::dropIfExists('programs');
         Schema::dropIfExists('program_statuses');
         Schema::dropIfExists('gurus');
+        Schema::dropIfExists('admin_pasti');
         Schema::dropIfExists('pastis');
         Schema::dropIfExists('model_has_roles');
         Schema::dropIfExists('roles');
@@ -323,6 +353,94 @@ class DashboardGuruProgramsTest extends TestCase
             ['Program Belum Hantar Kehadiran'],
             $latestPrograms->pluck('title')->all()
         );
+    }
+
+    public function test_dashboard_guru_shows_response_forms_for_all_pending_programs(): void
+    {
+        $user = User::query()->create([
+            'name' => 'Cikgu Dashboard',
+            'nama_samaran' => 'Cikgu Dashboard',
+            'email' => 'guru-dashboard-borang@example.test',
+        ]);
+        $this->attachRole($user, 'guru');
+
+        $pasti = Pasti::query()->create([
+            'name' => 'PASTI Dashboard',
+        ]);
+
+        $guru = Guru::query()->create([
+            'user_id' => $user->id,
+            'pasti_id' => $pasti->id,
+            'name' => $user->name,
+            'active' => true,
+        ]);
+
+        $hadirStatus = ProgramStatus::query()->create([
+            'name' => 'Hadir',
+            'code' => 'HADIR',
+            'is_hadir' => true,
+        ]);
+
+        ProgramStatus::query()->create([
+            'name' => 'Tidak Hadir',
+            'code' => 'TIDAK_HADIR',
+            'is_hadir' => false,
+        ]);
+
+        $firstPendingProgram = Program::query()->create([
+            'pasti_id' => $pasti->id,
+            'title' => 'Program Pending Pertama',
+            'program_date' => now()->addDay()->toDateString(),
+            'created_by' => $user->id,
+        ]);
+
+        $secondPendingProgram = Program::query()->create([
+            'pasti_id' => $pasti->id,
+            'title' => 'Program Pending Kedua',
+            'program_date' => now()->addDays(2)->toDateString(),
+            'created_by' => $user->id,
+        ]);
+
+        $submittedProgram = Program::query()->create([
+            'pasti_id' => $pasti->id,
+            'title' => 'Program Sudah Respon',
+            'program_date' => now()->addDays(3)->toDateString(),
+            'created_by' => $user->id,
+        ]);
+
+        \DB::table('program_teacher')->insert([
+            [
+                'program_id' => $firstPendingProgram->id,
+                'guru_id' => $guru->id,
+                'program_status_id' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'program_id' => $secondPendingProgram->id,
+                'guru_id' => $guru->id,
+                'program_status_id' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'program_id' => $submittedProgram->id,
+                'guru_id' => $guru->id,
+                'program_status_id' => $hadirStatus->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Program Pending Pertama')
+            ->assertSee('Program Pending Kedua')
+            ->assertSee(route('programs.teachers.status.update', [$firstPendingProgram, $guru->id]), false)
+            ->assertSee(route('programs.teachers.status.update', [$secondPendingProgram, $guru->id]), false)
+            ->assertDontSee(route('programs.teachers.status.update', [$submittedProgram, $guru->id]), false);
     }
 
     private function attachRole(User $user, string $roleName): void
