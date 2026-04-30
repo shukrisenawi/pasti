@@ -32,6 +32,10 @@
                     @endif
                 </div>
                 <div>
+                    <label class="label-base">{{ __('messages.phone') }}</label>
+                    <input class="input-base" name="phone" value="{{ old('phone', $assistant->phone) }}" required>
+                </div>
+                <div>
                     <label class="label-base">{{ __('messages.kad_pengenalan') }}</label>
                     <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $assistant->kad_pengenalan) }}" required data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####">
                 </div>

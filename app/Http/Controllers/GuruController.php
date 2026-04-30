@@ -139,6 +139,12 @@ class GuruController extends Controller
             array_unshift($avatarRules, 'nullable');
         }
 
+        $phoneRules = ['nullable', 'string', 'max:30'];
+
+        if ($isAssistant) {
+            $phoneRules[0] = 'required';
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'nama_samaran' => ['nullable', 'string', 'max:255'],
@@ -147,7 +153,7 @@ class GuruController extends Controller
             'password' => $passwordRules,
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
             'pasti_id' => ['nullable', Rule::requiredIf($isAssistant), 'integer', 'exists:pastis,id'],
-            'phone' => ['nullable', 'string', 'max:30'],
+            'phone' => $phoneRules,
             'kad_pengenalan' => $kadPengenalanRules,
             'elaun' => $assistantAllowanceRules,
             'elaun_transit' => $assistantAllowanceRules,
@@ -199,7 +205,7 @@ class GuruController extends Controller
             'elaun_transit' => $isAssistant ? ($data['elaun_transit'] ?? null) : null,
             'elaun_lain' => $isAssistant ? ($data['elaun_lain'] ?? null) : null,
             'is_assistant' => $isAssistant,
-            'phone' => null,
+            'phone' => $isAssistant ? $data['phone'] : null,
             'joined_at' => null,
             'active' => $isAssistant ? true : (bool) ($data['active'] ?? false),
             'kursus_guru' => $isAssistant ? null : ($data['kursus_guru'] ?? null),
@@ -522,6 +528,7 @@ class GuruController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:30'],
             'kad_pengenalan' => ['required', 'string', 'max:30'],
             'elaun' => ['nullable', 'numeric', 'min:0'],
             'elaun_transit' => ['nullable', 'numeric', 'min:0'],
@@ -539,7 +546,7 @@ class GuruController extends Controller
             'elaun_transit' => $data['elaun_transit'] ?? null,
             'elaun_lain' => $data['elaun_lain'] ?? null,
             'is_assistant' => true,
-            'phone' => null,
+            'phone' => $data['phone'],
             'joined_at' => null,
             'active' => true,
         ]);
@@ -601,6 +608,7 @@ class GuruController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:30'],
             'kad_pengenalan' => ['required', 'string', 'max:30'],
             'elaun' => ['nullable', 'numeric', 'min:0'],
             'elaun_transit' => ['nullable', 'numeric', 'min:0'],
@@ -618,7 +626,7 @@ class GuruController extends Controller
             'elaun_transit' => $data['elaun_transit'] ?? null,
             'elaun_lain' => $data['elaun_lain'] ?? null,
             'is_assistant' => true,
-            'phone' => null,
+            'phone' => $data['phone'],
             'joined_at' => null,
             'active' => true,
         ]);
@@ -653,6 +661,7 @@ class GuruController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:30'],
             'kad_pengenalan' => ['required', 'string', 'max:30'],
             'elaun' => ['nullable', 'numeric', 'min:0'],
             'elaun_transit' => ['nullable', 'numeric', 'min:0'],
@@ -664,7 +673,7 @@ class GuruController extends Controller
         $assistant->update([
             'name' => $data['name'],
             'email' => null,
-            'phone' => null,
+            'phone' => $data['phone'],
             'kad_pengenalan' => $data['kad_pengenalan'],
             'elaun' => $data['elaun'] ?? null,
             'elaun_transit' => $data['elaun_transit'] ?? null,

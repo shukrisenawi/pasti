@@ -114,6 +114,35 @@ class GuruManagementTest extends TestCase
             ->assertSessionHasErrors('kad_pengenalan');
     }
 
+    public function test_admin_cannot_store_assistant_without_phone(): void
+    {
+        Role::findOrCreate('master_admin');
+
+        $admin = User::factory()->create();
+        $admin->assignRole('master_admin');
+
+        $kawasan = Kawasan::query()->create([
+            'name' => 'Kawasan Ujian',
+            'code' => 'KUJ',
+        ]);
+
+        $pasti = Pasti::query()->create([
+            'kawasan_id' => $kawasan->id,
+            'name' => 'PASTI Ujian',
+            'code' => 'PUJ',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('users.gurus.store'), [
+                'name' => 'Pembantu Tanpa Telefon',
+                'pasti_id' => $pasti->id,
+                'is_assistant' => 1,
+                'kad_pengenalan' => '900101-01-1234',
+                'avatar' => UploadedFile::fake()->create('pembantu-tanpa-telefon.jpg', 100, 'image/jpeg'),
+            ])
+            ->assertSessionHasErrors('phone');
+    }
+
     public function test_admin_can_store_assistant_with_allowance_fields(): void
     {
         Role::findOrCreate('master_admin');
@@ -139,6 +168,7 @@ class GuruManagementTest extends TestCase
                 'pasti_id' => $pasti->id,
                 'is_assistant' => 1,
                 'kad_pengenalan' => '900101-01-1234',
+                'phone' => '0123456789',
                 'elaun' => 150,
                 'elaun_transit' => 40,
                 'elaun_lain' => 25,
@@ -150,6 +180,7 @@ class GuruManagementTest extends TestCase
         $this->assertDatabaseHas('gurus', [
             'name' => 'Pembantu Berelaun',
             'is_assistant' => true,
+            'phone' => '0123456789',
             'elaun' => '150.00',
             'elaun_transit' => '40.00',
             'elaun_lain' => '25.00',
@@ -197,13 +228,13 @@ class GuruManagementTest extends TestCase
 
         $assistantPage
             ->assertSee('name="name"', false)
+            ->assertSee('name="phone"', false)
             ->assertSee('name="kad_pengenalan"', false)
             ->assertSee('name="elaun"', false)
             ->assertSee('name="elaun_transit"', false)
             ->assertSee('name="elaun_lain"', false)
             ->assertSee('name="avatar"', false)
             ->assertDontSee('name="email"', false)
-            ->assertDontSee('name="phone"', false)
             ->assertDontSee('name="joined_at"', false)
             ->assertDontSee('name="active"', false);
 
@@ -212,13 +243,13 @@ class GuruManagementTest extends TestCase
             ->assertOk()
             ->assertSee('name="name"', false)
             ->assertSee('name="pasti_id"', false)
+            ->assertSee('name="phone"', false)
             ->assertSee('name="kad_pengenalan"', false)
             ->assertSee('name="elaun"', false)
             ->assertSee('name="elaun_transit"', false)
             ->assertSee('name="elaun_lain"', false)
             ->assertSee('name="avatar"', false)
             ->assertDontSee('name="email"', false)
-            ->assertDontSee('name="phone"', false)
             ->assertDontSee('name="joined_at"', false)
             ->assertDontSee('name="active"', false)
             ->assertDontSee('name="marital_status"', false)
