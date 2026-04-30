@@ -140,8 +140,8 @@
                             @php($latestSalary = $report->latestCompletedSalaryRequest)
                             <tr class="align-middle odd:bg-white even:bg-slate-50/55 hover:bg-primary/5">
                                 <td class="border-b border-slate-100 px-4 py-3">
-                                    <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.08em] {{ $report->active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
-                                        {{ $report->active ? 'Guru' : 'Berhenti' }}
+                                    <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.08em] {{ $report->is_assistant ? 'bg-amber-100 text-amber-700' : ($report->active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700') }}">
+                                        {{ $report->is_assistant ? 'PEMBANTU' : ($report->active ? 'Guru' : 'Berhenti') }}
                                     </span>
                                 </td>
                                 <td class="border-b border-slate-100 px-4 py-3">
@@ -152,9 +152,15 @@
                                 </td>
                                 <td class="border-b border-slate-100 px-4 py-3 font-medium">{{ mb_strtoupper((string) ($report->kad_pengenalan ?: '-')) }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 font-medium">{{ mb_strtoupper((string) ($report->phone ?: '-')) }}</td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->gaji) ? 'RM ' . number_format((float) $latestSalary->gaji, 2) : '-' }}</td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun_transit) ? 'RM ' . number_format((float) $latestSalary->elaun_transit, 2) : (filled($latestSalary?->elaun) ? 'RM ' . number_format((float) $latestSalary->elaun, 2) : '-') }}</td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">{{ filled($latestSalary?->elaun_lain) ? 'RM ' . number_format((float) $latestSalary->elaun_lain, 2) : '-' }}</td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">
+                                    {{ filled($report->is_assistant ? $report->elaun : $latestSalary?->gaji) ? 'RM ' . number_format((float) ($report->is_assistant ? $report->elaun : $latestSalary?->gaji), 2) : '-' }}
+                                </td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">
+                                    {{ filled($report->is_assistant ? $report->elaun_transit : ($latestSalary?->elaun_transit ?? $latestSalary?->elaun)) ? 'RM ' . number_format((float) ($report->is_assistant ? $report->elaun_transit : ($latestSalary?->elaun_transit ?? $latestSalary?->elaun)), 2) : '-' }}
+                                </td>
+                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">
+                                    {{ filled($report->is_assistant ? $report->elaun_lain : $latestSalary?->elaun_lain) ? 'RM ' . number_format((float) ($report->is_assistant ? $report->elaun_lain : $latestSalary?->elaun_lain), 2) : '-' }}
+                                </td>
                             </tr>
                         @empty
                             <tr>

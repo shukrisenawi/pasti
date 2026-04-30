@@ -22,7 +22,6 @@ class PastiReportController extends Controller
         }
 
         $reports = Guru::query()
-            ->where('is_assistant', false)
             ->whereRaw('lower(coalesce(gurus.name, \'\')) <> ?', ['test'])
             ->with(['pasti', 'latestCompletedSalaryRequest'])
             ->when(
@@ -31,6 +30,7 @@ class PastiReportController extends Controller
             )
             ->leftJoin('pastis', 'pastis.id', '=', 'gurus.pasti_id')
             ->select('gurus.*')
+            ->orderBy('gurus.is_assistant')
             ->orderByRaw("CASE WHEN pastis.name IS NULL OR pastis.name = '' THEN 1 ELSE 0 END")
             ->orderBy('pastis.name')
             ->orderBy('gurus.name')

@@ -131,6 +131,7 @@ class PastiReportTest extends TestCase
         $zainab = $this->createGuru($pastiA, 'Zainab', false, '900101-01-1234', '0123000000');
         $amina = $this->createGuru($pastiA, 'Amina', true, '880202-02-2345', '0134000000');
         $badrul = $this->createGuru($pastiB, 'Badrul', true, '870303-03-3456', '0145000000');
+        $pembantu = $this->createGuru($pastiA, 'Pembantu Aina', true, '860404-04-4567', '0156000000', true, 600, 80, 20);
 
         $this->insertSalary($zainab->id, now()->subDays(3), 1200, 150, 25);
         $this->insertSalary($zainab->id, now()->subDay(), 1400, 180, 35);
@@ -142,19 +143,24 @@ class PastiReportTest extends TestCase
         $template = file_get_contents(resource_path('views/pasti-reports/index.blade.php'));
 
         $this->assertSame(
-            ['Amina', 'Zainab', 'Badrul'],
+            ['Amina', 'Zainab', 'Badrul', 'Pembantu Aina'],
             collect($reports->items())->pluck('name')->all()
         );
         $this->assertSame('1000.00', $reports->items()[0]->latestCompletedSalaryRequest?->gaji);
         $this->assertSame('180.00', $reports->items()[1]->latestCompletedSalaryRequest?->elaun);
         $this->assertSame('35.00', $reports->items()[1]->latestCompletedSalaryRequest?->elaun_lain);
         $this->assertFalse((bool) $reports->items()[1]->active);
+        $this->assertTrue((bool) $reports->items()[3]->is_assistant);
+        $this->assertSame('600.00', $reports->items()[3]->elaun);
+        $this->assertSame('80.00', $reports->items()[3]->elaun_transit);
+        $this->assertSame('20.00', $reports->items()[3]->elaun_lain);
         $this->assertIsString($template);
         $this->assertStringContainsString('Elaun</th>', $template);
         $this->assertStringContainsString('Elaun Transit', $template);
         $this->assertStringContainsString('Elaun Lain', $template);
         $this->assertStringNotContainsString('Elaun Tambahan', $template);
         $this->assertStringNotContainsString('Nama PASTI', $template);
+        $this->assertStringContainsString("'PEMBANTU'", $template);
     }
 
     public function test_pasti_report_includes_maklumat_pasti_tab_with_latest_completed_information(): void
@@ -200,7 +206,9 @@ class PastiReportTest extends TestCase
         ]);
 
         $visibleGuru = $this->createGuru($visiblePasti, 'Guru Nampak', true, '900101-01-1111', '0111111111');
+        $visibleAssistant = $this->createGuru($visiblePasti, 'Pembantu Nampak', true, '900101-01-1212', '0111111212', true, 500, 70, 10);
         $hiddenGuru = $this->createGuru($hiddenPasti, 'Guru Sorok', true, '900101-01-2222', '0222222222');
+        $hiddenAssistant = $this->createGuru($hiddenPasti, 'Pembantu Sorok', true, '900101-01-2323', '0222222323', true, 550, 75, 12);
 
         $this->insertSalary($visibleGuru->id, now()->subDay(), 1000, 100, 20);
         $this->insertSalary($hiddenGuru->id, now()->subDay(), 2000, 200, 30);
@@ -208,7 +216,7 @@ class PastiReportTest extends TestCase
         $view = app(PastiReportController::class)->index();
         $reports = $view->getData()['reports'];
 
-        $this->assertSame(['Guru Nampak'], collect($reports->items())->pluck('name')->all());
+        $this->assertSame(['Guru Nampak', 'Pembantu Nampak'], collect($reports->items())->pluck('name')->all());
     }
 
     public function test_pasti_report_excludes_guru_named_test(): void
@@ -220,6 +228,7 @@ class PastiReportTest extends TestCase
 
         $testGuru = $this->createGuru($pasti, 'Test', true, '900101-01-9999', '0199999999');
         $realGuru = $this->createGuru($pasti, 'Guru Sebenar', true, '900101-01-8888', '0188888888');
+        $realAssistant = $this->createGuru($pasti, 'Pembantu Sebenar', true, '900101-01-7777', '0177777777', true, 450, 55, 5);
 
         $this->insertSalary($testGuru->id, now()->subDay(), 1000, 100, 20);
         $this->insertSalary($realGuru->id, now()->subDay(), 1100, 120, 25);
@@ -227,7 +236,7 @@ class PastiReportTest extends TestCase
         $view = app(PastiReportController::class)->index();
         $reports = $view->getData()['reports'];
 
-        $this->assertSame(['Guru Sebenar'], collect($reports->items())->pluck('name')->all());
+        $this->assertSame(['Guru Sebenar', 'Pembantu Sebenar'], collect($reports->items())->pluck('name')->all());
     }
 
     private function setAuthenticatedUser(User $user): void
@@ -256,7 +265,17 @@ class PastiReportTest extends TestCase
         return $user;
     }
 
-    private function createGuru(Pasti $pasti, string $name, bool $active, string $kadPengenalan, string $phone): Guru
+    private function createGuru(
+        Pasti $pasti,
+        string $name,
+        bool $active,
+        string $kadPengenalan,
+        string $phone,
+        bool $isAssistant = false,
+        ?float $elaun = null,
+        ?float $elaunTransit = null,
+        ?float $elaunLain = null
+    ): Guru
     {
         return Guru::query()->create([
             'pasti_id' => $pasti->id,
@@ -264,7 +283,10 @@ class PastiReportTest extends TestCase
             'email' => strtolower(str_replace(' ', '', $name)) . uniqid() . '@example.test',
             'kad_pengenalan' => $kadPengenalan,
             'phone' => $phone,
-            'is_assistant' => false,
+            'elaun' => $elaun,
+            'elaun_transit' => $elaunTransit,
+            'elaun_lain' => $elaunLain,
+            'is_assistant' => $isAssistant,
             'active' => $active,
         ]);
     }
