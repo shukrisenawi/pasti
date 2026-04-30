@@ -175,12 +175,15 @@ class GuruManagementTest extends TestCase
                 'active' => 1,
                 'avatar' => UploadedFile::fake()->create('pembantu-elaun.jpg', 100, 'image/jpeg'),
             ])
+            ->assertRedirect(route('users.gurus.index', ['tab' => 'assistant']))
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('gurus', [
             'name' => 'Pembantu Berelaun',
             'is_assistant' => true,
+            'pasti_id' => $pasti->id,
             'phone' => '0123456789',
+            'active' => true,
             'elaun' => '150.00',
             'elaun_transit' => '40.00',
             'elaun_lain' => '25.00',

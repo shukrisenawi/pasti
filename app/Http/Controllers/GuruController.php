@@ -196,7 +196,7 @@ class GuruController extends Controller
 
         $guru = Guru::query()->create([
             'user_id' => $guruUser?->id,
-            'pasti_id' => null,
+            'pasti_id' => $isAssistant ? ($data['pasti_id'] ?? null) : null,
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
             'avatar_path' => null,
@@ -225,7 +225,9 @@ class GuruController extends Controller
 
         $this->kpiCalculationService->recalculateForGuru($guru);
 
-        return redirect()->route('users.gurus.index')->with('status', __('messages.saved'));
+        return redirect()
+            ->route('users.gurus.index', $isAssistant ? ['tab' => 'assistant'] : [])
+            ->with('status', __('messages.saved'));
     }
 
     public function edit(Request $request, Guru $users_guru): View
