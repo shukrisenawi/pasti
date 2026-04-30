@@ -128,6 +128,7 @@ class GuruMobileApiController extends Controller
                 'avatar_url' => $this->assetUrl($user->avatar_url),
             ],
             'guru' => [
+                'kad_pengenalan' => $guru->kad_pengenalan,
                 'phone' => $guru->phone,
                 'joined_at' => $guru->joined_at?->toDateString(),
                 'pasti_id' => $guru->pasti_id,
@@ -354,6 +355,7 @@ class GuruMobileApiController extends Controller
             'tarikh_lahir' => ['required', 'date'],
             'pasti_id' => ['required', 'integer', 'exists:pastis,id'],
             'phone' => ['required', 'string', 'max:30'],
+            'kad_pengenalan' => ['required', 'string', 'max:30'],
             'marital_status' => ['required', 'string', 'in:single,married,widowed,divorced'],
             'kursus_guru' => ['nullable', 'string', Rule::in(Guru::KURSUS_GURU_OPTIONS)],
             'joined_at' => ['required', 'date'],
@@ -368,6 +370,7 @@ class GuruMobileApiController extends Controller
         $guru->update([
             'pasti_id' => $data['pasti_id'],
             'phone' => $data['phone'],
+            'kad_pengenalan' => $data['kad_pengenalan'],
             'marital_status' => $data['marital_status'],
             'kursus_guru' => $data['kursus_guru'] ?? null,
             'joined_at' => $data['joined_at'],
@@ -400,6 +403,7 @@ class GuruMobileApiController extends Controller
                 'pasti_id' => $freshUser->guru?->pasti_id,
                 'pasti_name' => $freshUser->guru?->pasti?->name,
                 'kawasan_name' => $freshUser->guru?->pasti?->kawasan?->name,
+                'kad_pengenalan' => $freshUser->guru?->kad_pengenalan,
                 'phone' => $freshUser->guru?->phone,
                 'marital_status' => $freshUser->guru?->marital_status,
                 'kursus_guru' => $freshUser->guru?->kursus_guru,

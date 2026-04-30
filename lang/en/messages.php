@@ -96,6 +96,7 @@ return [
     'code' => 'Code',
     'address' => 'Address',
     'phone' => 'Phone',
+    'kad_pengenalan' => 'Identity Card',
     'status' => 'Status',
     'yes' => 'Yes',
     'no' => 'No',

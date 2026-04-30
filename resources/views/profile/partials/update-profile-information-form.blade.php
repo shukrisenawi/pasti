@@ -59,6 +59,12 @@
             </div>
 
             <div>
+                <x-input-label for="kad_pengenalan" :value="__('messages.kad_pengenalan')" />
+                <x-text-input id="kad_pengenalan" name="kad_pengenalan" type="text" class="mt-1 block w-full" :value="old('kad_pengenalan', $user->guru?->kad_pengenalan)" required />
+                <x-input-error class="mt-2" :messages="$errors->get('kad_pengenalan')" />
+            </div>
+
+            <div>
                 <x-input-label for="marital_status" :value="__('messages.marital_status')" />
                 <select id="marital_status" name="marital_status" class="input-base mt-1 block w-full" required>
                     <option value="">- {{ __('messages.select') }} -</option>
@@ -133,4 +139,3 @@
         </div>
     </form>
 </section>
-

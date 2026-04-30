@@ -97,6 +97,7 @@ return [
     'code' => 'Kod',
     'address' => 'Alamat',
     'phone' => 'Telefon',
+    'kad_pengenalan' => 'Kad Pengenalan',
     'manager_name' => 'Nama Pengurus PASTI',
     'manager_phone' => 'No. HP Pengurus PASTI',
     'status' => 'Status',

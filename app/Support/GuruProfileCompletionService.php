@@ -30,6 +30,10 @@ class GuruProfileCompletionService
             $missing[] = 'phone';
         }
 
+        if (blank($guru?->kad_pengenalan)) {
+            $missing[] = 'kad_pengenalan';
+        }
+
         if (blank($guru?->marital_status)) {
             $missing[] = 'marital_status';
         }

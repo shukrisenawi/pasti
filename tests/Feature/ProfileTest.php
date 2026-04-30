@@ -147,4 +147,51 @@ class ProfileTest extends TestCase
             ->assertSee('data-testid="password-tab-panel"', false)
             ->assertSee('Update Password');
     }
+
+    public function test_guru_profile_requires_identity_card_and_saves_it(): void
+    {
+        Role::findOrCreate('guru');
+
+        $user = User::factory()->create([
+            'nama_samaran' => 'Guru Profil',
+            'tarikh_lahir' => '1990-01-01',
+            'avatar_path' => 'avatars/guru-profil.jpg',
+        ]);
+        $user->assignRole('guru');
+
+        $guru = Guru::query()->create([
+            'user_id' => $user->id,
+            'name' => $user->name,
+        ]);
+
+        $this->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'name' => 'Guru Profil',
+                'nama_samaran' => 'Guru Profil',
+                'email' => $user->email,
+                'tarikh_lahir' => '1990-01-01',
+                'phone' => '0123456789',
+                'marital_status' => 'married',
+                'joined_at' => '2024-01-01',
+                'kursus_guru' => 'semester_1',
+            ])
+            ->assertSessionHasErrors('kad_pengenalan');
+
+        $this->actingAs($user)
+            ->patch('/profile', [
+                'name' => 'Guru Profil',
+                'nama_samaran' => 'Guru Profil',
+                'email' => $user->email,
+                'tarikh_lahir' => '1990-01-01',
+                'phone' => '0123456789',
+                'kad_pengenalan' => '900101-01-1234',
+                'marital_status' => 'married',
+                'joined_at' => '2024-01-01',
+                'kursus_guru' => 'semester_1',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('900101-01-1234', $guru->fresh()->kad_pengenalan);
+    }
 }

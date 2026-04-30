@@ -120,11 +120,13 @@ class GuruController extends Controller
         $emailRules = ['email', 'max:255'];
         $passwordRules = ['nullable', 'string', 'min:8', 'confirmed'];
         $avatarRules = ['image', 'mimes:jpg,jpeg,png,webp', 'max:7168'];
+        $kadPengenalanRules = ['string', 'max:30'];
 
         if ($isAssistant) {
             $emailRules[] = 'nullable';
             $passwordRules[] = 'nullable';
             array_unshift($avatarRules, 'required');
+            array_unshift($kadPengenalanRules, 'nullable');
         } else {
             $emailRules[] = 'required';
             $emailRules[] = function ($attribute, $value, $fail) {
@@ -135,6 +137,7 @@ class GuruController extends Controller
             };
             $passwordRules[] = 'nullable';
             array_unshift($avatarRules, 'nullable');
+            array_unshift($kadPengenalanRules, 'required');
         }
 
         $data = $request->validate([
@@ -146,6 +149,7 @@ class GuruController extends Controller
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
             'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'kad_pengenalan' => $kadPengenalanRules,
             'joined_at' => ['nullable', 'date'],
             'tarikh_lahir' => ['nullable', 'date'],
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
@@ -188,6 +192,7 @@ class GuruController extends Controller
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
             'avatar_path' => null,
+            'kad_pengenalan' => $data['kad_pengenalan'] ?? null,
             'is_assistant' => $isAssistant,
             'phone' => null,
             'joined_at' => null,
@@ -242,10 +247,12 @@ class GuruController extends Controller
         $isAssistant = $request->boolean('is_assistant');
         $emailRules = ['email', 'max:255'];
         $passwordRules = ['nullable', 'string', 'min:8', 'confirmed'];
+        $kadPengenalanRules = ['string', 'max:30'];
 
         if ($isAssistant) {
             $emailRules[] = 'nullable';
             $passwordRules[] = 'nullable';
+            array_unshift($kadPengenalanRules, 'nullable');
         } else {
             $emailRules[] = 'required';
             $emailRules[] = function ($attribute, $value, $fail) use ($users_guru) {
@@ -255,6 +262,7 @@ class GuruController extends Controller
                 }
             };
             $passwordRules[] = 'nullable';
+            array_unshift($kadPengenalanRules, 'required');
         }
 
         $data = $request->validate([
@@ -267,6 +275,7 @@ class GuruController extends Controller
             'remove_avatar' => ['nullable', 'boolean'],
             'pasti_id' => ['nullable', 'integer', 'exists:pastis,id'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'kad_pengenalan' => $kadPengenalanRules,
             'joined_at' => ['nullable', 'date'],
             'tarikh_lahir' => ['nullable', 'date'],
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
@@ -348,6 +357,7 @@ class GuruController extends Controller
             'email' => $data['email'] ?? null,
             'is_assistant' => $isAssistant,
             'avatar_path' => $isAssistant ? $users_guru->avatar_path : null,
+            'kad_pengenalan' => $data['kad_pengenalan'] ?? null,
             'phone' => $data['phone'] ?? null,
             'joined_at' => $data['joined_at'] ?? null,
             'active' => (bool) ($data['active'] ?? false),

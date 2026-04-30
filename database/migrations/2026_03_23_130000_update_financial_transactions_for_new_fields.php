@@ -42,12 +42,16 @@ return new class extends Migration
                 'credit_debit' => DB::raw("CASE WHEN transaction_type = 'masuk' THEN 'credit' ELSE 'debit' END"),
             ]);
 
-        DB::statement('ALTER TABLE financial_transactions MODIFY pasti_id BIGINT UNSIGNED NULL');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE financial_transactions MODIFY pasti_id BIGINT UNSIGNED NULL');
+        }
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE financial_transactions MODIFY pasti_id BIGINT UNSIGNED NOT NULL');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE financial_transactions MODIFY pasti_id BIGINT UNSIGNED NOT NULL');
+        }
 
         Schema::table('financial_transactions', function (Blueprint $table) {
             $table->dropForeign(['financial_transaction_type_id']);

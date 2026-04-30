@@ -35,6 +35,7 @@ class ProfileUpdateRequest extends FormRequest
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
             'remove_avatar' => ['nullable', 'boolean'],
             'phone' => [...$requiredOrNullable(), 'string', 'max:30'],
+            'kad_pengenalan' => [...$requiredOrNullable(), 'string', 'max:30'],
             'marital_status' => [...$requiredOrNullable(), 'string', 'in:single,married,widowed,divorced'],
             'kursus_guru' => ['nullable', 'string', Rule::in(Guru::KURSUS_GURU_OPTIONS)],
             'joined_at' => [...$requiredOrNullable(), 'date'],
@@ -59,4 +60,3 @@ class ProfileUpdateRequest extends FormRequest
         });
     }
 }
-

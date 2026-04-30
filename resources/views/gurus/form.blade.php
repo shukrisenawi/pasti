@@ -63,6 +63,10 @@
                     <label class="label-base">{{ __('messages.phone') }}</label>
                     <input class="input-base" name="phone" value="{{ old('phone', $guru->phone) }}">
                 </div>
+                <div x-show="isAssistant === 0" x-cloak>
+                    <label class="label-base">{{ __('messages.kad_pengenalan') }}</label>
+                    <input class="input-base" name="kad_pengenalan" value="{{ old('kad_pengenalan', $guru->kad_pengenalan) }}" :required="isAssistant === 0">
+                </div>
                 <div>
                     <label class="label-base">{{ __('messages.marital_status') }}</label>
                     <select class="input-base" name="marital_status">
@@ -121,5 +125,4 @@
         </form>
     </div>
 </x-app-layout>
-
 

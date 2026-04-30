@@ -30,6 +30,7 @@ class Guru extends Model
         'name',
         'email',
         'avatar_path',
+        'kad_pengenalan',
         'is_assistant',
         'phone',
         'marital_status',
