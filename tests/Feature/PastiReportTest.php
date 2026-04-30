@@ -73,6 +73,7 @@ class PastiReportTest extends TestCase
             $table->timestamp('completed_at')->nullable();
             $table->decimal('gaji', 10, 2)->nullable();
             $table->decimal('elaun', 10, 2)->nullable();
+            $table->decimal('elaun_lain', 10, 2)->nullable();
             $table->timestamps();
         });
 
@@ -107,21 +108,26 @@ class PastiReportTest extends TestCase
         $amina = $this->createGuru($pastiA, 'Amina', true, '880202-02-2345', '0134000000');
         $badrul = $this->createGuru($pastiB, 'Badrul', true, '870303-03-3456', '0145000000');
 
-        $this->insertSalary($zainab->id, now()->subDays(3), 1200, 150);
-        $this->insertSalary($zainab->id, now()->subDay(), 1400, 180);
-        $this->insertSalary($amina->id, now()->subDays(2), 1000, 120);
-        $this->insertSalary($badrul->id, now()->subDays(4), 900, 90);
+        $this->insertSalary($zainab->id, now()->subDays(3), 1200, 150, 25);
+        $this->insertSalary($zainab->id, now()->subDay(), 1400, 180, 35);
+        $this->insertSalary($amina->id, now()->subDays(2), 1000, 120, 15);
+        $this->insertSalary($badrul->id, now()->subDays(4), 900, 90, 10);
 
         $view = app(PastiReportController::class)->index();
         $reports = $view->getData()['reports'];
+        $template = file_get_contents(resource_path('views/pasti-reports/index.blade.php'));
 
         $this->assertSame(
             ['Amina', 'Zainab', 'Badrul'],
             collect($reports->items())->pluck('name')->all()
         );
         $this->assertSame('180.00', $reports->items()[1]->latestCompletedSalaryRequest?->elaun);
-        $this->assertSame('1400.00', $reports->items()[1]->latestCompletedSalaryRequest?->gaji);
+        $this->assertSame('35.00', $reports->items()[1]->latestCompletedSalaryRequest?->elaun_lain);
         $this->assertFalse((bool) $reports->items()[1]->active);
+        $this->assertIsString($template);
+        $this->assertStringContainsString('Elaun Transit', $template);
+        $this->assertStringContainsString('Elaun Lain', $template);
+        $this->assertStringNotContainsString('Elaun Tambahan', $template);
     }
 
     public function test_pasti_report_for_admin_is_limited_to_assigned_pasti(): void
@@ -142,8 +148,8 @@ class PastiReportTest extends TestCase
         $visibleGuru = $this->createGuru($visiblePasti, 'Guru Nampak', true, '900101-01-1111', '0111111111');
         $hiddenGuru = $this->createGuru($hiddenPasti, 'Guru Sorok', true, '900101-01-2222', '0222222222');
 
-        $this->insertSalary($visibleGuru->id, now()->subDay(), 1000, 100);
-        $this->insertSalary($hiddenGuru->id, now()->subDay(), 2000, 200);
+        $this->insertSalary($visibleGuru->id, now()->subDay(), 1000, 100, 20);
+        $this->insertSalary($hiddenGuru->id, now()->subDay(), 2000, 200, 30);
 
         $view = app(PastiReportController::class)->index();
         $reports = $view->getData()['reports'];
@@ -161,8 +167,8 @@ class PastiReportTest extends TestCase
         $testGuru = $this->createGuru($pasti, 'Test', true, '900101-01-9999', '0199999999');
         $realGuru = $this->createGuru($pasti, 'Guru Sebenar', true, '900101-01-8888', '0188888888');
 
-        $this->insertSalary($testGuru->id, now()->subDay(), 1000, 100);
-        $this->insertSalary($realGuru->id, now()->subDay(), 1100, 120);
+        $this->insertSalary($testGuru->id, now()->subDay(), 1000, 100, 20);
+        $this->insertSalary($realGuru->id, now()->subDay(), 1100, 120, 25);
 
         $view = app(PastiReportController::class)->index();
         $reports = $view->getData()['reports'];
@@ -209,7 +215,7 @@ class PastiReportTest extends TestCase
         ]);
     }
 
-    private function insertSalary(int $guruId, $completedAt, float $gaji, float $elaun): void
+    private function insertSalary(int $guruId, $completedAt, float $gaji, float $elaun, float $elaunLain): void
     {
         \DB::table('guru_salary_requests')->insert([
             'guru_id' => $guruId,
@@ -219,6 +225,7 @@ class PastiReportTest extends TestCase
             'completed_at' => $completedAt,
             'gaji' => $gaji,
             'elaun' => $elaun,
+            'elaun_lain' => $elaunLain,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

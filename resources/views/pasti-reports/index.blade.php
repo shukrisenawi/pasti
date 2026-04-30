@@ -17,8 +17,8 @@
                         <th class="px-4 py-3 text-left">Nama Guru</th>
                         <th class="px-4 py-3 text-left">No Kad Pengenalan</th>
                         <th class="px-4 py-3 text-left">No HP</th>
-                        <th class="px-4 py-3 text-left">Elaun</th>
-                        <th class="px-4 py-3 text-left">Elaun Tambahan</th>
+                        <th class="px-4 py-3 text-left">Elaun Transit</th>
+                        <th class="px-4 py-3 text-left">Elaun Lain</th>
                         <th class="px-4 py-3 text-left">Nama PASTI</th>
                     </tr>
                 </thead>
@@ -33,7 +33,7 @@
                             <td class="px-4 py-3">{{ mb_strtoupper((string) ($report->kad_pengenalan ?: '-')) }}</td>
                             <td class="px-4 py-3">{{ mb_strtoupper((string) ($report->phone ?: '-')) }}</td>
                             <td class="px-4 py-3">{{ filled($latestSalary?->elaun) ? 'RM ' . number_format((float) $latestSalary->elaun, 2) : '-' }}</td>
-                            <td class="px-4 py-3">{{ filled($latestSalary?->gaji) ? 'RM ' . number_format((float) $latestSalary->gaji, 2) : '-' }}</td>
+                            <td class="px-4 py-3">{{ filled($latestSalary?->elaun_lain) ? 'RM ' . number_format((float) $latestSalary->elaun_lain, 2) : '-' }}</td>
                             <td class="px-4 py-3">{{ mb_strtoupper((string) ($report->pasti?->name ?: '-')) }}</td>
                         </tr>
                     @empty
