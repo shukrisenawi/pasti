@@ -40,6 +40,7 @@ class AdminUserController extends Controller
             'nama_samaran' => ['nullable', 'string', 'max:255'],
             'tarikh_lahir' => ['nullable', 'date'],
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
+            'kad_pengenalan' => ['nullable', 'string', 'max:30'],
             'email' => [
                 'required', 'email', 'max:255',
                 function ($attribute, $value, $fail) {
@@ -89,6 +90,12 @@ class AdminUserController extends Controller
             $admin->assignedPastis()->sync($data['pasti_ids'] ?? []);
         }
 
+        if ($admin->guru) {
+            $admin->guru->update([
+                'kad_pengenalan' => $data['kad_pengenalan'] ?? null,
+            ]);
+        }
+
         $this->syncAdminGuruProfile($admin, $isGuru, null, null);
 
         return redirect()->route('users.admins.index')->with('status', __('messages.saved'));
@@ -113,6 +120,7 @@ class AdminUserController extends Controller
             'nama_samaran' => ['nullable', 'string', 'max:255'],
             'tarikh_lahir' => ['nullable', 'date'],
             'tarikh_exp_skim_pas' => ['nullable', 'date'],
+            'kad_pengenalan' => ['nullable', 'string', 'max:30'],
             'email' => [
                 'required', 'email', 'max:255',
                 function ($attribute, $value, $fail) use ($users_admin) {
@@ -173,6 +181,12 @@ class AdminUserController extends Controller
             $users_admin->assignedPastis()->sync($allPastiIds);
         } else {
             $users_admin->assignedPastis()->sync($data['pasti_ids'] ?? []);
+        }
+
+        if ($users_admin->guru) {
+            $users_admin->guru->update([
+                'kad_pengenalan' => $data['kad_pengenalan'] ?? null,
+            ]);
         }
 
         $this->syncAdminGuruProfile($users_admin, $isGuru, null, null);

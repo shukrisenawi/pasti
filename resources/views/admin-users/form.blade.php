@@ -65,6 +65,16 @@
                             @enderror
                         </div>
 
+                        @if($adminUser->guru)
+                            <div class="admin-field md:col-span-2">
+                                <label class="admin-field-label">{{ __('messages.kad_pengenalan') }}</label>
+                                <input class="admin-field-input" type="text" name="kad_pengenalan" value="{{ old('kad_pengenalan', $adminUser->guru?->kad_pengenalan) }}" data-mask="kad-pengenalan" inputmode="numeric" placeholder="######-##-####">
+                                @error('kad_pengenalan')
+                                    <p class="admin-field-error">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        @endif
+
                         <div class="admin-field md:col-span-2">
                             <label class="admin-field-label">{{ __('messages.email') }}</label>
                             <input class="admin-field-input" type="email" name="email" value="{{ old('email', $adminUser->email) }}" required>
@@ -144,4 +154,3 @@
         </div>
     </div>
 </x-app-layout>
-
