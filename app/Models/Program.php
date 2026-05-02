@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -27,10 +28,47 @@ class Program extends Model
     {
         return [
             'program_date' => 'date',
-            'program_time' => 'datetime:H:i',
             'require_absence_reason' => 'boolean',
             'markah' => 'integer',
         ];
+    }
+
+    public function getProgramTimeAttribute($value): ?Carbon
+    {
+        if (blank($value)) {
+            return null;
+        }
+
+        foreach (['H:i:s', 'H:i'] as $format) {
+            try {
+                return Carbon::createFromFormat($format, (string) $value);
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return Carbon::parse((string) $value);
+    }
+
+    public function setProgramTimeAttribute($value): void
+    {
+        if (blank($value)) {
+            $this->attributes['program_time'] = null;
+
+            return;
+        }
+
+        foreach (['H:i:s', 'H:i'] as $format) {
+            try {
+                $this->attributes['program_time'] = Carbon::createFromFormat($format, (string) $value)->format('H:i:s');
+
+                return;
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        $this->attributes['program_time'] = Carbon::parse((string) $value)->format('H:i:s');
     }
 
     public function kawasan(): BelongsTo

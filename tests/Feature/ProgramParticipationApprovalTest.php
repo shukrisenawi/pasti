@@ -9,6 +9,8 @@ use App\Models\Pasti;
 use App\Models\Program;
 use App\Models\ProgramStatus;
 use App\Models\User;
+use App\Services\KpiCalculationService;
+use App\Services\N8nWebhookService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
@@ -359,6 +361,52 @@ class ProgramParticipationApprovalTest extends TestCase
             'program_id' => $program->id,
             'guru_id' => $assistantGuru->id,
         ]);
+    }
+
+    public function test_program_store_sends_n8n_payload_using_time_from_program_input(): void
+    {
+        Notification::fake();
+
+        [, $guruUser, , $admin] = $this->createProgramFixtures();
+
+        $kpiService = \Mockery::mock(KpiCalculationService::class);
+        $kpiService->shouldReceive('recalculateForGuru')->once();
+        $this->app->instance(KpiCalculationService::class, $kpiService);
+
+        $webhookService = \Mockery::mock(N8nWebhookService::class);
+        $webhookService->shouldReceive('toPublicUrl')->once()->with(null)->andReturn(null);
+        $webhookService->shouldReceive('toActionUrl')
+            ->once()
+            ->with(\Mockery::on(fn ($url) => is_string($url) && str_contains($url, '/programs/')))
+            ->andReturn('https://example.test/programs/baru');
+        $webhookService->shouldReceive('sendByTemplate')
+            ->once()
+            ->with(
+                N8nWebhookService::KEY_TEXT_PROGRAM_CREATED,
+                \Mockery::on(function (array $variables): bool {
+                    return ($variables['tajuk'] ?? null) === 'Program Masa Tepat'
+                        && ($variables['masa'] ?? null) === ' jam 8:30pg';
+                }),
+                'https://example.test/programs/baru',
+                null
+            );
+        $this->app->instance(N8nWebhookService::class, $webhookService);
+
+        $response = $this->actingAs($admin)
+            ->post(route('programs.store'), [
+                'title_option' => 'other',
+                'title_other' => 'Program Masa Tepat',
+                'program_date' => now()->toDateString(),
+                'program_time' => '08:30',
+                'location' => 'Dewan',
+                'description' => 'Ujian masa webhook',
+                'require_absence_reason' => '1',
+                'markah' => 4,
+                'teacher_scope' => 'selected',
+                'guru_ids' => [$guruUser->guru->id],
+            ]);
+
+        $response->assertRedirect(route('programs.index'));
     }
 
     public function test_program_show_page_displays_avatar_and_latest_updated_participation_first(): void

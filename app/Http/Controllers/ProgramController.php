@@ -463,9 +463,13 @@ class ProgramController extends Controller
     private function programTimeText(Program $program): string
     {
         if ($program->program_time) {
-            $hour = (int) Carbon::parse((string) $program->program_time)->format('G');
+            $time = $program->program_time instanceof Carbon
+                ? $program->program_time
+                : Carbon::parse((string) $program->program_time);
+            $hour = (int) $time->format('G');
             $suffix = $hour < 12 ? 'pg' : ($hour < 19 ? 'ptg' : 'mlm');
-            return ' jam ' . Carbon::parse((string) $program->program_time)->format('g:i') . $suffix;
+
+            return ' jam ' . $time->format('g:i') . $suffix;
         }
 
         return '';
