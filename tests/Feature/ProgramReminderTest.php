@@ -8,11 +8,13 @@ use App\Models\Kawasan;
 use App\Models\Pasti;
 use App\Models\Program;
 use App\Models\ProgramStatus;
+use App\Models\SystemSetting;
 use App\Models\User;
 use App\Services\KpiCalculationService;
 use App\Services\N8nWebhookService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -116,6 +118,13 @@ class ProgramReminderTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('system_settings', function (Blueprint $table): void {
+            $table->id();
+            $table->string('key')->unique();
+            $table->text('value')->nullable();
+            $table->timestamps();
+        });
+
         \DB::table('roles')->insert([
             ['name' => 'master_admin', 'guard_name' => 'web'],
             ['name' => 'admin', 'guard_name' => 'web'],
@@ -133,6 +142,7 @@ class ProgramReminderTest extends TestCase
         Schema::dropIfExists('program_teacher');
         Schema::dropIfExists('program_statuses');
         Schema::dropIfExists('programs');
+        Schema::dropIfExists('system_settings');
         Schema::dropIfExists('gurus');
         Schema::dropIfExists('pastis');
         Schema::dropIfExists('admin_pasti');
@@ -264,6 +274,49 @@ class ProgramReminderTest extends TestCase
         );
 
         $this->assertSame(302, $adminResponse->getStatusCode());
+    }
+
+    public function test_all_settings_forces_test_group_on_localhost_with_root_db_username(): void
+    {
+        config()->set('app.url', 'http://localhost');
+        config()->set('database.connections.mysql.username', 'root');
+
+        SystemSetting::query()->create([
+            'key' => N8nWebhookService::KEY_WEBHOOK_GROUP,
+            'value' => 'real',
+        ]);
+
+        $settings = app(N8nWebhookService::class)->allSettings();
+
+        $this->assertSame('test', $settings['webhook_group']);
+    }
+
+    public function test_send_forces_test_group_on_localhost_with_root_db_username(): void
+    {
+        config()->set('app.url', 'http://localhost');
+        config()->set('database.connections.mysql.username', 'root');
+
+        SystemSetting::query()->create([
+            'key' => N8nWebhookService::KEY_WEBHOOK_GROUP,
+            'value' => 'real',
+        ]);
+
+        SystemSetting::query()->create([
+            'key' => N8nWebhookService::KEY_WEBHOOK_URL_PRODUCTION,
+            'value' => 'https://example.test/webhook',
+        ]);
+
+        Http::fake([
+            'https://example.test/webhook' => Http::response(['ok' => true], 200),
+        ]);
+
+        app(N8nWebhookService::class)->send('Ujian');
+
+        Http::assertSent(function ($request): bool {
+            return $request->url() === 'https://example.test/webhook'
+                && ($request['group'] ?? null) === 'test'
+                && ($request['text'] ?? null) === 'Ujian';
+        });
     }
 
     private function masterAdmin(): User

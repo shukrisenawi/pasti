@@ -262,9 +262,37 @@ class N8nWebhookService
 
     private function webhookGroup(): string
     {
+        if ($this->shouldForceTestWhatsappGroup()) {
+            return 'test';
+        }
+
         $group = strtolower($this->setting(self::KEY_WEBHOOK_GROUP, 'real'));
 
         return in_array($group, ['test', 'real'], true) ? $group : 'real';
+    }
+
+    private function shouldForceTestWhatsappGroup(): bool
+    {
+        $dbUsername = strtolower(trim((string) config('database.connections.mysql.username', '')));
+        if ($dbUsername !== 'root') {
+            return false;
+        }
+
+        $host = '';
+
+        if (app()->bound('request')) {
+            try {
+                $host = strtolower(trim((string) request()->getHost()));
+            } catch (Throwable) {
+                $host = '';
+            }
+        }
+
+        if ($host === '') {
+            $host = strtolower((string) parse_url((string) config('app.url', 'http://localhost'), PHP_URL_HOST));
+        }
+
+        return in_array($host, ['localhost', '127.0.0.1', '::1'], true);
     }
 
     private function template(string $key): string
