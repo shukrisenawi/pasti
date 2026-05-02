@@ -133,10 +133,10 @@ class PastiReportTest extends TestCase
         $badrul = $this->createGuru($pastiB, 'Badrul', true, '870303-03-3456', '0145000000');
         $pembantu = $this->createGuru($pastiA, 'Pembantu Aina', true, '860404-04-4567', '0156000000', true, 600, 80, 20);
 
-        $this->insertSalary($zainab->id, now()->subDays(3), 1200, 150, 25);
-        $this->insertSalary($zainab->id, now()->subDay(), 1400, 180, 35);
-        $this->insertSalary($amina->id, now()->subDays(2), 1000, 120, 15);
-        $this->insertSalary($badrul->id, now()->subDays(4), 900, 90, 10);
+        $this->insertSalary($zainab->id, now()->subDays(3), 1200, 150, 0, 25);
+        $this->insertSalary($zainab->id, now()->subDay(), 1400, 180, 0, 35);
+        $this->insertSalary($amina->id, now()->subDays(2), 1000, 120, 0, 15);
+        $this->insertSalary($badrul->id, now()->subDays(4), 900, 90, 0, 10);
 
         $view = app(PastiReportController::class)->index();
         $reports = $view->getData()['reports'];
@@ -235,6 +235,50 @@ class PastiReportTest extends TestCase
         $this->assertStringContainsString('data-state="{{ $pastiReport->report_total_state ?? \'unchanged\' }}"', $template);
     }
 
+    public function test_pasti_report_marks_salary_cells_changed_unchanged_and_pending(): void
+    {
+        $admin = $this->createAdmin('master_admin');
+        $this->setAuthenticatedUser($admin);
+
+        $pasti = Pasti::query()->create(['name' => 'PASTI ELAUN']);
+
+        $guruChanged = $this->createGuru($pasti, 'Guru Changed', true, '900101-01-1000', '0111000000');
+        $guruPending = $this->createGuru($pasti, 'Guru Pending', true, '900101-01-2000', '0112000000');
+        $assistant = $this->createGuru($pasti, 'Pembantu Neutral', true, '900101-01-3000', '0113000000', true, 500, 70, 20);
+
+        $this->insertSalary($guruChanged->id, now()->subDays(4), 1000, 120, 10, 30);
+        $this->insertSalary($guruChanged->id, now()->subDay(), 1100, 120, 10, 30);
+
+        \DB::table('guru_salary_requests')->insert([
+            'guru_id' => $guruPending->id,
+            'requested_by' => null,
+            'requested_at' => now(),
+            'completed_by' => null,
+            'completed_at' => null,
+            'gaji' => null,
+            'elaun' => null,
+            'elaun_transit' => null,
+            'elaun_lain' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $view = app(PastiReportController::class)->index();
+        $reports = collect($view->getData()['reports']->items())->keyBy('name');
+        $template = file_get_contents(resource_path('views/pasti-reports/index.blade.php'));
+
+        $this->assertSame('changed', $reports['Guru Changed']->salary_report_states['gaji']);
+        $this->assertSame('unchanged', $reports['Guru Changed']->salary_report_states['elaun_transit']);
+        $this->assertSame('unchanged', $reports['Guru Changed']->salary_report_states['elaun_lain']);
+        $this->assertSame('pending', $reports['Guru Pending']->salary_report_states['gaji']);
+        $this->assertSame('pending', $reports['Guru Pending']->salary_report_states['elaun_transit']);
+        $this->assertSame('unchanged', $reports['Pembantu Neutral']->salary_report_states['gaji']);
+        $this->assertIsString($template);
+        $this->assertStringContainsString('data-field="gaji"', $template);
+        $this->assertStringContainsString('data-field="elaun_transit"', $template);
+        $this->assertStringContainsString('data-field="elaun_lain"', $template);
+    }
+
     public function test_pasti_report_for_admin_is_limited_to_assigned_pasti(): void
     {
         $admin = $this->createAdmin('admin');
@@ -255,8 +299,8 @@ class PastiReportTest extends TestCase
         $hiddenGuru = $this->createGuru($hiddenPasti, 'Guru Sorok', true, '900101-01-2222', '0222222222');
         $hiddenAssistant = $this->createGuru($hiddenPasti, 'Pembantu Sorok', true, '900101-01-2323', '0222222323', true, 550, 75, 12);
 
-        $this->insertSalary($visibleGuru->id, now()->subDay(), 1000, 100, 20);
-        $this->insertSalary($hiddenGuru->id, now()->subDay(), 2000, 200, 30);
+        $this->insertSalary($visibleGuru->id, now()->subDay(), 1000, 100, 0, 20);
+        $this->insertSalary($hiddenGuru->id, now()->subDay(), 2000, 200, 0, 30);
 
         $view = app(PastiReportController::class)->index();
         $reports = $view->getData()['reports'];
@@ -275,8 +319,8 @@ class PastiReportTest extends TestCase
         $realGuru = $this->createGuru($pasti, 'Guru Sebenar', true, '900101-01-8888', '0188888888');
         $realAssistant = $this->createGuru($pasti, 'Pembantu Sebenar', true, '900101-01-7777', '0177777777', true, 450, 55, 5);
 
-        $this->insertSalary($testGuru->id, now()->subDay(), 1000, 100, 20);
-        $this->insertSalary($realGuru->id, now()->subDay(), 1100, 120, 25);
+        $this->insertSalary($testGuru->id, now()->subDay(), 1000, 100, 0, 20);
+        $this->insertSalary($realGuru->id, now()->subDay(), 1100, 120, 0, 25);
 
         $view = app(PastiReportController::class)->index();
         $reports = $view->getData()['reports'];
@@ -336,7 +380,7 @@ class PastiReportTest extends TestCase
         ]);
     }
 
-    private function insertSalary(int $guruId, $completedAt, float $gaji, float $elaun, float $elaunLain): void
+    private function insertSalary(int $guruId, $completedAt, float $gaji, float $elaun, float $elaunTransit, float $elaunLain): void
     {
         \DB::table('guru_salary_requests')->insert([
             'guru_id' => $guruId,
@@ -346,6 +390,7 @@ class PastiReportTest extends TestCase
             'completed_at' => $completedAt,
             'gaji' => $gaji,
             'elaun' => $elaun,
+            'elaun_transit' => $elaunTransit,
             'elaun_lain' => $elaunLain,
             'created_at' => now(),
             'updated_at' => now(),

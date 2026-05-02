@@ -146,6 +146,7 @@
                     <tbody class="bg-white text-slate-700">
                         @forelse($reports as $report)
                             @php($latestSalary = $report->latestCompletedSalaryRequest)
+                            @php($salaryStates = $report->salary_report_states ?? [])
                             <tr class="align-middle odd:bg-white even:bg-slate-50/55 hover:bg-primary/5">
                                 <td class="border-b border-slate-100 px-4 py-3">
                                     <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.08em] {{ $report->is_assistant ? 'bg-amber-100 text-amber-700' : ($report->active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700') }}">
@@ -160,13 +161,13 @@
                                 </td>
                                 <td class="border-b border-slate-100 px-4 py-3 font-medium">{{ mb_strtoupper((string) ($report->kad_pengenalan ?: '-')) }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 font-medium">{{ mb_strtoupper((string) ($report->phone ?: '-')) }}</td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">
+                                <td data-field="gaji" data-state="{{ $salaryStates['gaji'] ?? 'unchanged' }}" class="border-b border-slate-100 px-4 py-3 text-right font-black {{ $stateClasses[$salaryStates['gaji'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">
                                     {{ filled($report->is_assistant ? $report->elaun : $latestSalary?->gaji) ? 'RM ' . number_format((float) ($report->is_assistant ? $report->elaun : $latestSalary?->gaji), 2) : '-' }}
                                 </td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">
+                                <td data-field="elaun_transit" data-state="{{ $salaryStates['elaun_transit'] ?? 'unchanged' }}" class="border-b border-slate-100 px-4 py-3 text-right font-black {{ $stateClasses[$salaryStates['elaun_transit'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">
                                     {{ filled($report->is_assistant ? $report->elaun_transit : ($latestSalary?->elaun_transit ?? $latestSalary?->elaun)) ? 'RM ' . number_format((float) ($report->is_assistant ? $report->elaun_transit : ($latestSalary?->elaun_transit ?? $latestSalary?->elaun)), 2) : '-' }}
                                 </td>
-                                <td class="border-b border-slate-100 px-4 py-3 text-right font-black text-slate-800">
+                                <td data-field="elaun_lain" data-state="{{ $salaryStates['elaun_lain'] ?? 'unchanged' }}" class="border-b border-slate-100 px-4 py-3 text-right font-black {{ $stateClasses[$salaryStates['elaun_lain'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">
                                     {{ filled($report->is_assistant ? $report->elaun_lain : $latestSalary?->elaun_lain) ? 'RM ' . number_format((float) ($report->is_assistant ? $report->elaun_lain : $latestSalary?->elaun_lain), 2) : '-' }}
                                 </td>
                             </tr>

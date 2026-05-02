@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Guru;
+use App\Models\GuruSalaryRequest;
 use App\Models\Pasti;
 use App\Models\PastiInformationRequest;
 use App\Models\User;
@@ -25,7 +26,14 @@ class PastiReportController extends Controller
 
         $reports = Guru::query()
             ->whereRaw('lower(coalesce(gurus.name, \'\')) <> ?', ['test'])
-            ->with(['pasti', 'latestCompletedSalaryRequest'])
+            ->with([
+                'pasti',
+                'latestSalaryRequest',
+                'latestCompletedSalaryRequest',
+                'salaryRequests' => fn ($query) => $query
+                    ->orderByDesc('completed_at')
+                    ->orderByDesc('id'),
+            ])
             ->when(
                 $user->hasRole('admin') && ! $user->hasRole('master_admin'),
                 fn (Builder $query) => $query->whereIn('pasti_id', $user->assignedPastis()->pluck('pastis.id'))
@@ -37,6 +45,7 @@ class PastiReportController extends Controller
             ->orderBy('pastis.name')
             ->orderBy('gurus.name')
             ->paginate(20)
+            ->through(fn (Guru $guru): Guru => $this->decorateGuruReport($guru))
             ->withQueryString();
 
         $pastiReports = Pasti::query()
@@ -135,5 +144,55 @@ class PastiReportController extends Controller
             + ($request->murid_lelaki_6_tahun ?? 0)
             + ($request->murid_perempuan_6_tahun ?? 0)
         );
+    }
+
+    private function decorateGuruReport(Guru $guru): Guru
+    {
+        $latestRequest = $guru->latestSalaryRequest;
+        $latestCompleted = $guru->latestCompletedSalaryRequest;
+        $completedRequests = $guru->salaryRequests
+            ->filter(fn (GuruSalaryRequest $request): bool => $request->completed_at !== null)
+            ->values();
+        $previousCompleted = $completedRequests->skip(1)->first();
+        $isPending = ! $guru->is_assistant && (! $latestRequest || $latestRequest->completed_at === null);
+
+        $currentValues = [
+            'gaji' => $guru->is_assistant ? $guru->elaun : $latestCompleted?->gaji,
+            'elaun_transit' => $guru->is_assistant ? $guru->elaun_transit : ($latestCompleted?->elaun_transit ?? $latestCompleted?->elaun),
+            'elaun_lain' => $guru->is_assistant ? $guru->elaun_lain : $latestCompleted?->elaun_lain,
+        ];
+
+        $previousValues = [
+            'gaji' => $previousCompleted?->gaji,
+            'elaun_transit' => $previousCompleted?->elaun_transit ?? $previousCompleted?->elaun,
+            'elaun_lain' => $previousCompleted?->elaun_lain,
+        ];
+
+        $guru->salary_report_states = collect(array_keys($currentValues))
+            ->mapWithKeys(fn (string $field): array => [
+                $field => $this->salaryFieldState(
+                    $currentValues[$field] ?? null,
+                    $previousValues[$field] ?? null,
+                    $isPending
+                ),
+            ])
+            ->all();
+
+        return $guru;
+    }
+
+    private function salaryFieldState(mixed $currentValue, mixed $previousValue, bool $isPending): string
+    {
+        if ($isPending) {
+            return 'pending';
+        }
+
+        if ($previousValue === null || $currentValue === null) {
+            return 'unchanged';
+        }
+
+        return (float) $currentValue !== (float) $previousValue
+            ? 'changed'
+            : 'unchanged';
     }
 }
