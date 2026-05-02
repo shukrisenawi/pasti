@@ -158,9 +158,19 @@ class ProgramParticipationApprovalTest extends TestCase
             $table->time('program_time')->nullable();
             $table->string('location')->nullable();
             $table->text('description')->nullable();
+            $table->string('banner_path')->nullable();
             $table->boolean('require_absence_reason')->default(false);
             $table->unsignedInteger('markah')->default(1);
             $table->unsignedBigInteger('created_by');
+            $table->timestamps();
+        });
+
+        Schema::create('program_title_options', function (Blueprint $table): void {
+            $table->id();
+            $table->string('title');
+            $table->unsignedInteger('markah')->default(1);
+            $table->unsignedInteger('sort_order')->default(0);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
 
@@ -205,6 +215,7 @@ class ProgramParticipationApprovalTest extends TestCase
         Schema::dropIfExists('pasti_information_requests');
         Schema::dropIfExists('program_teacher');
         Schema::dropIfExists('programs');
+        Schema::dropIfExists('program_title_options');
         Schema::dropIfExists('program_statuses');
         Schema::dropIfExists('gurus');
         Schema::dropIfExists('notifications');
@@ -252,8 +263,102 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertSee('Menunggu Semakan')
             ->assertSee('Complete')
             ->assertSee('Tiada semakan yang menunggu pada masa ini.')
-            ->assertSee('Tiada rekod complete untuk dipaparkan.')
+            ->assertSee('Cikgu Program')
             ->assertDontSee('<table class="table-base">', false);
+    }
+
+    public function test_program_create_page_excludes_assistant_teacher_from_selection(): void
+    {
+        Notification::fake();
+
+        [, $guruUser, , $admin] = $this->createProgramFixtures();
+
+        $assistantUser = User::query()->create([
+            'name' => 'Pembantu Program',
+            'nama_samaran' => 'Pembantu Program',
+            'email' => 'pembantu-program@example.test',
+        ]);
+        $this->attachRole($assistantUser, 'guru');
+
+        Guru::query()->create([
+            'user_id' => $assistantUser->id,
+            'pasti_id' => $guruUser->guru->pasti_id,
+            'is_assistant' => true,
+            'active' => true,
+        ]);
+
+        ProgramStatus::query()->firstOrCreate([
+            'code' => 'HADIR',
+        ], [
+            'name' => 'Hadir',
+            'is_hadir' => true,
+        ]);
+
+        \DB::table('program_title_options')->insert([
+            'title' => 'Pilihan Program',
+            'markah' => 3,
+            'sort_order' => 1,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.create'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Cikgu Program')
+            ->assertDontSee('Pembantu Program');
+    }
+
+    public function test_program_store_ignores_assistant_teacher_from_selected_scope(): void
+    {
+        Notification::fake();
+
+        [, $guruUser, , $admin] = $this->createProgramFixtures();
+
+        $assistantUser = User::query()->create([
+            'name' => 'Pembantu Program',
+            'nama_samaran' => 'Pembantu Program',
+            'email' => 'pembantu-program-2@example.test',
+        ]);
+        $this->attachRole($assistantUser, 'guru');
+
+        $assistantGuru = Guru::query()->create([
+            'user_id' => $assistantUser->id,
+            'pasti_id' => $guruUser->guru->pasti_id,
+            'is_assistant' => true,
+            'active' => true,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->post(route('programs.store'), [
+                'title_option' => 'other',
+                'title_other' => 'Program Tanpa Pembantu',
+                'program_date' => now()->toDateString(),
+                'program_time' => '08:30',
+                'location' => 'Dewan',
+                'description' => 'Ujian simpan program',
+                'require_absence_reason' => '1',
+                'markah' => 4,
+                'teacher_scope' => 'selected',
+                'guru_ids' => [$guruUser->guru->id, $assistantGuru->id],
+            ]);
+
+        $response->assertRedirect(route('programs.index'));
+
+        $program = Program::query()->where('title', 'Program Tanpa Pembantu')->firstOrFail();
+
+        $this->assertDatabaseHas('program_teacher', [
+            'program_id' => $program->id,
+            'guru_id' => $guruUser->guru->id,
+        ]);
+
+        $this->assertDatabaseMissing('program_teacher', [
+            'program_id' => $program->id,
+            'guru_id' => $assistantGuru->id,
+        ]);
     }
 
     public function test_program_show_page_displays_avatar_and_latest_updated_participation_first(): void
@@ -715,10 +820,10 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertOk()
             ->assertSee('data-testid="program-status-success-alert"', false)
             ->assertSee('Dah berjaya update')
-            ->assertSee('data-testid="program-admin-review-buttons-disabled"', false)
-            ->assertSee('Luluskan alasan')
-            ->assertSee('Tolak alasan')
-            ->assertSee('disabled', false);
+            ->assertSee('Anak sakit.')
+            ->assertDontSee('data-testid="program-admin-review-buttons-disabled"', false)
+            ->assertDontSee('Luluskan alasan')
+            ->assertDontSee('Tolak alasan');
     }
 
     public function test_admin_absence_review_buttons_remain_disabled_after_page_refresh(): void
@@ -746,10 +851,10 @@ class ProgramParticipationApprovalTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('data-testid="program-admin-review-buttons-disabled"', false)
-            ->assertSee('Luluskan alasan')
-            ->assertSee('Tolak alasan')
-            ->assertSee('disabled', false)
+            ->assertSee('Anak sakit.')
+            ->assertDontSee('data-testid="program-admin-review-buttons-disabled"', false)
+            ->assertDontSee('Luluskan alasan')
+            ->assertDontSee('Tolak alasan')
             ->assertDontSee('data-testid="program-status-success-alert"', false);
     }
 

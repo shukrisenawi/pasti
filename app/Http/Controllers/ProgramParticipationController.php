@@ -25,7 +25,16 @@ class ProgramParticipationController extends Controller
     public function updateStatus(Request $request, Program $program, int $guruId): RedirectResponse
     {
         $user = $request->user();
-        $operatingGuruIds = $user->operatingGuruIds();
+        $targetGuru = Guru::query()
+            ->whereKey($guruId)
+            ->where('is_assistant', false)
+            ->firstOrFail();
+
+        $operatingGuruIds = $user->operatingGuruProfiles()
+            ->reject(fn (Guru $guru): bool => $guru->is_assistant)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
         if ($this->isGuruOnly($user)) {
             abort_unless(in_array($guruId, $operatingGuruIds, true), 403);
             $canUpdateProgram = $program->gurus()->where('gurus.id', $guruId)->exists()
@@ -105,7 +114,7 @@ class ProgramParticipationController extends Controller
             }
         }
 
-        $this->kpiCalculationService->recalculateForGuru($participation->guru);
+        $this->kpiCalculationService->recalculateForGuru($targetGuru);
 
         $redirect = $this->programRedirectResponse($program, $user, $data['admin_tab'] ?? null);
 
@@ -159,7 +168,7 @@ class ProgramParticipationController extends Controller
         return redirect()
             ->route('programs.show', [
                 'program' => $program,
-                ...($data['admin_tab'] ? ['admin_tab' => $data['admin_tab']] : []),
+                ...(($data['admin_tab'] ?? null) ? ['admin_tab' => $data['admin_tab']] : []),
             ])
             ->with('status', __('messages.saved'))
             ->with('program_status_success_message', 'Dah berjaya update')

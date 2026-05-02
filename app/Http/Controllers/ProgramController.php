@@ -43,7 +43,7 @@ class ProgramController extends Controller
 
         return view('programs.form', [
             'program' => new Program(),
-            'gurus' => Guru::query()->with('user', 'pasti')->where('active', true)->orderBy('id')->get(),
+            'gurus' => $this->eligibleProgramGurusQuery()->get(),
             'titleOptions' => $this->activeTitleOptions(),
             'allTitleOptions' => $this->allTitleOptions(),
             'editingTitleOption' => $this->editingTitleOption($request),
@@ -109,6 +109,7 @@ class ProgramController extends Controller
     {
         $user = $request->user();
         $operatingGurus = $user->operatingGuruProfiles();
+        $operatingGurus = $operatingGurus->reject(fn (Guru $guru): bool => $guru->is_assistant)->values();
         $operatingGuruIds = $operatingGurus->pluck('id')->map(fn ($id) => (int) $id)->all();
         $operatingGuru = $operatingGurus->first();
 
@@ -181,12 +182,12 @@ class ProgramController extends Controller
         $activeTab = $this->programFormTab($request, $user->hasRole('master_admin'));
 
         $allActiveGuruIds = $this->activeGuruIds();
-        $selectedGuruIds = $program->gurus()->pluck('gurus.id')->all();
+        $selectedGuruIds = $program->gurus()->where('gurus.is_assistant', false)->pluck('gurus.id')->all();
         $defaultTeacherScope = count($selectedGuruIds) === count($allActiveGuruIds) ? 'all' : 'selected';
 
         return view('programs.form', [
             'program' => $program,
-            'gurus' => Guru::query()->with('user', 'pasti')->where('active', true)->orderBy('id')->get(),
+            'gurus' => $this->eligibleProgramGurusQuery()->get(),
             'titleOptions' => $this->activeTitleOptions(),
             'allTitleOptions' => $this->allTitleOptions(),
             'editingTitleOption' => $this->editingTitleOption($request),
@@ -299,7 +300,7 @@ class ProgramController extends Controller
 
     private function activeGuruIds(): array
     {
-        return Guru::query()->where('active', true)->pluck('id')->all();
+        return $this->eligibleProgramGurusQuery()->pluck('gurus.id')->all();
     }
 
     private function activeTitleOptions()
@@ -416,6 +417,7 @@ class ProgramController extends Controller
             ->whereNull('program_status_id')
             ->pluck('guru')
             ->filter()
+            ->reject(fn (Guru $guru): bool => $guru->is_assistant)
             ->reject(fn (Guru $guru): bool => $this->isTestReminderAccount($guru))
             ->unique('id')
             ->sortBy(fn (Guru $guru) => $guru->display_name)
@@ -428,9 +430,19 @@ class ProgramController extends Controller
             ->reject(function ($participation): bool {
                 $guru = $participation->guru;
 
-                return $guru instanceof Guru && $this->isTestReminderAccount($guru);
+                return $guru instanceof Guru
+                    && ($guru->is_assistant || $this->isTestReminderAccount($guru));
             })
             ->values();
+    }
+
+    private function eligibleProgramGurusQuery()
+    {
+        return Guru::query()
+            ->with('user', 'pasti')
+            ->where('active', true)
+            ->where('is_assistant', false)
+            ->orderBy('id');
     }
 
     private function dayNameInMalay(Carbon $date): string
