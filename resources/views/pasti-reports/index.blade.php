@@ -45,6 +45,13 @@
     </div>
 
     @if($activeTab === 'maklumat-pasti')
+        @php
+            $stateClasses = [
+                'changed' => 'bg-emerald-50 text-emerald-900',
+                'pending' => 'bg-rose-50 text-rose-900',
+                'unchanged' => 'bg-amber-50 text-amber-900',
+            ];
+        @endphp
         <div class="card overflow-hidden border border-slate-200 bg-white/95 p-0">
             <div class="border-b border-slate-200 px-4 py-3">
                 <div class="flex flex-wrap items-center justify-between gap-3">
@@ -77,6 +84,7 @@
                     <tbody class="bg-white text-slate-700">
                         @forelse($pastiReports as $pastiReport)
                             @php($latestInfo = $pastiReport->latestCompletedInformationRequest)
+                            @php($fieldStates = $pastiReport->report_field_states ?? [])
                             <tr class="align-middle odd:bg-white even:bg-slate-50/55 hover:bg-primary/5">
                                 <td class="sticky left-0 z-[1] border-b border-slate-100 bg-inherit px-4 py-3">
                                     <div class="min-w-[190px]">
@@ -84,16 +92,16 @@
                                         <p class="text-[11px] text-slate-500">Kemaskini: {{ optional($latestInfo?->completed_at)->format('d/m/Y H:i') ?: '-' }}</p>
                                     </div>
                                 </td>
-                                <td class="border-b border-slate-100 px-3 py-3 text-center font-semibold">{{ $latestInfo?->jumlah_guru ?? 0 }}</td>
-                                <td class="border-b border-slate-100 px-3 py-3 text-center font-semibold">{{ $latestInfo?->jumlah_pembantu_guru ?? 0 }}</td>
-                                <td class="border-b border-slate-100 px-3 py-3 text-center">{{ $latestInfo?->murid_lelaki_4_tahun ?? 0 }}</td>
-                                <td class="border-b border-slate-100 px-3 py-3 text-center">{{ $latestInfo?->murid_perempuan_4_tahun ?? 0 }}</td>
-                                <td class="border-b border-slate-100 px-3 py-3 text-center">{{ $latestInfo?->murid_lelaki_5_tahun ?? 0 }}</td>
-                                <td class="border-b border-slate-100 px-3 py-3 text-center">{{ $latestInfo?->murid_perempuan_5_tahun ?? 0 }}</td>
-                                <td class="border-b border-slate-100 px-3 py-3 text-center">{{ $latestInfo?->murid_lelaki_6_tahun ?? 0 }}</td>
-                                <td class="border-b border-slate-100 px-3 py-3 text-center">{{ $latestInfo?->murid_perempuan_6_tahun ?? 0 }}</td>
+                                <td data-field="jumlah_guru" data-state="{{ $fieldStates['jumlah_guru'] ?? 'unchanged' }}" class="border-b border-slate-100 px-3 py-3 text-center font-semibold {{ $stateClasses[$fieldStates['jumlah_guru'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">{{ $latestInfo?->jumlah_guru ?? 0 }}</td>
+                                <td data-field="jumlah_pembantu_guru" data-state="{{ $fieldStates['jumlah_pembantu_guru'] ?? 'unchanged' }}" class="border-b border-slate-100 px-3 py-3 text-center font-semibold {{ $stateClasses[$fieldStates['jumlah_pembantu_guru'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">{{ $latestInfo?->jumlah_pembantu_guru ?? 0 }}</td>
+                                <td data-field="murid_lelaki_4_tahun" data-state="{{ $fieldStates['murid_lelaki_4_tahun'] ?? 'unchanged' }}" class="border-b border-slate-100 px-3 py-3 text-center {{ $stateClasses[$fieldStates['murid_lelaki_4_tahun'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">{{ $latestInfo?->murid_lelaki_4_tahun ?? 0 }}</td>
+                                <td data-field="murid_perempuan_4_tahun" data-state="{{ $fieldStates['murid_perempuan_4_tahun'] ?? 'unchanged' }}" class="border-b border-slate-100 px-3 py-3 text-center {{ $stateClasses[$fieldStates['murid_perempuan_4_tahun'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">{{ $latestInfo?->murid_perempuan_4_tahun ?? 0 }}</td>
+                                <td data-field="murid_lelaki_5_tahun" data-state="{{ $fieldStates['murid_lelaki_5_tahun'] ?? 'unchanged' }}" class="border-b border-slate-100 px-3 py-3 text-center {{ $stateClasses[$fieldStates['murid_lelaki_5_tahun'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">{{ $latestInfo?->murid_lelaki_5_tahun ?? 0 }}</td>
+                                <td data-field="murid_perempuan_5_tahun" data-state="{{ $fieldStates['murid_perempuan_5_tahun'] ?? 'unchanged' }}" class="border-b border-slate-100 px-3 py-3 text-center {{ $stateClasses[$fieldStates['murid_perempuan_5_tahun'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">{{ $latestInfo?->murid_perempuan_5_tahun ?? 0 }}</td>
+                                <td data-field="murid_lelaki_6_tahun" data-state="{{ $fieldStates['murid_lelaki_6_tahun'] ?? 'unchanged' }}" class="border-b border-slate-100 px-3 py-3 text-center {{ $stateClasses[$fieldStates['murid_lelaki_6_tahun'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">{{ $latestInfo?->murid_lelaki_6_tahun ?? 0 }}</td>
+                                <td data-field="murid_perempuan_6_tahun" data-state="{{ $fieldStates['murid_perempuan_6_tahun'] ?? 'unchanged' }}" class="border-b border-slate-100 px-3 py-3 text-center {{ $stateClasses[$fieldStates['murid_perempuan_6_tahun'] ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">{{ $latestInfo?->murid_perempuan_6_tahun ?? 0 }}</td>
                                 <td class="border-b border-slate-100 px-4 py-3 text-center">
-                                    <span class="inline-flex min-w-[3.5rem] items-center justify-center rounded-xl bg-primary/10 px-2.5 py-1 font-black text-primary">
+                                    <span data-field="jumlah" data-state="{{ $pastiReport->report_total_state ?? 'unchanged' }}" class="inline-flex min-w-[3.5rem] items-center justify-center rounded-xl px-2.5 py-1 font-black {{ $stateClasses[$pastiReport->report_total_state ?? 'unchanged'] ?? $stateClasses['unchanged'] }}">
                                         {{ $pastiReport->maklumat_pasti_jumlah ?? 0 }}
                                     </span>
                                 </td>

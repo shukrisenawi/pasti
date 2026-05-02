@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Guru;
 use App\Models\Pasti;
+use App\Models\PastiInformationRequest;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\View\View;
 
@@ -38,27 +40,20 @@ class PastiReportController extends Controller
             ->withQueryString();
 
         $pastiReports = Pasti::query()
-            ->with('latestCompletedInformationRequest')
+            ->with([
+                'latestInformationRequest',
+                'latestCompletedInformationRequest',
+                'informationRequests' => fn ($query) => $query
+                    ->orderByDesc('completed_at')
+                    ->orderByDesc('id'),
+            ])
             ->when(
                 $user->hasRole('admin') && ! $user->hasRole('master_admin'),
                 fn (Builder $query) => $query->whereIn('id', $user->assignedPastis()->pluck('pastis.id'))
             )
-            ->whereHas('latestCompletedInformationRequest')
             ->orderBy('name')
             ->paginate(20, ['*'], 'pastiPage')
-            ->through(function (Pasti $pasti): Pasti {
-                $latestCompleted = $pasti->latestCompletedInformationRequest;
-                $pasti->maklumat_pasti_jumlah = (int) (
-                    ($latestCompleted?->murid_lelaki_4_tahun ?? 0)
-                    + ($latestCompleted?->murid_perempuan_4_tahun ?? 0)
-                    + ($latestCompleted?->murid_lelaki_5_tahun ?? 0)
-                    + ($latestCompleted?->murid_perempuan_5_tahun ?? 0)
-                    + ($latestCompleted?->murid_lelaki_6_tahun ?? 0)
-                    + ($latestCompleted?->murid_perempuan_6_tahun ?? 0)
-                );
-
-                return $pasti;
-            })
+            ->through(fn (Pasti $pasti): Pasti => $this->decoratePastiReport($pasti))
             ->withQueryString();
 
         return view('pasti-reports.index', [
@@ -66,5 +61,79 @@ class PastiReportController extends Controller
             'pastiReports' => $pastiReports,
             'activeTab' => $activeTab,
         ]);
+    }
+
+    private function decoratePastiReport(Pasti $pasti): Pasti
+    {
+        $latestRequest = $pasti->latestInformationRequest;
+        $latestCompleted = $pasti->latestCompletedInformationRequest;
+        $completedRequests = $pasti->informationRequests
+            ->filter(fn (PastiInformationRequest $request): bool => $request->completed_at !== null)
+            ->values();
+        $previousCompleted = $completedRequests->skip(1)->first();
+        $isPending = ! $latestRequest || $latestRequest->completed_at === null;
+
+        $fieldNames = [
+            'jumlah_guru',
+            'jumlah_pembantu_guru',
+            'murid_lelaki_4_tahun',
+            'murid_perempuan_4_tahun',
+            'murid_lelaki_5_tahun',
+            'murid_perempuan_5_tahun',
+            'murid_lelaki_6_tahun',
+            'murid_perempuan_6_tahun',
+        ];
+
+        $fieldStates = collect($fieldNames)
+            ->mapWithKeys(fn (string $field): array => [
+                $field => $this->reportFieldState($latestCompleted, $previousCompleted, $field, $isPending),
+            ])
+            ->all();
+
+        $latestTotal = $this->maklumatPastiJumlah($latestCompleted);
+        $previousTotal = $this->maklumatPastiJumlah($previousCompleted);
+
+        $pasti->maklumat_pasti_jumlah = $latestTotal;
+        $pasti->report_field_states = $fieldStates;
+        $pasti->report_total_state = $isPending
+            ? 'pending'
+            : ($previousCompleted && $latestTotal !== $previousTotal ? 'changed' : 'unchanged');
+
+        return $pasti;
+    }
+
+    private function reportFieldState(
+        ?PastiInformationRequest $latestCompleted,
+        ?PastiInformationRequest $previousCompleted,
+        string $field,
+        bool $isPending
+    ): string {
+        if ($isPending) {
+            return 'pending';
+        }
+
+        if (! $latestCompleted || ! $previousCompleted) {
+            return 'unchanged';
+        }
+
+        return (int) ($latestCompleted->{$field} ?? 0) !== (int) ($previousCompleted->{$field} ?? 0)
+            ? 'changed'
+            : 'unchanged';
+    }
+
+    private function maklumatPastiJumlah(?PastiInformationRequest $request): int
+    {
+        if (! $request) {
+            return 0;
+        }
+
+        return (int) (
+            ($request->murid_lelaki_4_tahun ?? 0)
+            + ($request->murid_perempuan_4_tahun ?? 0)
+            + ($request->murid_lelaki_5_tahun ?? 0)
+            + ($request->murid_perempuan_5_tahun ?? 0)
+            + ($request->murid_lelaki_6_tahun ?? 0)
+            + ($request->murid_perempuan_6_tahun ?? 0)
+        );
     }
 }

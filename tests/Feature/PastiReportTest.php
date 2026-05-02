@@ -190,6 +190,51 @@ class PastiReportTest extends TestCase
         $this->assertStringContainsString('Jumlah', $template);
     }
 
+    public function test_pasti_report_marks_changed_unchanged_and_pending_cells(): void
+    {
+        $admin = $this->createAdmin('master_admin');
+        $this->setAuthenticatedUser($admin);
+
+        $pastiChanged = Pasti::query()->create(['name' => 'PASTI CHANGED']);
+        $pastiPending = Pasti::query()->create(['name' => 'PASTI PENDING']);
+
+        $this->insertPastiInformation($pastiChanged->id, now()->subDays(3), 2, 1, 3, 4, 5, 6, 7, 8);
+        $this->insertPastiInformation($pastiChanged->id, now()->subDay(), 5, 1, 3, 4, 5, 6, 7, 8);
+
+        \DB::table('pasti_information_requests')->insert([
+            'pasti_id' => $pastiPending->id,
+            'requested_by' => null,
+            'requested_at' => now(),
+            'completed_by' => null,
+            'completed_at' => null,
+            'jumlah_guru' => null,
+            'jumlah_pembantu_guru' => null,
+            'murid_lelaki_4_tahun' => null,
+            'murid_perempuan_4_tahun' => null,
+            'murid_lelaki_5_tahun' => null,
+            'murid_perempuan_5_tahun' => null,
+            'murid_lelaki_6_tahun' => null,
+            'murid_perempuan_6_tahun' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $view = app(PastiReportController::class)->index();
+        $pastiReports = collect($view->getData()['pastiReports']->items())->keyBy('name');
+        $template = file_get_contents(resource_path('views/pasti-reports/index.blade.php'));
+
+        $this->assertSame('changed', $pastiReports['PASTI CHANGED']->report_field_states['jumlah_guru']);
+        $this->assertSame('unchanged', $pastiReports['PASTI CHANGED']->report_field_states['jumlah_pembantu_guru']);
+        $this->assertSame('unchanged', $pastiReports['PASTI CHANGED']->report_total_state);
+        $this->assertSame('pending', $pastiReports['PASTI PENDING']->report_field_states['jumlah_guru']);
+        $this->assertSame('pending', $pastiReports['PASTI PENDING']->report_total_state);
+        $this->assertIsString($template);
+        $this->assertStringContainsString('data-field="jumlah_guru"', $template);
+        $this->assertStringContainsString('data-state="{{ $fieldStates[\'jumlah_guru\'] ?? \'unchanged\' }}"', $template);
+        $this->assertStringContainsString('data-field="jumlah"', $template);
+        $this->assertStringContainsString('data-state="{{ $pastiReport->report_total_state ?? \'unchanged\' }}"', $template);
+    }
+
     public function test_pasti_report_for_admin_is_limited_to_assigned_pasti(): void
     {
         $admin = $this->createAdmin('admin');
