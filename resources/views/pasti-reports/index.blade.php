@@ -4,6 +4,11 @@
         $summaryGuruCount = $reports->total();
         $summaryMuridCount = collect($pastiReports->items())->sum(fn ($item) => (int) ($item->maklumat_pasti_jumlah ?? 0));
         $tabBaseClass = 'inline-flex items-center rounded-2xl px-4 py-2 text-sm font-bold transition-all';
+        $stateClasses = [
+            'changed' => 'bg-emerald-50 text-emerald-900',
+            'pending' => 'bg-rose-50 text-rose-900',
+            'unchanged' => 'bg-amber-50 text-amber-900',
+        ];
     @endphp
 
     <x-slot name="header">
@@ -45,13 +50,6 @@
     </div>
 
     @if($activeTab === 'maklumat-pasti')
-        @php
-            $stateClasses = [
-                'changed' => 'bg-emerald-50 text-emerald-900',
-                'pending' => 'bg-rose-50 text-rose-900',
-                'unchanged' => 'bg-amber-50 text-amber-900',
-            ];
-        @endphp
         <div class="card overflow-hidden border border-slate-200 bg-white/95 p-0">
             <div class="border-b border-slate-200 px-4 py-3">
                 <div class="flex flex-wrap items-center justify-between gap-3">
