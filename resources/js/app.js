@@ -155,12 +155,59 @@ function initMaskedInputSync() {
     });
 }
 
+const selectableRowClassNames = ['bg-primary/10', 'ring-2', 'ring-inset', 'ring-primary/30'];
+
+function clearSelectedRows() {
+    document.querySelectorAll('[data-selectable-row].is-selected').forEach((row) => {
+        row.classList.remove('is-selected', ...selectableRowClassNames);
+    });
+}
+
+function selectRowContents(row) {
+    if (typeof window.getSelection !== 'function' || typeof document.createRange !== 'function') {
+        return;
+    }
+
+    const selection = window.getSelection();
+
+    if (!selection) {
+        return;
+    }
+
+    const range = document.createRange();
+    range.selectNodeContents(row);
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
+function initSelectableRows() {
+    document.addEventListener('click', (event) => {
+        const target = event.target;
+
+        if (!(target instanceof Element) || target.closest('a, button, input, textarea, select, option, label')) {
+            return;
+        }
+
+        const row = target.closest('[data-selectable-row]');
+
+        if (!(row instanceof HTMLElement)) {
+            return;
+        }
+
+        clearSelectedRows();
+        row.classList.add('is-selected', ...selectableRowClassNames);
+        selectRowContents(row);
+    });
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         initRequiredAsteriskSync();
         initMaskedInputSync();
+        initSelectableRows();
     }, { once: true });
 } else {
     initRequiredAsteriskSync();
     initMaskedInputSync();
+    initSelectableRows();
 }

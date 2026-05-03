@@ -83,7 +83,10 @@
                         @forelse($pastiReports as $pastiReport)
                             @php($latestInfo = $pastiReport->latestCompletedInformationRequest)
                             @php($fieldStates = $pastiReport->report_field_states ?? [])
-                            <tr class="align-middle odd:bg-white even:bg-slate-50/55 hover:bg-primary/5">
+                            <tr
+                                data-selectable-row
+                                class="align-middle odd:bg-white even:bg-slate-50/55 hover:bg-primary/5 cursor-pointer transition"
+                            >
                                 <td class="sticky left-0 z-[1] border-b border-slate-100 bg-inherit px-4 py-3">
                                     <div class="min-w-[190px]">
                                         <p class="font-bold uppercase tracking-[0.08em] text-slate-800">{{ $pastiReport->name ?: '-' }}</p>
@@ -145,7 +148,10 @@
                         @forelse($reports as $report)
                             @php($latestSalary = $report->latestCompletedSalaryRequest)
                             @php($salaryStates = $report->salary_report_states ?? [])
-                            <tr class="align-middle odd:bg-white even:bg-slate-50/55 hover:bg-primary/5">
+                            <tr
+                                data-selectable-row
+                                class="align-middle odd:bg-white even:bg-slate-50/55 hover:bg-primary/5 cursor-pointer transition"
+                            >
                                 <td class="border-b border-slate-100 px-4 py-3">
                                     <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.08em] {{ $report->is_assistant ? 'bg-amber-100 text-amber-700' : ($report->active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700') }}">
                                         {{ $report->is_assistant ? 'PEMBANTU' : ($report->active ? 'Guru' : 'Berhenti') }}

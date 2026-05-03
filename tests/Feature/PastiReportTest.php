@@ -279,6 +279,14 @@ class PastiReportTest extends TestCase
         $this->assertStringContainsString('data-field="elaun_lain"', $template);
     }
 
+    public function test_pasti_report_template_marks_data_rows_as_selectable(): void
+    {
+        $template = file_get_contents(resource_path('views/pasti-reports/index.blade.php'));
+
+        $this->assertIsString($template);
+        $this->assertStringContainsString('data-selectable-row', $template);
+    }
+
     public function test_pasti_report_for_admin_is_limited_to_assigned_pasti(): void
     {
         $admin = $this->createAdmin('admin');
