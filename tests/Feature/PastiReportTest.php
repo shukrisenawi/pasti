@@ -287,6 +287,15 @@ class PastiReportTest extends TestCase
         $this->assertStringContainsString('data-selectable-row', $template);
     }
 
+    public function test_pasti_report_row_click_uses_visual_highlight_only(): void
+    {
+        $script = file_get_contents(resource_path('js/app.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString("row.classList.add('is-selected'", $script);
+        $this->assertStringNotContainsString('selectNodeContents(row)', $script);
+    }
+
     public function test_pasti_report_for_admin_is_limited_to_assigned_pasti(): void
     {
         $admin = $this->createAdmin('admin');

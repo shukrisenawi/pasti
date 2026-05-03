@@ -155,29 +155,16 @@ function initMaskedInputSync() {
     });
 }
 
-const selectableRowClassNames = ['bg-primary/10', 'ring-2', 'ring-inset', 'ring-primary/30'];
+const selectableRowClassNames = [
+    'bg-primary/10',
+    'shadow-[inset_0_0_0_2px_rgba(59,130,246,0.18)]',
+    'scale-[0.998]',
+];
 
 function clearSelectedRows() {
     document.querySelectorAll('[data-selectable-row].is-selected').forEach((row) => {
         row.classList.remove('is-selected', ...selectableRowClassNames);
     });
-}
-
-function selectRowContents(row) {
-    if (typeof window.getSelection !== 'function' || typeof document.createRange !== 'function') {
-        return;
-    }
-
-    const selection = window.getSelection();
-
-    if (!selection) {
-        return;
-    }
-
-    const range = document.createRange();
-    range.selectNodeContents(row);
-    selection.removeAllRanges();
-    selection.addRange(range);
 }
 
 function initSelectableRows() {
@@ -196,7 +183,6 @@ function initSelectableRows() {
 
         clearSelectedRows();
         row.classList.add('is-selected', ...selectableRowClassNames);
-        selectRowContents(row);
     });
 }
 
