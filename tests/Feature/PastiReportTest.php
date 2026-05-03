@@ -293,6 +293,7 @@ class PastiReportTest extends TestCase
 
         $this->assertIsString($script);
         $this->assertStringContainsString("row.classList.add('is-selected'", $script);
+        $this->assertStringContainsString("row.querySelectorAll('td')", $script);
         $this->assertStringNotContainsString('selectNodeContents(row)', $script);
     }
 

@@ -160,10 +160,19 @@ const selectableRowClassNames = [
     'shadow-[inset_0_0_0_2px_rgba(59,130,246,0.18)]',
     'scale-[0.998]',
 ];
+const selectableCellClassNames = ['bg-sky-100/80', 'text-slate-950'];
+const selectableStickyCellClassNames = ['bg-sky-100'];
 
 function clearSelectedRows() {
     document.querySelectorAll('[data-selectable-row].is-selected').forEach((row) => {
         row.classList.remove('is-selected', ...selectableRowClassNames);
+        row.querySelectorAll('td').forEach((cell) => {
+            cell.classList.remove(...selectableCellClassNames);
+
+            if (cell.classList.contains('sticky')) {
+                cell.classList.remove(...selectableStickyCellClassNames);
+            }
+        });
     });
 }
 
@@ -183,6 +192,13 @@ function initSelectableRows() {
 
         clearSelectedRows();
         row.classList.add('is-selected', ...selectableRowClassNames);
+        row.querySelectorAll('td').forEach((cell) => {
+            cell.classList.add(...selectableCellClassNames);
+
+            if (cell.classList.contains('sticky')) {
+                cell.classList.add(...selectableStickyCellClassNames);
+            }
+        });
     });
 }
 
