@@ -41,7 +41,7 @@ class N8nWebhookService
     private const DEFAULT_TEXT_PASTI_INFO_RESPONSE_REMINDER = "Sila hantar respon maklumat PASTI segera.\n\nPASTI yang belum respon:\n{senarai_pasti}";
     private const DEFAULT_TEXT_GURU_COURSE_OFFER = 'Permintaan sambung Kursus Guru ke Semester {semester} telah dihantar. Tarikh akhir pendaftaran: {tarikh_akhir}.{nota}';
     private const DEFAULT_TEXT_GURU_COURSE_RESPONSE_REMINDER = "Sila hantar respon sambung kursus guru segera.\n\nGuru yang belum respon:\n{senarai_guru}";
-    private const DEFAULT_TEXT_PROGRAM_RESPONSE_REMINDER = "Sila hantar respon program segera.\n\nGuru yang belum respon:\n{senarai_guru}";
+    private const DEFAULT_TEXT_PROGRAM_RESPONSE_REMINDER = "Sila hantar respon program {program_title} segera.\n\nGuru yang belum respon:\n{senarai_guru}";
     private const DEFAULT_TEXT_LEAVE_NOTICE_SUBMITTED = '{nama_guru} hantar notis cuti pada {tarikh_cuti} hingga {tarikh_hingga}. Sebab: {sebab}.';
     private const DEFAULT_TEXT_CLAIM_SUBMITTED = '{nama_guru} hantar claim sebanyak RM{jumlah} pada {tarikh_claim}. Catatan: {catatan}.';
     private const DEFAULT_TEXT_ALL_PASTI_INFO_COMPLETED = 'Semua PASTI telah hantar maklumat PASTI.';
@@ -65,14 +65,14 @@ class N8nWebhookService
 
     public function sendByTemplate(string $templateKey, array $variables, ?string $link = null, ?string $gambar = null): void
     {
-        $template = $this->template($templateKey);
+        $template = $this->preparedTemplate($templateKey, $variables);
         $text = $this->renderTemplate($template, $variables);
         $this->send($text, $link, $gambar);
     }
 
     public function sendGroup2ByTemplate(string $templateKey, array $variables, ?string $link = null, ?string $gambar = null): void
     {
-        $template = $this->template($templateKey);
+        $template = $this->preparedTemplate($templateKey, $variables);
         $text = $this->renderTemplate($template, $variables);
         $this->sendGroup2($text, $link, $gambar);
     }
@@ -339,6 +339,25 @@ class N8nWebhookService
         }
 
         return trim((string) strtr($template, $replacements));
+    }
+
+    private function preparedTemplate(string $templateKey, array $variables): string
+    {
+        $template = $this->template($templateKey);
+
+        if (
+            $templateKey === self::KEY_TEXT_PROGRAM_RESPONSE_REMINDER
+            && filled($variables['program_title'] ?? null)
+            && ! str_contains($template, '{program_title}')
+        ) {
+            $template = str_replace(
+                'Sila hantar respon program segera.',
+                'Sila hantar respon program {program_title} segera.',
+                $template
+            );
+        }
+
+        return $template;
     }
 
     private function renderActionLinkTemplate(string $publicUrl): string

@@ -186,6 +186,31 @@ class ProgramReminderTest extends TestCase
         $this->assertSame('Mesej telah berjaya dihantar ke group guru.', $response->getSession()->get('status'));
     }
 
+    public function test_program_response_reminder_template_includes_program_title(): void
+    {
+        SystemSetting::query()->create([
+            'key' => N8nWebhookService::KEY_WEBHOOK_URL_PRODUCTION,
+            'value' => 'https://example.test/webhook',
+        ]);
+
+        Http::fake([
+            'https://example.test/webhook' => Http::response(['ok' => true], 200),
+        ]);
+
+        app(N8nWebhookService::class)->sendByTemplate(
+            N8nWebhookService::KEY_TEXT_PROGRAM_RESPONSE_REMINDER,
+            [
+                'program_title' => 'Program Ujian',
+                'senarai_guru' => "1- Ahmad\n2- Nurul",
+            ]
+        );
+
+        Http::assertSent(function ($request): bool {
+            return $request->url() === 'https://example.test/webhook'
+                && ($request['text'] ?? null) === "Sila hantar respon program Program Ujian segera.\n\nGuru yang belum respon:\n1- Ahmad\n2- Nurul";
+        });
+    }
+
     public function test_updating_last_real_program_participation_does_not_send_auto_thanks_even_with_test_pending(): void
     {
         $payload = $this->seedProgramWithCompletedGurusExceptTest();
