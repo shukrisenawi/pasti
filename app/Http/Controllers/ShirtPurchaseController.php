@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ShirtPurchaseController extends Controller
@@ -75,6 +76,7 @@ class ShirtPurchaseController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:3000'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:7168'],
         ]);
 
         $gurus = $this->recipientGurus($user)->get();
@@ -84,10 +86,15 @@ class ShirtPurchaseController extends Controller
             ])->withInput();
         }
 
-        $purchase = DB::transaction(function () use ($user, $data, $gurus): ShirtPurchase {
+        $purchaseImagePath = $request->hasFile('image')
+            ? $request->file('image')->store('shirt-purchases', 'public')
+            : null;
+
+        $purchase = DB::transaction(function () use ($user, $data, $gurus, $purchaseImagePath): ShirtPurchase {
             $purchase = ShirtPurchase::query()->create([
                 'title' => trim((string) $data['title']),
                 'description' => trim((string) ($data['description'] ?? '')) ?: null,
+                'image_path' => $purchaseImagePath,
                 'created_by' => $user->id,
                 'sent_to_n8n_at' => now(),
             ]);
@@ -104,15 +111,23 @@ class ShirtPurchaseController extends Controller
 
             return $purchase;
         });
+        try {
+            $this->n8nWebhookService->sendByTemplate(
+                N8nWebhookService::KEY_TEXT_SHIRT_PURCHASE_REQUEST,
+                [
+                    'tajuk' => $purchase->title,
+                    'keterangan' => $purchase->description ?? '-',
+                ],
+                $this->n8nWebhookService->toActionUrl(route('shirt-purchases.index')),
+                $purchase->image_path ? $this->n8nWebhookService->toPublicUrl($purchase->image_url) : null
+            );
+        } catch (\Throwable $exception) {
+            if ($purchaseImagePath) {
+                Storage::disk('public')->delete($purchaseImagePath);
+            }
 
-        $this->n8nWebhookService->sendByTemplate(
-            N8nWebhookService::KEY_TEXT_SHIRT_PURCHASE_REQUEST,
-            [
-                'tajuk' => $purchase->title,
-                'keterangan' => $purchase->description ?? '-',
-            ],
-            $this->n8nWebhookService->toActionUrl(route('shirt-purchases.index'))
-        );
+            throw $exception;
+        }
 
         return redirect()->route('shirt-purchases.index')->with('status', __('messages.saved'));
     }

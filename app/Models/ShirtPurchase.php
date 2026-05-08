@@ -13,6 +13,7 @@ class ShirtPurchase extends Model
     protected $fillable = [
         'title',
         'description',
+        'image_path',
         'created_by',
         'sent_to_n8n_at',
         'last_broadcast_at',
@@ -34,5 +35,12 @@ class ShirtPurchase extends Model
     public function responses(): HasMany
     {
         return $this->hasMany(ShirtPurchaseResponse::class);
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path
+            ? '/uploads/' . ltrim($this->image_path, '/')
+            : null;
     }
 }

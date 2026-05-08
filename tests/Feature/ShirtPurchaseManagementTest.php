@@ -8,7 +8,9 @@ use App\Models\Pasti;
 use App\Models\User;
 use App\Services\N8nWebhookService;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ShirtPurchaseManagementTest extends TestCase
@@ -69,6 +71,7 @@ class ShirtPurchaseManagementTest extends TestCase
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
+            $table->string('image_path')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('sent_to_n8n_at')->nullable();
             $table->timestamp('last_broadcast_at')->nullable();
@@ -116,15 +119,21 @@ class ShirtPurchaseManagementTest extends TestCase
     public function test_admin_can_create_shirt_purchase_for_assigned_pasti_gurus_only(): void
     {
         $payload = $this->seedAdminAndGurus();
+        Storage::fake('public');
+        $tempImage = tempnam(sys_get_temp_dir(), 'shirt-purchase-test');
+        file_put_contents($tempImage, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WnSUs8AAAAASUVORK5CYII='));
+        $image = new UploadedFile($tempImage, 'baju-korporat.png', 'image/png', null, true);
 
         $webhookService = \Mockery::mock(N8nWebhookService::class);
         $webhookService->shouldReceive('toActionUrl')->once()->andReturn('https://example.test/pembelian-baju');
+        $webhookService->shouldReceive('toPublicUrl')->once()->andReturn('https://example.test/uploads/shirt-purchases/baju-korporat.jpg');
         $webhookService->shouldReceive('sendByTemplate')
             ->once()
             ->with(
                 N8nWebhookService::KEY_TEXT_SHIRT_PURCHASE_REQUEST,
                 \Mockery::on(fn (array $variables): bool => $variables['tajuk'] === 'Baju Korporat'),
-                'https://example.test/pembelian-baju'
+                'https://example.test/pembelian-baju',
+                'https://example.test/uploads/shirt-purchases/baju-korporat.jpg'
             );
         $this->app->instance(N8nWebhookService::class, $webhookService);
 
@@ -132,10 +141,14 @@ class ShirtPurchaseManagementTest extends TestCase
             ->post(route('shirt-purchases.store'), [
                 'title' => 'Baju Korporat',
                 'description' => 'Sila pilih saiz baju.',
+                'image' => $image,
             ])
             ->assertRedirect(route('shirt-purchases.index'));
 
         $this->assertDatabaseCount('shirt_purchases', 1);
+        $storedImagePath = \DB::table('shirt_purchases')->value('image_path');
+        $this->assertNotNull($storedImagePath);
+        Storage::disk('public')->assertExists($storedImagePath);
         $this->assertDatabaseHas('shirt_purchase_responses', [
             'guru_id' => $payload['eligibleGuru']->id,
             'quantity' => 1,

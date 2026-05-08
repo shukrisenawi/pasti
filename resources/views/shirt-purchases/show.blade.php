@@ -15,6 +15,11 @@
                 <div>
                     <h3 class="text-base font-bold text-slate-900">{{ $purchase->title }}</h3>
                     <p class="mt-1 whitespace-pre-wrap text-sm text-slate-600">{{ $purchase->description ?: '-' }}</p>
+                    @if($purchase->image_url)
+                        <a href="{{ $purchase->image_url }}" target="_blank" class="mt-3 block">
+                            <img src="{{ $purchase->image_url }}" alt="{{ $purchase->title }}" class="h-48 w-full max-w-md rounded-2xl border border-slate-200 object-cover">
+                        </a>
+                    @endif
                 </div>
                 <form method="POST" action="{{ route('shirt-purchases.broadcast', $purchase) }}">
                     @csrf

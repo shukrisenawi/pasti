@@ -51,7 +51,7 @@
 
             <div class="card border-primary/10 bg-white/95" x-show="activeTab === 'cipta'" x-cloak>
                 <h3 class="text-base font-bold text-slate-900">Cipta Pembelian Baju</h3>
-                <form method="POST" action="{{ route('shirt-purchases.store') }}" class="mt-4 space-y-4">
+                <form method="POST" action="{{ route('shirt-purchases.store') }}" enctype="multipart/form-data" class="mt-4 space-y-4">
                     @csrf
                     <div>
                         <label for="title" class="label-base">Tajuk</label>
@@ -63,6 +63,13 @@
                         <label for="description" class="label-base">Keterangan</label>
                         <textarea id="description" name="description" rows="4" class="input-base mt-1 block w-full">{{ old('description') }}</textarea>
                         <x-input-error class="mt-2" :messages="$errors->get('description')" />
+                    </div>
+
+                    <div>
+                        <label for="image" class="label-base">Gambar Baju</label>
+                        <input id="image" name="image" type="file" accept=".jpg,.jpeg,.png,.webp,image/*" class="file-input mt-1 w-full">
+                        <p class="mt-1 text-xs text-slate-500">Format: JPG, PNG, WEBP (maks 7MB).</p>
+                        <x-input-error class="mt-2" :messages="$errors->get('image')" />
                     </div>
 
                     <button class="btn btn-primary">Simpan dan Hantar</button>
@@ -79,6 +86,11 @@
                         <div>
                             <h3 class="text-base font-bold text-slate-900">{{ $response->purchase?->title ?? '-' }}</h3>
                             <p class="mt-1 whitespace-pre-wrap text-sm text-slate-600">{{ $response->purchase?->description ?: '-' }}</p>
+                            @if($response->purchase?->image_url)
+                                <a href="{{ $response->purchase->image_url }}" target="_blank" class="mt-3 block">
+                                    <img src="{{ $response->purchase->image_url }}" alt="{{ $response->purchase?->title ?? 'Gambar baju' }}" class="h-40 w-full max-w-sm rounded-2xl border border-slate-200 object-cover">
+                                </a>
+                            @endif
                         </div>
                         <div class="flex flex-wrap gap-2 text-xs">
                             <span class="rounded-full {{ $response->paid_at ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700' }} px-3 py-1 font-semibold">
