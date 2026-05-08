@@ -266,8 +266,9 @@ class ShirtPurchaseController extends Controller
         $senarai = $shirtPurchase->responses
             ->filter(fn (ShirtPurchaseResponse $response): bool => filled($response->size))
             ->values()
-            ->map(function (ShirtPurchaseResponse $response): string {
-                $line = ($response->guru?->display_name ?? '-')
+            ->map(function (ShirtPurchaseResponse $response, int $index): string {
+                $line = ($index + 1) . '. '
+                    . ($response->guru?->display_name ?? '-')
                     . ' - ' . ($response->size ?? '-');
 
                 if ((int) $response->quantity > 1) {

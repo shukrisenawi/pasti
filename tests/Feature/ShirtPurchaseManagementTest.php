@@ -461,7 +461,7 @@ class ShirtPurchaseManagementTest extends TestCase
             ->with(
                 N8nWebhookService::KEY_TEXT_SHIRT_PURCHASE_LIST,
                 \Mockery::on(fn (array $variables): bool => $variables['tajuk'] === 'Baju Korporat'
-                    && str_contains($variables['senarai'], 'Cikgu A - M (2 helai) ✓')
+                    && str_contains($variables['senarai'], '1. Cikgu A - M (2 helai) ✓')
                     && ! str_contains($variables['senarai'], 'Kuantiti:')
                     && ! str_contains($variables['senarai'], 'Saiz:')
                     && ! str_contains($variables['senarai'], 'Menunggu pengesahan admin')
