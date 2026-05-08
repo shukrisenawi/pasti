@@ -145,6 +145,13 @@ class ShirtPurchaseManagementTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('kpi_snapshots', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id');
+            $table->decimal('score', 5, 2)->default(0);
+            $table->timestamps();
+        });
+
         Schema::create('programs', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('kawasan_id')->nullable();
@@ -215,6 +222,7 @@ class ShirtPurchaseManagementTest extends TestCase
         Schema::dropIfExists('shirt_purchases');
         Schema::dropIfExists('program_teacher');
         Schema::dropIfExists('programs');
+        Schema::dropIfExists('kpi_snapshots');
         Schema::dropIfExists('leave_notices');
         Schema::dropIfExists('guru_salary_requests');
         Schema::dropIfExists('pasti_information_requests');
@@ -431,6 +439,38 @@ class ShirtPurchaseManagementTest extends TestCase
             ->assertOk()
             ->assertSee('Cikgu A')
             ->assertDontSee('Cikgu B');
+    }
+
+    public function test_guru_index_hides_negative_payment_badges(): void
+    {
+        $payload = $this->seedAdminAndGurus();
+
+        $purchaseId = \DB::table('shirt_purchases')->insertGetId([
+            'title' => 'Baju Korporat',
+            'description' => 'Sila isi.',
+            'created_by' => $payload['admin']->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        \DB::table('shirt_purchase_responses')->insert([
+            'shirt_purchase_id' => $purchaseId,
+            'guru_id' => $payload['eligibleGuru']->id,
+            'size' => 'M',
+            'quantity' => 1,
+            'submitted_at' => now(),
+            'paid_at' => null,
+            'approved_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($payload['eligibleGuruUser'])
+            ->get(route('shirt-purchases.index'))
+            ->assertOk()
+            ->assertSee('Baju Korporat')
+            ->assertDontSee('Belum Bayar')
+            ->assertDontSee('Belum Approve');
     }
 
     private function seedAdminAndGurus(): array
