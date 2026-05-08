@@ -560,8 +560,8 @@ class ShirtPurchaseManagementTest extends TestCase
             ->get(route('shirt-purchases.index'))
             ->assertOk()
             ->assertSee('Perlu sahkan bayaran: 1')
-            ->assertSee('Maklum bayar: 2')
-            ->assertSee('Bayar sah: 1');
+            ->assertSee('Bayar sah: 1')
+            ->assertDontSee('Maklum bayar:');
     }
 
     public function test_guru_index_hides_negative_payment_badges(): void
