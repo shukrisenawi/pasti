@@ -216,6 +216,8 @@ class ShirtPurchaseController extends Controller
         $response->update([
             'paid_at' => $response->paid_at ?? now(),
             'paid_marked_by' => $user->id,
+            'approved_at' => $response->approved_at ?? now(),
+            'approved_by' => $response->approved_by ?? $user->id,
         ]);
 
         if ($request->expectsJson()) {

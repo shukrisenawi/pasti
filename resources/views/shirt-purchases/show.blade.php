@@ -68,7 +68,13 @@
                                 <td class="px-3 py-3">
                                     <div class="ml-auto w-full max-w-sm space-y-1.5 text-right">
                                         @if($response->approved_at)
-                                            <div class="flex flex-wrap justify-end gap-1.5 text-xs">
+                                            <div class="flex flex-wrap justify-end gap-1.5 text-xs" data-approved-badge-wrapper>
+                                                <span data-approved-badge class="rounded-full bg-primary/10 px-2.5 py-1 font-semibold text-primary">
+                                                    Diluluskan
+                                                </span>
+                                            </div>
+                                        @else
+                                            <div class="hidden flex-wrap justify-end gap-1.5 text-xs" data-approved-badge-wrapper>
                                                 <span data-approved-badge class="rounded-full bg-primary/10 px-2.5 py-1 font-semibold text-primary">
                                                     Diluluskan
                                                 </span>
@@ -182,6 +188,7 @@
                     const button = form.querySelector('[data-mark-paid-button]');
                     const card = form.closest('[data-shirt-response-card]');
                     const paidIcon = card?.querySelector('[data-paid-icon]');
+                    const approvedBadgeWrapper = card?.querySelector('[data-approved-badge-wrapper]');
                     const markPaidForm = card?.querySelector('[data-mark-paid-form]');
                     const approveForm = card?.querySelector('[data-approve-form]');
                     const approveButton = card?.querySelector('[data-approve-button]');
@@ -215,12 +222,21 @@
                             paidIcon.classList.add('inline-flex');
                         }
 
+                        if (approvedBadgeWrapper && payload.response?.approved) {
+                            approvedBadgeWrapper.classList.remove('hidden');
+                            approvedBadgeWrapper.classList.add('flex');
+                        }
+
                         if (markPaidForm) {
                             markPaidForm.classList.add('hidden');
                         }
 
-                        if (approveForm && !payload.response?.approved) {
-                            approveForm.classList.remove('hidden');
+                        if (approveForm) {
+                            if (payload.response?.approved) {
+                                approveForm.classList.add('hidden');
+                            } else {
+                                approveForm.classList.remove('hidden');
+                            }
                         }
 
                         if (approveButton && !payload.response?.approved) {

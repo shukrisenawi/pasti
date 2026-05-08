@@ -358,7 +358,7 @@ class ShirtPurchaseManagementTest extends TestCase
             ->assertSee('window.Swal.fire', false);
     }
 
-    public function test_admin_can_mark_paid_and_approve_response(): void
+    public function test_admin_manual_mark_paid_auto_approves_response(): void
     {
         $payload = $this->seedAdminAndGurus();
         $responseId = $this->seedSubmittedResponse($payload);
@@ -367,7 +367,19 @@ class ShirtPurchaseManagementTest extends TestCase
             ->post(route('shirt-purchases.responses.mark-paid', $responseId))
             ->assertRedirect();
 
-        $this->assertNotNull(\DB::table('shirt_purchase_responses')->where('id', $responseId)->value('paid_at'));
+        $response = \DB::table('shirt_purchase_responses')->where('id', $responseId)->first();
+        $this->assertNotNull($response->paid_at);
+        $this->assertNotNull($response->approved_at);
+        $this->assertSame($payload['admin']->id, (int) $response->paid_marked_by);
+        $this->assertSame($payload['admin']->id, (int) $response->approved_by);
+    }
+
+    public function test_admin_can_approve_guru_payment_notice(): void
+    {
+        $payload = $this->seedAdminAndGurus();
+        $responseId = $this->seedSubmittedResponse($payload, [
+            'paid_at' => now(),
+        ]);
 
         $this->actingAs($payload['admin'])
             ->post(route('shirt-purchases.responses.approve', $responseId))
@@ -391,14 +403,16 @@ class ShirtPurchaseManagementTest extends TestCase
                 'response' => [
                     'id' => $responseId,
                     'payment_notice' => true,
-                    'paid' => false,
-                    'approved' => false,
+                    'paid' => true,
+                    'approved' => true,
                 ],
             ]);
 
         $response = \DB::table('shirt_purchase_responses')->where('id', $responseId)->first();
         $this->assertNotNull($response->paid_at);
+        $this->assertNotNull($response->approved_at);
         $this->assertSame($payload['admin']->id, (int) $response->paid_marked_by);
+        $this->assertSame($payload['admin']->id, (int) $response->approved_by);
     }
 
     public function test_broadcast_list_only_includes_gurus_with_sizes(): void
@@ -678,7 +692,7 @@ class ShirtPurchaseManagementTest extends TestCase
         );
     }
 
-    private function seedSubmittedResponse(array $payload): int
+    private function seedSubmittedResponse(array $payload, array $overrides = []): int
     {
         $purchaseId = \DB::table('shirt_purchases')->insertGetId([
             'title' => 'Baju Korporat',
@@ -688,7 +702,7 @@ class ShirtPurchaseManagementTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        return \DB::table('shirt_purchase_responses')->insertGetId([
+        return \DB::table('shirt_purchase_responses')->insertGetId(array_merge([
             'shirt_purchase_id' => $purchaseId,
             'guru_id' => $payload['eligibleGuru']->id,
             'size' => 'L',
@@ -696,7 +710,7 @@ class ShirtPurchaseManagementTest extends TestCase
             'submitted_at' => now(),
             'created_at' => now(),
             'updated_at' => now(),
-        ]);
+        ], $overrides));
     }
 
     private function attachRole(User $user, string $roleName): void
