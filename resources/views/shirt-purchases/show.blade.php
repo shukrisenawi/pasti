@@ -64,14 +64,13 @@
                                         @endif
 
                                         <div class="flex flex-wrap gap-2">
-                                            <form method="POST" action="{{ route('shirt-purchases.responses.mark-paid', $response) }}" data-mark-paid-form>
+                                            <form method="POST" action="{{ route('shirt-purchases.responses.mark-paid', $response) }}" data-mark-paid-form @class(['hidden' => $response->paid_at !== null])>
                                                 @csrf
                                                 <button
                                                     data-mark-paid-button
                                                     class="btn btn-outline btn-sm px-3"
                                                     title="Sudah Bayar"
                                                     aria-label="Sudah Bayar"
-                                                    @disabled($response->paid_at !== null)
                                                 >
                                                     <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
                                                         <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.415 0l-3.2-3.2a1 1 0 111.414-1.42l2.493 2.494 6.493-6.494a1 1 0 011.415 0z" clip-rule="evenodd" />
@@ -79,14 +78,13 @@
                                                 </button>
                                             </form>
 
-                                            <form method="POST" action="{{ route('shirt-purchases.responses.approve', $response) }}" data-approve-form>
+                                            <form method="POST" action="{{ route('shirt-purchases.responses.approve', $response) }}" data-approve-form @class(['hidden' => $response->paid_at === null || $response->approved_at !== null])>
                                                 @csrf
                                                 <button
                                                     data-approve-button
                                                     class="btn btn-primary btn-sm px-3"
                                                     title="Sahkan Bayaran"
                                                     aria-label="Sahkan Bayaran"
-                                                    @disabled($response->paid_at === null || $response->approved_at !== null)
                                                 >
                                                     <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
                                                         <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.415 0l-3.2-3.2a1 1 0 111.414-1.42l2.493 2.494 6.493-6.494a1 1 0 011.415 0z" clip-rule="evenodd" />
@@ -178,6 +176,8 @@
                     const button = form.querySelector('[data-mark-paid-button]');
                     const card = form.closest('[data-shirt-response-card]');
                     const paidIcon = card?.querySelector('[data-paid-icon]');
+                    const markPaidForm = card?.querySelector('[data-mark-paid-form]');
+                    const approveForm = card?.querySelector('[data-approve-form]');
                     const approveButton = card?.querySelector('[data-approve-button]');
 
                     if (!button || button.disabled) {
@@ -207,6 +207,14 @@
                         if (payload.response?.paid && paidIcon) {
                             paidIcon.classList.remove('hidden');
                             paidIcon.classList.add('inline-flex');
+                        }
+
+                        if (markPaidForm) {
+                            markPaidForm.classList.add('hidden');
+                        }
+
+                        if (approveForm && !payload.response?.approved) {
+                            approveForm.classList.remove('hidden');
                         }
 
                         if (approveButton && !payload.response?.approved) {
