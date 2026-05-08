@@ -3,7 +3,7 @@
         <h2 class="text-lg font-bold">Pembelian Baju</h2>
     </x-slot>
 
-    @if($isAdmin)
+    @if(isset($purchases))
         @php($defaultTab = $errors->any() ? 'cipta' : 'senarai')
         <div x-data="{ activeTab: '{{ $defaultTab }}' }" class="space-y-4">
             <div class="card border-primary/10 bg-white/95">
@@ -78,42 +78,4 @@
         </div>
     @endif
 
-    @if($isGuru)
-        <div class="space-y-4">
-            @forelse($responses as $response)
-                <div class="card border-primary/10 bg-white/95">
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                            <h3 class="text-base font-bold text-slate-900">{{ $response->purchase?->title ?? '-' }}</h3>
-                            <p class="mt-1 whitespace-pre-wrap text-sm text-slate-600">{{ $response->purchase?->description ?: '-' }}</p>
-                            <div class="mt-3 flex flex-wrap gap-2 text-xs">
-                                @if($response->submitted_at)
-                                    <span class="rounded-full bg-sky-100 px-3 py-1 font-semibold text-sky-700">
-                                        Sudah Isi
-                                    </span>
-                                @endif
-                                @if($response->paid_at)
-                                    <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
-                                        Dah Bayar
-                                    </span>
-                                @endif
-                                @if($response->approved_at)
-                                    <span class="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">
-                                        Diluluskan
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                        <a href="{{ route('shirt-purchases.show', $response->purchase) }}" class="btn btn-primary btn-sm">
-                            {{ $response->submitted_at ? 'Lihat Maklumat' : 'Isi Maklumat' }}
-                        </a>
-                    </div>
-                </div>
-            @empty
-                <div class="rounded-xl border-2 border-dashed border-slate-100 p-8 text-center text-slate-400">
-                    Tiada pembelian baju untuk anda.
-                </div>
-            @endforelse
-        </div>
-    @endif
 </x-app-layout>

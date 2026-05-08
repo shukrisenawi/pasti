@@ -312,7 +312,7 @@ class ShirtPurchaseManagementTest extends TestCase
                 'quantity' => 2,
                 'is_paid' => '1',
             ])
-            ->assertRedirect(route('shirt-purchases.show', $purchaseId));
+            ->assertRedirect(route('shirt-purchases.index'));
 
         $this->assertDatabaseHas('shirt_purchase_responses', [
             'id' => $responseId,
@@ -322,6 +322,39 @@ class ShirtPurchaseManagementTest extends TestCase
         ]);
         $this->assertNotNull(\DB::table('shirt_purchase_responses')->where('id', $responseId)->value('paid_at'));
         $this->assertSame('XL', Guru::query()->findOrFail($payload['eligibleGuru']->id)->default_baju_size);
+    }
+
+    public function test_guru_submit_shows_success_alert_on_purchase_list_after_redirect(): void
+    {
+        $payload = $this->seedAdminAndGurus();
+
+        $purchaseId = \DB::table('shirt_purchases')->insertGetId([
+            'title' => 'Baju Korporat',
+            'description' => 'Sila isi.',
+            'created_by' => $payload['admin']->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $responseId = \DB::table('shirt_purchase_responses')->insertGetId([
+            'shirt_purchase_id' => $purchaseId,
+            'guru_id' => $payload['eligibleGuru']->id,
+            'quantity' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($payload['eligibleGuruUser'])
+            ->followingRedirects()
+            ->post(route('shirt-purchases.responses.update', $responseId), [
+                'size' => 'L',
+                'notes' => 'Sila proses',
+                'quantity' => 1,
+            ])
+            ->assertOk()
+            ->assertSee('data-testid="shirt-purchase-success-alert"', false)
+            ->assertSee('Pembelian baju berjaya dihantar.', false)
+            ->assertSee('window.Swal.fire', false);
     }
 
     public function test_admin_can_mark_paid_and_approve_response(): void

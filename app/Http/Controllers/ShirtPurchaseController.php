@@ -38,9 +38,7 @@ class ShirtPurchaseController extends Controller
                 ->latest('id')
                 ->get();
 
-            return view('shirt-purchases.index', [
-                'isGuru' => true,
-                'isAdmin' => false,
+            return view('shirt-purchases.guru-index', [
                 'responses' => $responses,
                 'sizeOptions' => ShirtPurchase::SIZE_OPTIONS,
             ]);
@@ -201,8 +199,10 @@ class ShirtPurchaseController extends Controller
         });
 
         return redirect()
-            ->route('shirt-purchases.show', $response->shirt_purchase_id)
-            ->with('status', __('messages.saved'));
+            ->route('shirt-purchases.index')
+            ->with('status', __('messages.saved'))
+            ->with('shirt_purchase_success_message', 'Pembelian baju berjaya dihantar.')
+            ->with('shirt_purchase_success_actor', 'guru');
     }
 
     public function markPaid(Request $request, ShirtPurchaseResponse $response): RedirectResponse
