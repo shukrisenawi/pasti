@@ -377,6 +377,28 @@ class ShirtPurchaseManagementTest extends TestCase
         $this->assertSame($payload['admin']->id, (int) $response->approved_by);
     }
 
+    public function test_admin_can_mark_paid_without_refresh_using_json_request(): void
+    {
+        $payload = $this->seedAdminAndGurus();
+        $responseId = $this->seedSubmittedResponse($payload);
+
+        $this->actingAs($payload['admin'])
+            ->postJson(route('shirt-purchases.responses.mark-paid', $responseId))
+            ->assertOk()
+            ->assertJson([
+                'message' => __('messages.saved'),
+                'response' => [
+                    'id' => $responseId,
+                    'paid' => true,
+                    'approved' => false,
+                ],
+            ]);
+
+        $response = \DB::table('shirt_purchase_responses')->where('id', $responseId)->first();
+        $this->assertNotNull($response->paid_at);
+        $this->assertSame($payload['admin']->id, (int) $response->paid_marked_by);
+    }
+
     public function test_broadcast_list_only_includes_gurus_with_sizes(): void
     {
         $payload = $this->seedAdminAndGurus();

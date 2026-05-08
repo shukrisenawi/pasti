@@ -7,6 +7,7 @@ use App\Models\ShirtPurchase;
 use App\Models\ShirtPurchaseResponse;
 use App\Services\N8nWebhookService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -205,7 +206,7 @@ class ShirtPurchaseController extends Controller
             ->with('shirt_purchase_success_actor', 'guru');
     }
 
-    public function markPaid(Request $request, ShirtPurchaseResponse $response): RedirectResponse
+    public function markPaid(Request $request, ShirtPurchaseResponse $response): RedirectResponse|JsonResponse
     {
         $user = $request->user();
         abort_unless($user->isOperatingAsAdmin(), 403);
@@ -215,6 +216,17 @@ class ShirtPurchaseController extends Controller
             'paid_at' => $response->paid_at ?? now(),
             'paid_marked_by' => $user->id,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => __('messages.saved'),
+                'response' => [
+                    'id' => $response->id,
+                    'paid' => $response->paid_at !== null,
+                    'approved' => $response->approved_at !== null,
+                ],
+            ]);
+        }
 
         return back()->with('status', __('messages.saved'));
     }
