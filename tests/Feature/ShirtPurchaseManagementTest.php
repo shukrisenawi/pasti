@@ -37,6 +37,8 @@ class ShirtPurchaseManagementTest extends TestCase
             $table->string('name')->nullable();
             $table->string('nama_samaran')->nullable();
             $table->string('email')->unique();
+            $table->date('tarikh_exp_skim_pas')->nullable();
+            $table->timestamp('last_login_at')->nullable();
             $table->string('password')->nullable();
             $table->rememberToken();
             $table->timestamps();
@@ -55,6 +57,48 @@ class ShirtPurchaseManagementTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('admin_messages', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('sender_id')->nullable();
+            $table->string('title')->nullable();
+            $table->text('body')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('admin_message_recipients', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('admin_message_id');
+            $table->unsignedBigInteger('user_id');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('notifications', function (Blueprint $table): void {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('claims', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('guru_id')->nullable();
+            $table->unsignedBigInteger('pasti_id')->nullable();
+            $table->date('claim_date')->nullable();
+            $table->decimal('amount', 8, 2)->nullable();
+            $table->text('notes')->nullable();
+            $table->string('image_path')->nullable();
+            $table->string('status')->default('pending');
+            $table->decimal('approved_amount', 8, 2)->nullable();
+            $table->string('payment_method')->nullable();
+            $table->unsignedBigInteger('approved_by')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('gurus', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
@@ -64,6 +108,69 @@ class ShirtPurchaseManagementTest extends TestCase
             $table->string('default_baju_size')->nullable();
             $table->boolean('is_assistant')->default(false);
             $table->boolean('active')->default(true);
+            $table->timestamps();
+        });
+
+        Schema::create('pasti_information_requests', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('pasti_id');
+            $table->unsignedBigInteger('requested_by')->nullable();
+            $table->timestamp('requested_at')->nullable();
+            $table->unsignedBigInteger('completed_by')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('guru_salary_requests', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id');
+            $table->unsignedBigInteger('requested_by')->nullable();
+            $table->timestamp('requested_at')->nullable();
+            $table->unsignedBigInteger('completed_by')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->decimal('gaji', 8, 2)->nullable();
+            $table->decimal('elaun', 8, 2)->nullable();
+            $table->decimal('elaun_transit', 8, 2)->nullable();
+            $table->decimal('elaun_lain', 8, 2)->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('leave_notices', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('guru_id');
+            $table->date('leave_date');
+            $table->date('leave_until')->nullable();
+            $table->text('reason')->nullable();
+            $table->string('mc_image_path')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('programs', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('kawasan_id')->nullable();
+            $table->unsignedBigInteger('pasti_id')->nullable();
+            $table->string('title');
+            $table->date('program_date');
+            $table->time('program_time')->nullable();
+            $table->string('location')->nullable();
+            $table->text('description')->nullable();
+            $table->string('banner_path')->nullable();
+            $table->boolean('require_absence_reason')->default(false);
+            $table->unsignedInteger('markah')->default(1);
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('program_teacher', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('program_id');
+            $table->unsignedBigInteger('guru_id');
+            $table->unsignedBigInteger('program_status_id')->nullable();
+            $table->text('absence_reason')->nullable();
+            $table->string('absence_reason_status')->nullable();
+            $table->unsignedBigInteger('absence_reason_reviewed_by')->nullable();
+            $table->timestamp('absence_reason_reviewed_at')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
         });
 
@@ -106,6 +213,15 @@ class ShirtPurchaseManagementTest extends TestCase
     {
         Schema::dropIfExists('shirt_purchase_responses');
         Schema::dropIfExists('shirt_purchases');
+        Schema::dropIfExists('program_teacher');
+        Schema::dropIfExists('programs');
+        Schema::dropIfExists('leave_notices');
+        Schema::dropIfExists('guru_salary_requests');
+        Schema::dropIfExists('pasti_information_requests');
+        Schema::dropIfExists('claims');
+        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('admin_message_recipients');
+        Schema::dropIfExists('admin_messages');
         Schema::dropIfExists('gurus');
         Schema::dropIfExists('admin_pasti');
         Schema::dropIfExists('pastis');
@@ -273,6 +389,48 @@ class ShirtPurchaseManagementTest extends TestCase
         $this->actingAs($payload['admin'])
             ->post(route('shirt-purchases.broadcast', $purchaseId))
             ->assertRedirect();
+    }
+
+    public function test_admin_detail_only_shows_gurus_who_have_submitted(): void
+    {
+        $payload = $this->seedAdminAndGurus();
+
+        $purchaseId = \DB::table('shirt_purchases')->insertGetId([
+            'title' => 'Baju Korporat',
+            'description' => 'Sila isi.',
+            'created_by' => $payload['admin']->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        \DB::table('shirt_purchase_responses')->insert([
+            [
+                'shirt_purchase_id' => $purchaseId,
+                'guru_id' => $payload['eligibleGuru']->id,
+                'size' => 'L',
+                'notes' => 'Sudah isi',
+                'quantity' => 1,
+                'submitted_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'shirt_purchase_id' => $purchaseId,
+                'guru_id' => $payload['secondEligibleGuru']->id,
+                'size' => null,
+                'notes' => null,
+                'quantity' => 1,
+                'submitted_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $this->actingAs($payload['admin'])
+            ->get(route('shirt-purchases.show', $purchaseId))
+            ->assertOk()
+            ->assertSee('Cikgu A')
+            ->assertDontSee('Cikgu B');
     }
 
     private function seedAdminAndGurus(): array

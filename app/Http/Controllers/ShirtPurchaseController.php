@@ -147,6 +147,10 @@ class ShirtPurchaseController extends Controller
 
         return view('shirt-purchases.show', [
             'purchase' => $shirtPurchase,
+            'submittedResponses' => $shirtPurchase->responses
+                ->filter(fn (ShirtPurchaseResponse $response): bool => $response->submitted_at !== null && filled($response->size))
+                ->sortBy(fn (ShirtPurchaseResponse $response) => $response->guru?->display_name)
+                ->values(),
         ]);
     }
 

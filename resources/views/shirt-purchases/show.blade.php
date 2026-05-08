@@ -29,7 +29,7 @@
         </div>
 
         <div class="grid gap-3">
-            @foreach($purchase->responses->sortBy(fn ($response) => $response->guru?->display_name)->values() as $response)
+            @forelse($submittedResponses as $response)
                 <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div>
@@ -64,7 +64,11 @@
                         </div>
                     </div>
                 </div>
-            @endforeach
+            @empty
+                <div class="rounded-xl border-2 border-dashed border-slate-100 p-8 text-center text-slate-400">
+                    Belum ada guru yang submit pembelian baju ini.
+                </div>
+            @endforelse
         </div>
     </div>
 </x-app-layout>
