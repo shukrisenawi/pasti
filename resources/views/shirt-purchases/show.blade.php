@@ -16,47 +16,64 @@
         </div>
 
         <div id="buyers-tab" data-tab-panel class="space-y-4">
-            <div class="grid gap-3">
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Nama</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Saiz</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
                 @forelse($submittedResponses as $response)
-                    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" data-shirt-response-card data-response-id="{{ $response->id }}">
-                        <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                            <div>
-                                <h4 class="text-sm font-extrabold text-slate-800">{{ $response->guru?->display_name ?? '-' }}</h4>
-                                <p class="text-xs text-slate-500">{{ __('messages.pasti') }}: {{ $response->guru?->pasti?->name ?? '-' }}</p>
-                                <div class="mt-2 grid gap-1 text-sm text-slate-700">
-                                    <p>Saiz: <span class="font-bold">{{ $response->size ?? '-' }}</span></p>
-                                    <p>Kuantiti: <span class="font-bold">{{ $response->quantity }}</span></p>
-                                    <p>Catatan: <span class="font-bold">{{ $response->notes ?: '-' }}</span></p>
-                                </div>
-                            </div>
-
-                            <div class="w-full max-w-xs space-y-2">
-                                <div class="flex flex-wrap gap-2 text-xs">
+                            <tr data-shirt-response-card data-response-id="{{ $response->id }}" class="align-top">
+                                <td class="px-4 py-4">
+                                    <p class="font-extrabold text-slate-800">{{ $response->guru?->display_name ?? '-' }}</p>
+                                </td>
+                                <td class="px-4 py-4 text-slate-700">
+                                    <span class="font-bold">{{ $response->size ?? '-' }}</span>
+                                    @if($response->quantity > 1)
+                                        <span class="text-slate-500">- {{ $response->quantity }}</span>
+                                    @endif
+                                    @if($response->notes)
+                                        <span class="text-slate-500">({{ $response->notes }})</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="w-full max-w-xs space-y-2">
+                                        <div class="flex flex-wrap gap-2 text-xs">
                                     <span data-paid-badge class="rounded-full {{ $response->paid_at ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700' }} px-3 py-1 font-semibold">
                                         {{ $response->paid_at ? 'Dah Bayar' : 'Belum Bayar' }}
                                     </span>
                                     <span data-approved-badge class="rounded-full {{ $response->approved_at ? 'bg-primary/10 text-primary' : 'bg-amber-100 text-amber-700' }} px-3 py-1 font-semibold">
                                         {{ $response->approved_at ? 'Diluluskan' : 'Belum Approve' }}
                                     </span>
-                                </div>
+                                        </div>
 
-                                <form method="POST" action="{{ route('shirt-purchases.responses.mark-paid', $response) }}" data-mark-paid-form>
-                                    @csrf
-                                    <button data-mark-paid-button class="btn btn-outline btn-sm w-full" @disabled($response->paid_at !== null)>Tandakan Manual Dah Bayar</button>
-                                </form>
+                                        <form method="POST" action="{{ route('shirt-purchases.responses.mark-paid', $response) }}" data-mark-paid-form>
+                                            @csrf
+                                            <button data-mark-paid-button class="btn btn-outline btn-sm w-full" @disabled($response->paid_at !== null)>Tandakan Manual Dah Bayar</button>
+                                        </form>
 
-                                <form method="POST" action="{{ route('shirt-purchases.responses.approve', $response) }}" data-approve-form>
-                                    @csrf
-                                    <button data-approve-button class="btn btn-primary btn-sm w-full" @disabled($response->paid_at === null || $response->approved_at !== null)>Approve Bayaran</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                                        <form method="POST" action="{{ route('shirt-purchases.responses.approve', $response) }}" data-approve-form>
+                                            @csrf
+                                            <button data-approve-button class="btn btn-primary btn-sm w-full" @disabled($response->paid_at === null || $response->approved_at !== null)>Approve Bayaran</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
                 @empty
-                    <div class="rounded-xl border-2 border-dashed border-slate-100 p-8 text-center text-slate-400">
-                        Belum ada guru yang submit pembelian baju ini.
-                    </div>
+                            <tr>
+                                <td colspan="3" class="px-4 py-8 text-center text-slate-400">
+                                    Belum ada guru yang submit pembelian baju ini.
+                                </td>
+                            </tr>
                 @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
