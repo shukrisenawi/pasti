@@ -28,7 +28,7 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                 @forelse($submittedResponses as $response)
-                            <tr data-shirt-response-card data-response-id="{{ $response->id }}" class="align-top">
+                            <tr data-shirt-response-card data-response-id="{{ $response->id }}" class="align-top transition-colors duration-150 hover:bg-emerald-50/80">
                                 <td class="px-4 py-4">
                                     <div class="flex items-center gap-3">
                                         <x-avatar :guru="$response->guru" size="h-9 w-9" border="border border-slate-200" />
