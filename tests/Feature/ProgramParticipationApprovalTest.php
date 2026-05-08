@@ -696,6 +696,32 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertSee('xapprove');
     }
 
+    public function test_program_show_page_for_guru_does_not_display_approval_badge(): void
+    {
+        Notification::fake();
+
+        [$program, $guruUser, $absentStatus, $admin] = $this->createProgramFixtures();
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $guruUser->guru->id)
+            ->update([
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Ada urusan kecemasan.',
+                'absence_reason_status' => 'approved',
+                'updated_by' => $admin->id,
+            ]);
+
+        $response = $this->actingAs($guruUser)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('Tidak Hadir')
+            ->assertDontSee('approve')
+            ->assertDontSee('xapprove');
+    }
+
     public function test_admin_status_update_from_complete_tab_redirects_back_to_complete_tab(): void
     {
         Notification::fake();

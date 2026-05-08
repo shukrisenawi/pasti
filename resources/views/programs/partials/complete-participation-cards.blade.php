@@ -34,7 +34,8 @@
                                 {{ $participation->status?->name ?? '-' }}
                             </span>
                             @if(
-                                $participation->status?->code === 'TIDAK_HADIR'
+                                ($canManage ?? false)
+                                && $participation->status?->code === 'TIDAK_HADIR'
                                 && filled($completeAbsenceReviewLabel)
                             )
                                 <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold {{ $completeAbsenceReviewClass }}">
