@@ -27,7 +27,7 @@
                                     <h4 class="text-base font-bold text-slate-900">{{ $purchase->title }}</h4>
                                     <p class="mt-1 whitespace-pre-wrap text-sm text-slate-600">{{ $purchase->description ?: '-' }}</p>
                                     <div class="mt-3 flex flex-wrap gap-2 text-xs">
-                                        <span class="rounded-full bg-sky-100 px-3 py-1 font-semibold text-sky-700">Isi saiz: {{ $purchase->submitted_count }}</span>
+                                        <span class="rounded-full bg-sky-100 px-3 py-1 font-semibold text-sky-700">Respond: {{ $purchase->submitted_count }}</span>
                                         <span class="rounded-full bg-rose-100 px-3 py-1 font-semibold text-rose-700">Perlu sahkan bayaran: {{ $purchase->pending_confirmation_count }}</span>
                                         <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">Bayar sah: {{ $purchase->approved_count }}</span>
                                     </div>
