@@ -240,6 +240,32 @@ class DashboardGuruProgramsTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('shirt_purchases', function (Blueprint $table): void {
+            $table->id();
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->string('image_path')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->timestamp('sent_to_n8n_at')->nullable();
+            $table->timestamp('last_broadcast_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('shirt_purchase_responses', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('shirt_purchase_id');
+            $table->unsignedBigInteger('guru_id');
+            $table->string('size')->nullable();
+            $table->text('notes')->nullable();
+            $table->unsignedInteger('quantity')->default(1);
+            $table->timestamp('submitted_at')->nullable();
+            $table->timestamp('paid_at')->nullable();
+            $table->unsignedBigInteger('paid_marked_by')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->unsignedBigInteger('approved_by')->nullable();
+            $table->timestamps();
+        });
+
         \DB::table('roles')->insert([
             ['name' => 'guru', 'guard_name' => 'web'],
             ['name' => 'admin', 'guard_name' => 'web'],
@@ -282,6 +308,8 @@ class DashboardGuruProgramsTest extends TestCase
         Schema::dropIfExists('ajk_positions');
         Schema::dropIfExists('leave_notices');
         Schema::dropIfExists('kpi_snapshots');
+        Schema::dropIfExists('shirt_purchase_responses');
+        Schema::dropIfExists('shirt_purchases');
         Schema::dropIfExists('guru_salary_requests');
         Schema::dropIfExists('financial_transactions');
         Schema::dropIfExists('pasti_information_requests');
@@ -701,6 +729,54 @@ class DashboardGuruProgramsTest extends TestCase
             ['Aina', 'Bella'],
             $topKpiGurus->pluck('display_name')->all()
         );
+    }
+
+    public function test_dashboard_guru_shirt_purchase_action_points_to_specific_purchase_detail(): void
+    {
+        $user = User::query()->create([
+            'name' => 'Cikgu Baju',
+            'nama_samaran' => 'Cikgu Baju',
+            'email' => 'guru-baju@example.test',
+        ]);
+        $this->attachRole($user, 'guru');
+
+        $pasti = Pasti::query()->create([
+            'name' => 'PASTI Baju',
+        ]);
+
+        $guru = Guru::query()->create([
+            'user_id' => $user->id,
+            'pasti_id' => $pasti->id,
+            'name' => $user->name,
+            'active' => true,
+        ]);
+
+        $purchaseId = DB::table('shirt_purchases')->insertGetId([
+            'title' => 'Baju Korporat',
+            'description' => 'Sila isi saiz.',
+            'created_by' => $user->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('shirt_purchase_responses')->insert([
+            'shirt_purchase_id' => $purchaseId,
+            'guru_id' => $guru->id,
+            'quantity' => 1,
+            'submitted_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Kemaskini pembelian baju')
+            ->assertSee(
+                'href="' . route('shirt-purchases.show', $purchaseId) . '" class="btn mt-4 rounded-2xl border-none bg-fuchsia-600 px-4 text-sm font-bold text-white hover:bg-fuchsia-700 shadow-lg shadow-fuchsia-200/50"',
+                false
+            );
     }
 
     private function attachRole(User $user, string $roleName): void

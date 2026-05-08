@@ -153,7 +153,7 @@
                             <p class="text-xs font-bold uppercase tracking-[0.16em] text-fuchsia-700">Pembelian Baju</p>
                             <h4 class="mt-2 text-lg font-black text-slate-900">Kemaskini pembelian baju</h4>
                             <p class="mt-2 text-sm leading-6 text-slate-600">Admin menunggu saiz, kuantiti dan status bayaran anda untuk pembelian <span class="font-bold">{{ $pendingShirtPurchaseResponse->purchase?->title ?? '-' }}</span>.</p>
-                            <a href="{{ route('shirt-purchases.index') }}" class="btn mt-4 rounded-2xl border-none bg-fuchsia-600 px-4 text-sm font-bold text-white hover:bg-fuchsia-700 shadow-lg shadow-fuchsia-200/50">
+                            <a href="{{ route('shirt-purchases.show', $pendingShirtPurchaseResponse->shirt_purchase_id) }}" class="btn mt-4 rounded-2xl border-none bg-fuchsia-600 px-4 text-sm font-bold text-white hover:bg-fuchsia-700 shadow-lg shadow-fuchsia-200/50">
                                 Kemaskini sekarang
                             </a>
                         </div>
