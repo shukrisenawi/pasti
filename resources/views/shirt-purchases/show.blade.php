@@ -66,12 +66,32 @@
                                         <div class="flex flex-wrap gap-2">
                                             <form method="POST" action="{{ route('shirt-purchases.responses.mark-paid', $response) }}" data-mark-paid-form>
                                                 @csrf
-                                                <button data-mark-paid-button class="btn btn-outline btn-sm" @disabled($response->paid_at !== null)>Sudah Bayar</button>
+                                                <button
+                                                    data-mark-paid-button
+                                                    class="btn btn-outline btn-sm px-3"
+                                                    title="Sudah Bayar"
+                                                    aria-label="Sudah Bayar"
+                                                    @disabled($response->paid_at !== null)
+                                                >
+                                                    <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                                                        <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.415 0l-3.2-3.2a1 1 0 111.414-1.42l2.493 2.494 6.493-6.494a1 1 0 011.415 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </button>
                                             </form>
 
                                             <form method="POST" action="{{ route('shirt-purchases.responses.approve', $response) }}" data-approve-form>
                                                 @csrf
-                                                <button data-approve-button class="btn btn-primary btn-sm" @disabled($response->paid_at === null || $response->approved_at !== null)>Sahkan Bayaran</button>
+                                                <button
+                                                    data-approve-button
+                                                    class="btn btn-primary btn-sm px-3"
+                                                    title="Sahkan Bayaran"
+                                                    aria-label="Sahkan Bayaran"
+                                                    @disabled($response->paid_at === null || $response->approved_at !== null)
+                                                >
+                                                    <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                                                        <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.415 0l-3.2-3.2a1 1 0 111.414-1.42l2.493 2.494 6.493-6.494a1 1 0 011.415 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </button>
                                             </form>
                                         </div>
                                     </div>
