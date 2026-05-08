@@ -10,9 +10,16 @@
     </x-slot>
 
     <div class="space-y-4">
-        <div class="flex flex-wrap gap-2">
-            <button type="button" class="btn btn-primary btn-sm" data-tab-button data-target="buyers-tab">Senarai Pembeli</button>
-            <button type="button" class="btn btn-outline btn-sm" data-tab-button data-target="info-tab">Maklumat Baju</button>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-wrap gap-2">
+                <button type="button" class="btn btn-primary btn-sm" data-tab-button data-target="buyers-tab">Senarai Pembeli</button>
+                <button type="button" class="btn btn-outline btn-sm" data-tab-button data-target="info-tab">Maklumat Baju</button>
+            </div>
+
+            <form method="POST" action="{{ route('shirt-purchases.broadcast', $purchase) }}" class="sm:ml-auto">
+                @csrf
+                <button class="btn btn-primary btn-sm w-full sm:w-auto">Keluarkan Senarai</button>
+            </form>
         </div>
 
         <div id="buyers-tab" data-tab-panel class="space-y-4">
@@ -136,12 +143,6 @@
                         </div>
                     </div>
 
-                    <div class="w-full max-w-xs">
-                        <form method="POST" action="{{ route('shirt-purchases.broadcast', $purchase) }}">
-                            @csrf
-                            <button class="btn btn-primary w-full">Keluarkan Senarai</button>
-                        </form>
-                    </div>
                 </div>
             </div>
         </div>
