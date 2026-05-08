@@ -87,7 +87,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/leave-notices/{leaveNotice}', [LeaveNoticeController::class, 'update'])->name('leave-notices.update');
         Route::get('/laporan-pasti', [PastiReportController::class, 'index'])->name('pasti-reports.index');
         Route::post('/pembelian-baju', [ShirtPurchaseController::class, 'store'])->name('shirt-purchases.store');
-        Route::get('/pembelian-baju/{shirtPurchase}', [ShirtPurchaseController::class, 'show'])->name('shirt-purchases.show');
         Route::post('/pembelian-baju/{shirtPurchase}/keluarkan-senarai', [ShirtPurchaseController::class, 'broadcast'])->name('shirt-purchases.broadcast');
         Route::post('/pembelian-baju/responses/{response}/mark-paid', [ShirtPurchaseController::class, 'markPaid'])->name('shirt-purchases.responses.mark-paid');
         Route::post('/pembelian-baju/responses/{response}/approve', [ShirtPurchaseController::class, 'approve'])->name('shirt-purchases.responses.approve');
@@ -146,6 +145,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/messages/{message}', [AdminMessageController::class, 'destroy'])->name('messages.destroy');
         Route::get('/senarai-guru', [GuruController::class, 'directory'])->name('guru-directory.index');
         Route::get('/pembelian-baju', [ShirtPurchaseController::class, 'index'])->name('shirt-purchases.index');
+        Route::get('/pembelian-baju/{shirtPurchase}', [ShirtPurchaseController::class, 'show'])->name('shirt-purchases.show');
     });
 
     Route::middleware(['role:master_admin|admin', 'admin.mode'])->group(function () {

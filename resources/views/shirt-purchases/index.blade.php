@@ -86,57 +86,28 @@
                         <div>
                             <h3 class="text-base font-bold text-slate-900">{{ $response->purchase?->title ?? '-' }}</h3>
                             <p class="mt-1 whitespace-pre-wrap text-sm text-slate-600">{{ $response->purchase?->description ?: '-' }}</p>
-                            @if($response->purchase?->image_url)
-                                <a href="{{ $response->purchase->image_url }}" target="_blank" class="mt-3 block">
-                                    <img src="{{ $response->purchase->image_url }}" alt="{{ $response->purchase?->title ?? 'Gambar baju' }}" class="h-40 w-full max-w-sm rounded-2xl border border-slate-200 object-cover">
-                                </a>
-                            @endif
+                            <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                                @if($response->submitted_at)
+                                    <span class="rounded-full bg-sky-100 px-3 py-1 font-semibold text-sky-700">
+                                        Sudah Isi
+                                    </span>
+                                @endif
+                                @if($response->paid_at)
+                                    <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
+                                        Dah Bayar
+                                    </span>
+                                @endif
+                                @if($response->approved_at)
+                                    <span class="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">
+                                        Diluluskan
+                                    </span>
+                                @endif
+                            </div>
                         </div>
-                        <div class="flex flex-wrap gap-2 text-xs">
-                            @if($response->paid_at)
-                                <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
-                                    Dah Bayar
-                                </span>
-                            @endif
-                            @if($response->approved_at)
-                                <span class="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">
-                                    Diluluskan
-                                </span>
-                            @endif
-                        </div>
+                        <a href="{{ route('shirt-purchases.show', $response->purchase) }}" class="btn btn-primary btn-sm">
+                            {{ $response->submitted_at ? 'Lihat Maklumat' : 'Isi Maklumat' }}
+                        </a>
                     </div>
-
-                    <form method="POST" action="{{ route('shirt-purchases.responses.update', $response) }}" class="mt-4 grid gap-4 md:grid-cols-2">
-                        @csrf
-                        <div>
-                            <label class="label-base">Saiz</label>
-                            <select name="size" class="input-base mt-1 block w-full" required>
-                                <option value="">- Pilih saiz -</option>
-                                @foreach($sizeOptions as $size)
-                                    <option value="{{ $size }}" @selected(old('size.' . $response->id, old('size', $response->size ?? $response->guru?->default_baju_size)) === $size)>{{ $size }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="label-base">Kuantiti</label>
-                            <input type="number" min="1" max="99" name="quantity" class="input-base mt-1 block w-full" value="{{ old('quantity', $response->quantity ?: 1) }}" required>
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="label-base">Catatan</label>
-                            <textarea name="notes" rows="3" class="input-base mt-1 block w-full">{{ old('notes', $response->notes) }}</textarea>
-                        </div>
-
-                        <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                            <input type="checkbox" name="is_paid" value="1" class="rounded border-slate-300 text-primary" @checked(old('is_paid', $response->paid_at !== null))>
-                            <span>Dah bayar</span>
-                        </label>
-
-                        <div class="md:col-span-2">
-                            <button class="btn btn-primary">Simpan</button>
-                        </div>
-                    </form>
                 </div>
             @empty
                 <div class="rounded-xl border-2 border-dashed border-slate-100 p-8 text-center text-slate-400">

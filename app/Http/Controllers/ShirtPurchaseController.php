@@ -27,7 +27,7 @@ class ShirtPurchaseController extends Controller
 
         if ($user->isOperatingAsGuru()) {
             $responses = ShirtPurchaseResponse::query()
-                ->with(['purchase', 'guru.pasti'])
+                ->with(['purchase'])
                 ->where('guru_id', $user->operatingGuruProfile()?->id ?? 0)
                 ->orderByDesc(
                     ShirtPurchase::query()
@@ -135,6 +135,21 @@ class ShirtPurchaseController extends Controller
     public function show(Request $request, ShirtPurchase $shirtPurchase): View
     {
         $user = $request->user();
+
+        if ($user->isOperatingAsGuru()) {
+            $response = ShirtPurchaseResponse::query()
+                ->with(['purchase', 'guru.pasti'])
+                ->where('shirt_purchase_id', $shirtPurchase->id)
+                ->where('guru_id', $user->operatingGuruProfile()?->id ?? 0)
+                ->firstOrFail();
+
+            return view('shirt-purchases.guru-show', [
+                'purchase' => $shirtPurchase,
+                'response' => $response,
+                'sizeOptions' => ShirtPurchase::SIZE_OPTIONS,
+            ]);
+        }
+
         abort_unless($user->isOperatingAsAdmin(), 403);
         $this->ensureAdminCanAccessPurchase($user, $shirtPurchase);
 
@@ -185,7 +200,9 @@ class ShirtPurchaseController extends Controller
             ]);
         });
 
-        return redirect()->route('shirt-purchases.index')->with('status', __('messages.saved'));
+        return redirect()
+            ->route('shirt-purchases.show', $response->shirt_purchase_id)
+            ->with('status', __('messages.saved'));
     }
 
     public function markPaid(Request $request, ShirtPurchaseResponse $response): RedirectResponse

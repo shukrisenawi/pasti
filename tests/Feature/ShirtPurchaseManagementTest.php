@@ -312,7 +312,7 @@ class ShirtPurchaseManagementTest extends TestCase
                 'quantity' => 2,
                 'is_paid' => '1',
             ])
-            ->assertRedirect(route('shirt-purchases.index'));
+            ->assertRedirect(route('shirt-purchases.show', $purchaseId));
 
         $this->assertDatabaseHas('shirt_purchase_responses', [
             'id' => $responseId,
@@ -469,8 +469,44 @@ class ShirtPurchaseManagementTest extends TestCase
             ->get(route('shirt-purchases.index'))
             ->assertOk()
             ->assertSee('Baju Korporat')
+            ->assertSee('Lihat Maklumat')
+            ->assertDontSee('Saiz')
+            ->assertDontSee('Kuantiti')
             ->assertDontSee('Belum Bayar')
             ->assertDontSee('Belum Approve');
+    }
+
+    public function test_guru_can_open_purchase_detail_to_view_and_edit_submitted_information(): void
+    {
+        $payload = $this->seedAdminAndGurus();
+
+        $purchaseId = \DB::table('shirt_purchases')->insertGetId([
+            'title' => 'Baju Korporat',
+            'description' => 'Sila isi saiz baju.',
+            'created_by' => $payload['admin']->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        \DB::table('shirt_purchase_responses')->insert([
+            'shirt_purchase_id' => $purchaseId,
+            'guru_id' => $payload['eligibleGuru']->id,
+            'size' => 'XL',
+            'notes' => 'Lengan panjang',
+            'quantity' => 2,
+            'submitted_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($payload['eligibleGuruUser'])
+            ->get(route('shirt-purchases.show', $purchaseId))
+            ->assertOk()
+            ->assertSee('Baju Korporat')
+            ->assertSee('Saiz')
+            ->assertSee('Kuantiti')
+            ->assertSee('Catatan')
+            ->assertSee('Lengan panjang');
     }
 
     private function seedAdminAndGurus(): array
