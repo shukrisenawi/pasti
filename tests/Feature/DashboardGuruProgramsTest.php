@@ -459,7 +459,7 @@ class DashboardGuruProgramsTest extends TestCase
             ->assertDontSee(route('programs.teachers.status.update', [$submittedProgram, $guru->id]), false);
     }
 
-    public function test_dashboard_admin_orders_top_kpi_by_lowest_leave_when_score_is_tied(): void
+    public function test_dashboard_admin_shows_only_best_top_kpi_guru_when_leave_count_breaks_the_tie(): void
     {
         $admin = User::query()->create([
             'name' => 'Admin Dashboard',
@@ -559,6 +559,128 @@ class DashboardGuruProgramsTest extends TestCase
             [
                 'guru_id' => $highLeaveGuru->id,
                 'leave_date' => now()->subDays(2)->toDateString(),
+                'leave_until' => now()->toDateString(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $request = Request::create('/dashboard', 'GET');
+        $request->setUserResolver(fn () => $admin);
+
+        $response = app(DashboardController::class)($request);
+
+        $this->assertInstanceOf(View::class, $response);
+
+        $topKpiGurus = $response->getData()['topKpiGurus'];
+
+        $this->assertInstanceOf(Collection::class, $topKpiGurus);
+        $this->assertSame(
+            ['Aina'],
+            $topKpiGurus->pluck('display_name')->all()
+        );
+    }
+
+    public function test_dashboard_admin_shows_all_top_kpi_gurus_when_score_and_leave_count_are_tied(): void
+    {
+        $admin = User::query()->create([
+            'name' => 'Admin Seri',
+            'nama_samaran' => 'Admin Seri',
+            'email' => 'admin-seri@example.test',
+        ]);
+        $this->attachRole($admin, 'admin');
+
+        $pasti = Pasti::query()->create([
+            'name' => 'PASTI Seri',
+        ]);
+
+        \DB::table('admin_pasti')->insert([
+            'user_id' => $admin->id,
+            'pasti_id' => $pasti->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $firstUser = User::query()->create([
+            'name' => 'Aina',
+            'nama_samaran' => 'Aina',
+            'email' => 'aina-seri@example.test',
+        ]);
+        $secondUser = User::query()->create([
+            'name' => 'Bella',
+            'nama_samaran' => 'Bella',
+            'email' => 'bella-seri@example.test',
+        ]);
+
+        $firstGuru = Guru::query()->create([
+            'user_id' => $firstUser->id,
+            'pasti_id' => $pasti->id,
+            'name' => $firstUser->name,
+            'active' => true,
+        ]);
+        $secondGuru = Guru::query()->create([
+            'user_id' => $secondUser->id,
+            'pasti_id' => $pasti->id,
+            'name' => $secondUser->name,
+            'active' => true,
+        ]);
+
+        $program = Program::query()->create([
+            'pasti_id' => $pasti->id,
+            'title' => 'Program Seri',
+            'program_date' => now()->addDay()->toDateString(),
+            'created_by' => $admin->id,
+        ]);
+
+        \DB::table('program_teacher')->insert([
+            [
+                'program_id' => $program->id,
+                'guru_id' => $firstGuru->id,
+                'program_status_id' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'program_id' => $program->id,
+                'guru_id' => $secondGuru->id,
+                'program_status_id' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        \DB::table('kpi_snapshots')->insert([
+            [
+                'guru_id' => $firstGuru->id,
+                'total_invited' => 10,
+                'total_hadir' => 9,
+                'score' => 90,
+                'calculated_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'guru_id' => $secondGuru->id,
+                'total_invited' => 10,
+                'total_hadir' => 9,
+                'score' => 90,
+                'calculated_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        \DB::table('leave_notices')->insert([
+            [
+                'guru_id' => $firstGuru->id,
+                'leave_date' => now()->toDateString(),
+                'leave_until' => now()->toDateString(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'guru_id' => $secondGuru->id,
+                'leave_date' => now()->toDateString(),
                 'leave_until' => now()->toDateString(),
                 'created_at' => now(),
                 'updated_at' => now(),

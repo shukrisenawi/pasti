@@ -91,6 +91,12 @@ class DashboardController extends Controller
                         fn (Guru $left, Guru $right) => strcmp($left->display_name, $right->display_name),
                     ])
                     ->values();
+
+                $bestLeaveCount = (int) ($topKpiGurus->first()?->leave_notices_current_year_count ?? 0);
+
+                $topKpiGurus = $topKpiGurus
+                    ->filter(fn (Guru $guru) => (int) ($guru->leave_notices_current_year_count ?? 0) === $bestLeaveCount)
+                    ->values();
             }
 
             $balanceExpression = "SUM(CASE WHEN COALESCE(credit_debit, CASE WHEN transaction_type = 'masuk' THEN 'credit' ELSE 'debit' END) = 'credit' THEN amount ELSE -amount END)";
