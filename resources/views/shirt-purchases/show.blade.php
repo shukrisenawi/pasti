@@ -30,7 +30,8 @@
                 @forelse($submittedResponses as $response)
                             <tr data-shirt-response-card data-response-id="{{ $response->id }}" class="align-top">
                                 <td class="px-4 py-4">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <x-avatar :guru="$response->guru" size="h-9 w-9" border="border border-slate-200" />
                                         <p class="font-extrabold text-slate-800">{{ $response->guru?->display_name ?? '-' }}</p>
                                         <span
                                             data-paid-icon
