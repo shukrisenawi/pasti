@@ -26,6 +26,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ProgramParticipationController;
 use App\Http\Controllers\ProgramTitleOptionController;
+use App\Http\Controllers\ShirtPurchaseController;
 use App\Http\Controllers\WebViewFcmTokenController;
 use App\Services\N8nWebhookService;
 use Illuminate\Support\Facades\Route;
@@ -85,6 +86,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/leave-notices/{leaveNotice}/edit', [LeaveNoticeController::class, 'edit'])->name('leave-notices.edit');
         Route::put('/leave-notices/{leaveNotice}', [LeaveNoticeController::class, 'update'])->name('leave-notices.update');
         Route::get('/laporan-pasti', [PastiReportController::class, 'index'])->name('pasti-reports.index');
+        Route::post('/pembelian-baju', [ShirtPurchaseController::class, 'store'])->name('shirt-purchases.store');
+        Route::get('/pembelian-baju/{shirtPurchase}', [ShirtPurchaseController::class, 'show'])->name('shirt-purchases.show');
+        Route::post('/pembelian-baju/{shirtPurchase}/keluarkan-senarai', [ShirtPurchaseController::class, 'broadcast'])->name('shirt-purchases.broadcast');
+        Route::post('/pembelian-baju/responses/{response}/mark-paid', [ShirtPurchaseController::class, 'markPaid'])->name('shirt-purchases.responses.mark-paid');
+        Route::post('/pembelian-baju/responses/{response}/approve', [ShirtPurchaseController::class, 'approve'])->name('shirt-purchases.responses.approve');
     });
 
     Route::middleware('role:guru')->group(function () {
@@ -105,6 +111,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/kursus-guru/responses/{response}', [GuruCourseController::class, 'respond'])->name('kursus-guru.responses.respond');
         Route::post('/kursus-guru/request-reminder', [GuruCourseController::class, 'requestPendingResponses'])->name('kursus-guru.request-reminder');
         Route::put('/profile/pasti-selection', [ProfileController::class, 'updatePastiSelection'])->name('profile.pasti-selection.update');
+        Route::post('/pembelian-baju/responses/{response}', [ShirtPurchaseController::class, 'updateResponse'])->name('shirt-purchases.responses.update');
     });
 
     Route::middleware('role:master_admin|admin|guru')->group(function () {
@@ -138,6 +145,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/messages/{message}/replies/{reply}', [AdminMessageController::class, 'destroyReply'])->name('messages.replies.destroy');
         Route::delete('/messages/{message}', [AdminMessageController::class, 'destroy'])->name('messages.destroy');
         Route::get('/senarai-guru', [GuruController::class, 'directory'])->name('guru-directory.index');
+        Route::get('/pembelian-baju', [ShirtPurchaseController::class, 'index'])->name('shirt-purchases.index');
     });
 
     Route::middleware(['role:master_admin|admin', 'admin.mode'])->group(function () {

@@ -26,6 +26,8 @@ class N8nSettingsSeeder extends Seeder
             N8nWebhookService::KEY_TEXT_CLAIM_SUBMITTED => '{nama_guru} hantar claim sebanyak RM{jumlah} pada {tarikh_claim}. Catatan: {catatan}.',
             N8nWebhookService::KEY_TEXT_ALL_PASTI_INFO_COMPLETED => 'Semua PASTI telah hantar maklumat PASTI. Dikemaskini pada {tarikh}.',
             N8nWebhookService::KEY_TEXT_ALL_GURU_SALARY_COMPLETED => 'Semua guru telah hantar maklumat gaji semasa. Dikemaskini pada {tarikh}.',
+            N8nWebhookService::KEY_TEXT_SHIRT_PURCHASE_REQUEST => "Pembelian baju baharu dibuka: {tajuk}.\n{keterangan}",
+            N8nWebhookService::KEY_TEXT_SHIRT_PURCHASE_LIST => "Senarai pembelian baju: {tajuk}\n\n{senarai}",
         ];
 
         foreach ($settings as $key => $value) {

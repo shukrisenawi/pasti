@@ -38,6 +38,7 @@ class Guru extends Model
         'phone',
         'marital_status',
         'kursus_guru',
+        'default_baju_size',
         'joined_at',
         'active',
         'terima_anugerah',
@@ -93,6 +94,11 @@ class Guru extends Model
     public function salaryRequests(): HasMany
     {
         return $this->hasMany(GuruSalaryRequest::class);
+    }
+
+    public function shirtPurchaseResponses(): HasMany
+    {
+        return $this->hasMany(ShirtPurchaseResponse::class);
     }
 
     public function latestSalaryRequest(): HasOne

@@ -47,6 +47,13 @@
             </div>
             <span>Claim</span>
         </a>
+
+        <a href="{{ route('shirt-purchases.index') }}" wire:navigate class="flex flex-col items-center gap-1 px-3 py-2 text-xs font-bold transition-colors {{ request()->routeIs('shirt-purchases.*') ? 'text-primary' : 'text-slate-500' }}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0v10l-8 4m8-14l-8 4m-8-4v10l8 4m0-10v10" />
+            </svg>
+            <span>Baju</span>
+        </a>
     </div>
 </div>
 @endrole

@@ -25,6 +25,7 @@
     @php
         $user = auth()->user();
         $skimPasAlert = null;
+        $pendingShirtPurchaseResponse = $pendingShirtPurchaseResponse ?? null;
         if ($user->tarikh_exp_skim_pas) {
             $today = now()->startOfDay();
             $expiry = $user->tarikh_exp_skim_pas->startOfDay();
@@ -108,7 +109,7 @@
             </div>
         </section>
 
-        @if(($pendingPastiInfoRequest ?? null) || ($pendingGuruSalaryRequest ?? null))
+        @if(($pendingPastiInfoRequest ?? null) || ($pendingGuruSalaryRequest ?? null) || ($pendingShirtPurchaseResponse ?? null))
         <section class="mb-8">
             <div class="rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-5 shadow-card sm:p-6">
                 <div class="flex items-start gap-3">
@@ -124,7 +125,7 @@
                     </div>
                 </div>
 
-                <div class="mt-5 grid gap-4 {{ $pendingPastiInfoRequest && $pendingGuruSalaryRequest ? 'lg:grid-cols-2' : 'lg:grid-cols-1' }}">
+                <div class="mt-5 grid gap-4 {{ collect([$pendingPastiInfoRequest, $pendingGuruSalaryRequest, $pendingShirtPurchaseResponse])->filter()->count() > 1 ? 'lg:grid-cols-2' : 'lg:grid-cols-1' }}">
                     @if($pendingPastiInfoRequest)
                     <div class="rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">
                         <p class="text-xs font-bold uppercase tracking-[0.16em] {{ $pendingPastiInfoRequest ? 'text-amber-700' : 'text-slate-400' }}">Maklumat Semasa</p>
@@ -143,6 +144,17 @@
                             <p class="mt-2 text-sm leading-6 text-slate-600">Kemaskini maklumat gaji, elaun, elaun transit dan elaun lain semasa anda supaya rekod kewangan guru sentiasa terkini.</p>
                             <a href="{{ route('guru-salary-information.edit', $pendingGuruSalaryRequest) }}" class="btn mt-4 rounded-2xl border-none bg-sky-600 px-4 text-sm font-bold text-white hover:bg-sky-700 shadow-lg shadow-sky-200/50">
                                 Isi sekarang
+                            </a>
+                        </div>
+                    @endif
+
+                    @if($pendingShirtPurchaseResponse)
+                        <div class="rounded-2xl border border-fuchsia-200 bg-white p-4 shadow-sm">
+                            <p class="text-xs font-bold uppercase tracking-[0.16em] text-fuchsia-700">Pembelian Baju</p>
+                            <h4 class="mt-2 text-lg font-black text-slate-900">Kemaskini pembelian baju</h4>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">Admin menunggu saiz, kuantiti dan status bayaran anda untuk pembelian <span class="font-bold">{{ $pendingShirtPurchaseResponse->purchase?->title ?? '-' }}</span>.</p>
+                            <a href="{{ route('shirt-purchases.index') }}" class="btn mt-4 rounded-2xl border-none bg-fuchsia-600 px-4 text-sm font-bold text-white hover:bg-fuchsia-700 shadow-lg shadow-fuchsia-200/50">
+                                Kemaskini sekarang
                             </a>
                         </div>
                     @endif

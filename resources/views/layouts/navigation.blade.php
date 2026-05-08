@@ -16,6 +16,12 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
+                    @if(auth()->user()->isOperatingAsGuru())
+                        <x-nav-link :href="route('shirt-purchases.index')" :active="request()->routeIs('shirt-purchases.*')">
+                            Pembelian Baju
+                        </x-nav-link>
+                    @endif
+
                     @if(auth()->user()->isOperatingAsAdmin())
                         <x-nav-link :href="route('claims.index')" :active="request()->routeIs('claims.*')">
                             {{ __('Claim') }}
@@ -47,7 +53,7 @@
 
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
-                                <button class="btn btn-sm btn-ghost gap-1 {{ request()->routeIs(['kpi.*', 'financial.index', 'messages.index', 'programs.index', 'leave-notices.index']) ? 'bg-base-200' : '' }}">
+                                <button class="btn btn-sm btn-ghost gap-1 {{ request()->routeIs(['kpi.*', 'financial.index', 'messages.index', 'programs.index', 'leave-notices.index', 'shirt-purchases.*']) ? 'bg-base-200' : '' }}">
                                     <span>{{ __('Laporan/Aktiviti') }}</span>
                                     <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
                                 </button>
@@ -58,6 +64,7 @@
                                 <x-dropdown-link :href="route('programs.index')">{{ __('Program') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('leave-notices.index')">{{ __('Notis Cuti') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('messages.index')">{{ __('Mesej') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('shirt-purchases.index')">Pembelian Baju</x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     @endif
@@ -117,6 +124,12 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
+            @if(auth()->user()->isOperatingAsGuru())
+                <x-responsive-nav-link :href="route('shirt-purchases.index')" :active="request()->routeIs('shirt-purchases.*')">
+                    Pembelian Baju
+                </x-responsive-nav-link>
+            @endif
+
             @if(auth()->user()->isOperatingAsAdmin())
                 <x-responsive-nav-link :href="route('claims.index')" :active="request()->routeIs('claims.*')">
                     <div class="flex items-center justify-between w-full">
@@ -146,7 +159,7 @@
                 </div>
 
                 <div x-data="{ open: false }" class="space-y-1">
-                    <button @click="open = !open" class="btn btn-sm btn-ghost w-full justify-between {{ request()->routeIs(['kpi.*', 'financial.index', 'messages.index', 'programs.index', 'leave-notices.index']) ? 'bg-base-200' : '' }}">
+                    <button @click="open = !open" class="btn btn-sm btn-ghost w-full justify-between {{ request()->routeIs(['kpi.*', 'financial.index', 'messages.index', 'programs.index', 'leave-notices.index', 'shirt-purchases.*']) ? 'bg-base-200' : '' }}">
                         <span>{{ __('Laporan/Aktiviti') }}</span>
                         <svg class="h-4 w-4 transform transition-transform" :class="open ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
                     </button>
@@ -156,6 +169,7 @@
                         <x-responsive-nav-link :href="route('programs.index')" :active="request()->routeIs('programs.index')">{{ __('Program') }}</x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('leave-notices.index')" :active="request()->routeIs('leave-notices.*')">{{ __('Notis Cuti') }}</x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.*')">{{ __('Mesej') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('shirt-purchases.index')" :active="request()->routeIs('shirt-purchases.*')">Pembelian Baju</x-responsive-nav-link>
                     </div>
                 </div>
             @endif
@@ -187,4 +201,3 @@
         </div>
     </div>
 </nav>
-

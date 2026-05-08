@@ -10,7 +10,9 @@ use App\Models\GuruSalaryRequest;
 use App\Models\PastiInformationRequest;
 use App\Models\Program;
 use App\Models\ProgramStatus;
+use App\Models\ShirtPurchaseResponse;
 use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -31,6 +33,7 @@ class DashboardController extends Controller
         $adminBankBalance = 0.0;
         $pendingPastiInfoRequest = null;
         $pendingGuruSalaryRequest = null;
+        $pendingShirtPurchaseResponse = null;
         $birthdayUsers = User::query()
             ->whereNotNull('tarikh_lahir')
             ->whereRaw("DATE_FORMAT(tarikh_lahir, '%m-%d') = ?", [now()->format('m-d')])
@@ -62,6 +65,18 @@ class DashboardController extends Controller
                     ->whereNull('completed_at')
                     ->latest('id')
                     ->first();
+
+                if (Schema::hasTable('shirt_purchase_responses')) {
+                    $pendingShirtPurchaseResponse = ShirtPurchaseResponse::query()
+                        ->with('purchase')
+                        ->whereIn('guru_id', $guruIds)
+                        ->where(function ($query): void {
+                            $query->whereNull('size')
+                                ->orWhereNull('submitted_at');
+                        })
+                        ->latest('id')
+                        ->first();
+                }
             }
         }
 
@@ -256,6 +271,7 @@ class DashboardController extends Controller
             'pendingPastiInfoCount' => $pendingPastiInfoCount ?? 0,
             'pendingPastiInfoRequest' => $pendingPastiInfoRequest,
             'pendingGuruSalaryRequest' => $pendingGuruSalaryRequest,
+            'pendingShirtPurchaseResponse' => $pendingShirtPurchaseResponse,
             'guruLeaveDays' => $user->guru ? \App\Models\Guru::where('id', $user->guru->id)->withLeaveDaysForYear($currentYear)->first()?->leave_notices_current_year_count : 0,
             'guruTeachingDuration' => $guruTeachingDuration,
             'userAjkPositions' => $user->ajkPositions->sortBy('name')->values(),

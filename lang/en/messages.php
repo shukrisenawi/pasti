@@ -58,6 +58,7 @@ return [
     'maklumat_pasti' => 'PASTI Information',
     'laporan_pasti' => 'PASTI Report',
     'guru_salary_information' => 'Teacher Salary Information',
+    'shirt_purchases' => 'Shirt Purchases',
     'program_statuses' => 'Program Statuses',
     'kpi_guru' => 'Teacher KPI',
     'my_kpi' => 'My KPI',
