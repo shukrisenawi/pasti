@@ -54,7 +54,7 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-4">
-                                    <div class="w-full max-w-xs space-y-2">
+                                    <div class="w-full max-w-sm space-y-2">
                                         @if($response->approved_at)
                                             <div class="flex flex-wrap gap-2 text-xs">
                                                 <span data-approved-badge class="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">
@@ -63,15 +63,17 @@
                                             </div>
                                         @endif
 
-                                        <form method="POST" action="{{ route('shirt-purchases.responses.mark-paid', $response) }}" data-mark-paid-form>
-                                            @csrf
-                                            <button data-mark-paid-button class="btn btn-outline btn-sm w-full" @disabled($response->paid_at !== null)>Tandakan Manual Dah Bayar</button>
-                                        </form>
+                                        <div class="flex flex-wrap gap-2">
+                                            <form method="POST" action="{{ route('shirt-purchases.responses.mark-paid', $response) }}" data-mark-paid-form>
+                                                @csrf
+                                                <button data-mark-paid-button class="btn btn-outline btn-sm" @disabled($response->paid_at !== null)>Sudah Bayar</button>
+                                            </form>
 
-                                        <form method="POST" action="{{ route('shirt-purchases.responses.approve', $response) }}" data-approve-form>
-                                            @csrf
-                                            <button data-approve-button class="btn btn-primary btn-sm w-full" @disabled($response->paid_at === null || $response->approved_at !== null)>Approve Bayaran</button>
-                                        </form>
+                                            <form method="POST" action="{{ route('shirt-purchases.responses.approve', $response) }}" data-approve-form>
+                                                @csrf
+                                                <button data-approve-button class="btn btn-primary btn-sm" @disabled($response->paid_at === null || $response->approved_at !== null)>Sahkan Bayaran</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
