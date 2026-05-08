@@ -158,6 +158,7 @@
 
                 $drawerInboxCount = 0;
                 $drawerProgramApprovalCount = 0;
+                $drawerShirtPurchaseApprovalCount = 0;
                 $drawerPastiInfoPendingCount = 0;
                 $drawerGuruSalaryPendingCount = 0;
                 $drawerOnLeaveGuruCount = 0;
@@ -185,6 +186,15 @@
                         ->when(
                             $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
                             fn ($q) => $q->whereHas('program', fn ($q2) => $q2->whereIn('pasti_id', $assignedPastiIds))
+                        )
+                        ->count();
+
+                    $drawerShirtPurchaseApprovalCount = \App\Models\ShirtPurchaseResponse::query()
+                        ->whereNotNull('paid_at')
+                        ->whereNull('approved_at')
+                        ->when(
+                            $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
+                            fn ($query) => $query->whereHas('guru', fn ($q) => $q->whereIn('pasti_id', $assignedPastiIds))
                         )
                         ->count();
                 }
@@ -235,7 +245,7 @@
                         <div class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                             <span>{{ __('Laporan/Aktiviti') }}</span>
-                            @if((($drawerPendingClaimsCount ?? 0) > 0 || ($expiredSkimPasCount ?? 0) > 0 || ($drawerPastiInfoPendingCount ?? 0) > 0 || ($drawerGuruSalaryPendingCount ?? 0) > 0 || ($drawerProgramApprovalCount ?? 0) > 0))
+                            @if((($drawerPendingClaimsCount ?? 0) > 0 || ($expiredSkimPasCount ?? 0) > 0 || ($drawerPastiInfoPendingCount ?? 0) > 0 || ($drawerGuruSalaryPendingCount ?? 0) > 0 || ($drawerProgramApprovalCount ?? 0) > 0 || ($drawerShirtPurchaseApprovalCount ?? 0) > 0))
                                 <div class="dot-pulse-yellow ml-2"></div>
                             @endif
                         </div>
@@ -261,7 +271,10 @@
                             <span>{{ __('messages.guru_salary_information') }}</span>
                             @if($drawerGuruSalaryPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ $drawerGuruSalaryPendingCount > 99 ? '99+' : $drawerGuruSalaryPendingCount }}</span>@endif
                         </a>
-                        <a href="{{ route('shirt-purchases.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('shirt-purchases.*') ? 'menu-link-active' : '' }}">Pembelian Baju</a>
+                        <a href="{{ route('shirt-purchases.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('shirt-purchases.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                            <span>Pembelian Baju</span>
+                            @if(($drawerShirtPurchaseApprovalCount ?? 0) > 0)<span data-testid="menu-shirt-purchase-badge" class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($drawerShirtPurchaseApprovalCount ?? 0) > 99 ? '99+' : ($drawerShirtPurchaseApprovalCount ?? 0) }}</span>@endif
+                        </a>
                         <a href="{{ route('pasti-reports.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-reports.*') ? 'menu-link-active' : '' }}">{{ __('messages.laporan_pasti') }}</a>
                         <a href="{{ route('kursus-guru.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                         <a href="{{ route('programs.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
@@ -499,6 +512,7 @@
             <nav class="mt-5 space-y-1.5 text-sm">
                 @php
                     $menuInboxCount = $authUser->unreadInboxMessagesCount();
+                    $menuShirtPurchaseApprovalCount = 0;
 
                     if ($isGuruOnly) {
                         $menuGuruIds = $authUser->operatingGuruIds();
@@ -520,6 +534,15 @@
                             ->when(
                                 $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
                                 fn ($query) => $query->whereHas('program', fn ($q) => $q->whereIn('pasti_id', $assignedPastiIds))
+                            )
+                            ->count();
+
+                        $menuShirtPurchaseApprovalCount = \App\Models\ShirtPurchaseResponse::query()
+                            ->whereNotNull('paid_at')
+                            ->whereNull('approved_at')
+                            ->when(
+                                $authUser->hasRole('admin') && ! $authUser->hasRole('master_admin'),
+                                fn ($query) => $query->whereHas('guru', fn ($q) => $q->whereIn('pasti_id', $assignedPastiIds))
                             )
                             ->count();
                     }
@@ -583,7 +606,7 @@
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                 <span>{{ __('Laporan/Aktiviti') }}</span>
-                                @if(($menuPendingClaimsCount > 0 || $expiredSkimPasCount > 0 || $menuPastiInfoPendingCount > 0 || $menuGuruSalaryPendingCount > 0 || $menuProgramApprovalCount > 0))
+                                @if(($menuPendingClaimsCount > 0 || $expiredSkimPasCount > 0 || $menuPastiInfoPendingCount > 0 || $menuGuruSalaryPendingCount > 0 || $menuProgramApprovalCount > 0 || $menuShirtPurchaseApprovalCount > 0))
                                     <div class="dot-pulse-yellow ml-2"></div>
                                 @endif
                             </div>
@@ -623,7 +646,12 @@
                                     <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuGuruSalaryPendingCount ?? 0) > 99 ? '99+' : ($menuGuruSalaryPendingCount ?? 0) }}</span>
                                 @endif
                             </a>
-                            <a href="{{ route('shirt-purchases.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('shirt-purchases.*') ? 'menu-link-active' : '' }}">Pembelian Baju</a>
+                            <a href="{{ route('shirt-purchases.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('shirt-purchases.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                <span>Pembelian Baju</span>
+                                @if(($menuShirtPurchaseApprovalCount ?? 0) > 0)
+                                    <span data-testid="menu-shirt-purchase-badge" class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shrink-0">{{ ($menuShirtPurchaseApprovalCount ?? 0) > 99 ? '99+' : ($menuShirtPurchaseApprovalCount ?? 0) }}</span>
+                                @endif
+                            </a>
                             <a href="{{ route('pasti-reports.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('pasti-reports.*') ? 'menu-link-active' : '' }}">{{ __('messages.laporan_pasti') }}</a>
                             <a href="{{ route('kursus-guru.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                             
