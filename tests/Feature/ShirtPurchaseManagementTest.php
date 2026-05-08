@@ -433,9 +433,10 @@ class ShirtPurchaseManagementTest extends TestCase
                 'guru_id' => $payload['eligibleGuru']->id,
                 'size' => 'M',
                 'notes' => null,
-                'quantity' => 1,
+                'quantity' => 2,
                 'submitted_at' => now(),
                 'paid_at' => now(),
+                'approved_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -447,6 +448,7 @@ class ShirtPurchaseManagementTest extends TestCase
                 'quantity' => 1,
                 'submitted_at' => null,
                 'paid_at' => null,
+                'approved_at' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -459,8 +461,10 @@ class ShirtPurchaseManagementTest extends TestCase
             ->with(
                 N8nWebhookService::KEY_TEXT_SHIRT_PURCHASE_LIST,
                 \Mockery::on(fn (array $variables): bool => $variables['tajuk'] === 'Baju Korporat'
-                    && str_contains($variables['senarai'], 'Cikgu A')
-                    && str_contains($variables['senarai'], 'Menunggu pengesahan admin')
+                    && str_contains($variables['senarai'], 'Cikgu A - M (2 helai) ✓')
+                    && ! str_contains($variables['senarai'], 'Kuantiti:')
+                    && ! str_contains($variables['senarai'], 'Saiz:')
+                    && ! str_contains($variables['senarai'], 'Menunggu pengesahan admin')
                     && ! str_contains($variables['senarai'], 'Cikgu B')),
                 'https://example.test/pembelian-baju/1'
             );

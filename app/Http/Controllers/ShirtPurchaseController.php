@@ -266,16 +266,19 @@ class ShirtPurchaseController extends Controller
         $senarai = $shirtPurchase->responses
             ->filter(fn (ShirtPurchaseResponse $response): bool => filled($response->size))
             ->values()
-            ->map(function (ShirtPurchaseResponse $response, int $index): string {
-                $statusBayar = $response->approved_at
-                    ? 'Dah bayar'
-                    : ($response->paid_at ? 'Menunggu pengesahan admin' : 'Belum bayar');
+            ->map(function (ShirtPurchaseResponse $response): string {
+                $line = ($response->guru?->display_name ?? '-')
+                    . ' - ' . ($response->size ?? '-');
 
-                return ($index + 1) . '. '
-                    . ($response->guru?->display_name ?? '-')
-                    . ' | Saiz: ' . ($response->size ?? '-')
-                    . ' | Kuantiti: ' . (int) $response->quantity
-                    . ' | ' . $statusBayar;
+                if ((int) $response->quantity > 1) {
+                    $line .= ' (' . (int) $response->quantity . ' helai)';
+                }
+
+                if ($response->approved_at) {
+                    $line .= ' ✓';
+                }
+
+                return $line;
             })
             ->implode("\n");
 
