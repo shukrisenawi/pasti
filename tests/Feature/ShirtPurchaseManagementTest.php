@@ -599,6 +599,37 @@ class ShirtPurchaseManagementTest extends TestCase
             ->assertDontSee('Belum Approve');
     }
 
+    public function test_guru_menu_shows_pending_shirt_purchase_response_badge(): void
+    {
+        $payload = $this->seedAdminAndGurus();
+
+        $purchaseId = \DB::table('shirt_purchases')->insertGetId([
+            'title' => 'Baju Korporat',
+            'description' => 'Sila isi.',
+            'created_by' => $payload['admin']->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        \DB::table('shirt_purchase_responses')->insert([
+            'shirt_purchase_id' => $purchaseId,
+            'guru_id' => $payload['eligibleGuru']->id,
+            'size' => null,
+            'quantity' => 1,
+            'submitted_at' => null,
+            'paid_at' => null,
+            'approved_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($payload['eligibleGuruUser'])
+            ->get(route('shirt-purchases.index'))
+            ->assertOk()
+            ->assertSee('data-testid="menu-shirt-purchase-badge"', false)
+            ->assertSee('>1<', false);
+    }
+
     public function test_guru_payment_notice_is_not_counted_as_paid_before_admin_approval(): void
     {
         $payload = $this->seedAdminAndGurus();

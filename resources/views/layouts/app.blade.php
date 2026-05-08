@@ -159,6 +159,7 @@
                 $drawerInboxCount = 0;
                 $drawerProgramApprovalCount = 0;
                 $drawerShirtPurchaseApprovalCount = 0;
+                $drawerShirtPurchaseRespondCount = 0;
                 $drawerPastiInfoPendingCount = 0;
                 $drawerGuruSalaryPendingCount = 0;
                 $drawerOnLeaveGuruCount = 0;
@@ -178,6 +179,14 @@
                             $query
                                 ->whereIn('guru_id', $drawerGuruIds)
                                 ->whereNotNull('program_status_id');
+                        })
+                        ->count();
+
+                    $drawerShirtPurchaseRespondCount = \App\Models\ShirtPurchaseResponse::query()
+                        ->whereIn('guru_id', $drawerGuruIds)
+                        ->where(function ($query): void {
+                            $query->whereNull('size')
+                                ->orWhereNull('submitted_at');
                         })
                         ->count();
                 } else {
@@ -318,7 +327,7 @@
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                 <span>Prestasi & Tugasan</span>
-                                @if((($drawerPendingClaimsCount ?? 0) > 0 || ($drawerPastiInfoPendingCount ?? 0) > 0 || ($drawerGuruSalaryPendingCount ?? 0) > 0 || ($drawerProgramApprovalCount ?? 0) > 0))
+                                @if((($drawerPendingClaimsCount ?? 0) > 0 || ($drawerPastiInfoPendingCount ?? 0) > 0 || ($drawerGuruSalaryPendingCount ?? 0) > 0 || ($drawerProgramApprovalCount ?? 0) > 0 || ($drawerShirtPurchaseRespondCount ?? 0) > 0))
                                     <div class="dot-pulse-yellow ml-2"></div>
                                 @endif
                             </div>
@@ -341,7 +350,10 @@
                                 <span>{{ __('messages.guru_salary_information') }}</span>
                                 @if($drawerGuruSalaryPendingCount > 0)<span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $drawerGuruSalaryPendingCount > 99 ? '99+' : $drawerGuruSalaryPendingCount }}</span>@endif
                             </a>
-                            <a href="{{ route('shirt-purchases.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('shirt-purchases.*') ? 'menu-link-active' : '' }}">Pembelian Baju</a>
+                            <a href="{{ route('shirt-purchases.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('shirt-purchases.*') ? 'menu-link-active' : '' }} flex items-center justify-between gap-1">
+                                <span>Pembelian Baju</span>
+                                @if(($drawerShirtPurchaseRespondCount ?? 0) > 0)<span data-testid="menu-shirt-purchase-badge" class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($drawerShirtPurchaseRespondCount ?? 0) > 99 ? '99+' : ($drawerShirtPurchaseRespondCount ?? 0) }}</span>@endif
+                            </a>
                             <a href="{{ route('kursus-guru.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                             <a href="{{ route('programs.index') }}" wire:navigate @click="mobileMenuOpen = false" class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                                 <span>{{ __('messages.programs') }}</span>
@@ -513,6 +525,7 @@
                 @php
                     $menuInboxCount = $authUser->unreadInboxMessagesCount();
                     $menuShirtPurchaseApprovalCount = 0;
+                    $menuShirtPurchaseRespondCount = 0;
 
                     if ($isGuruOnly) {
                         $menuGuruIds = $authUser->operatingGuruIds();
@@ -526,6 +539,14 @@
                                 $query
                                     ->whereIn('guru_id', $menuGuruIds)
                                     ->whereNotNull('program_status_id');
+                            })
+                            ->count();
+
+                        $menuShirtPurchaseRespondCount = \App\Models\ShirtPurchaseResponse::query()
+                            ->whereIn('guru_id', $menuGuruIds)
+                            ->where(function ($query): void {
+                                $query->whereNull('size')
+                                    ->orWhereNull('submitted_at');
                             })
                             ->count();
                     } else {
@@ -704,7 +725,7 @@
                                 <div class="flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m-8-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4l2 2z" /></svg>
                                     <span>Prestasi & Tugasan</span>
-                                    @if(($menuPendingClaimsCount > 0 || $menuPastiInfoPendingCount > 0 || $menuGuruSalaryPendingCount > 0 || $menuProgramApprovalCount > 0))
+                                    @if(($menuPendingClaimsCount > 0 || $menuPastiInfoPendingCount > 0 || $menuGuruSalaryPendingCount > 0 || $menuProgramApprovalCount > 0 || $menuShirtPurchaseRespondCount > 0))
                                         <div class="dot-pulse-yellow ml-2"></div>
                                     @endif
                                 </div>
@@ -733,7 +754,12 @@
                                         <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuGuruSalaryPendingCount ?? 0) > 99 ? '99+' : ($menuGuruSalaryPendingCount ?? 0) }}</span>
                                     @endif
                                 </a>
-                                <a href="{{ route('shirt-purchases.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('shirt-purchases.*') ? 'menu-link-active' : '' }}">Pembelian Baju</a>
+                                <a href="{{ route('shirt-purchases.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('shirt-purchases.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
+                                    <span>Pembelian Baju</span>
+                                    @if(($menuShirtPurchaseRespondCount ?? 0) > 0)
+                                        <span data-testid="menu-shirt-purchase-badge" class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ ($menuShirtPurchaseRespondCount ?? 0) > 99 ? '99+' : ($menuShirtPurchaseRespondCount ?? 0) }}</span>
+                                    @endif
+                                </a>
                                 <a href="{{ route('kursus-guru.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('kursus-guru.*') ? 'menu-link-active' : '' }}">{{ __('messages.kursus_guru') }}</a>
                                 <a href="{{ route('programs.index') }}" wire:navigate class="menu-link !py-2 !px-3 {{ request()->routeIs('programs.*') ? 'menu-link-active' : '' }} flex items-center justify-between">
                                     <span>{{ __('messages.programs') }}</span>
