@@ -39,26 +39,30 @@
                                 <td class="px-4 py-4">
                                     <div class="flex items-center gap-3">
                                         <x-avatar :guru="$response->guru" size="h-9 w-9" border="border border-slate-200" />
-                                        <p class="font-extrabold text-slate-800">{{ $response->guru?->display_name ?? '-' }}</p>
-                                        <span
-                                            data-paid-icon
-                                            class="{{ $response->approved_at ? 'inline-flex' : 'hidden' }} h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"
-                                            title="Dah Bayar"
-                                            aria-label="Dah Bayar"
-                                        >
-                                            <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
-                                                <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.415 0l-3.2-3.2a1 1 0 111.414-1.42l2.493 2.494 6.493-6.494a1 1 0 011.415 0z" clip-rule="evenodd" />
-                                            </svg>
-                                        </span>
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <p class="font-extrabold text-slate-800">{{ $response->guru?->display_name ?? '-' }}</p>
+                                                <span
+                                                    data-paid-icon
+                                                    class="{{ $response->approved_at ? 'inline-flex' : 'hidden' }} h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"
+                                                    title="Dah Bayar"
+                                                    aria-label="Dah Bayar"
+                                                >
+                                                    <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+                                                        <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.415 0l-3.2-3.2a1 1 0 111.414-1.42l2.493 2.494 6.493-6.494a1 1 0 011.415 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            @if($response->notes)
+                                                <p class="mt-1 text-xs text-slate-500">- {{ $response->notes }}</p>
+                                            @endif
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="px-4 py-4 text-slate-700">
                                     <span class="font-bold">{{ $response->size ?? '-' }}</span>
                                     @if($response->quantity > 1)
                                         <span class="text-slate-500">- {{ $response->quantity }}</span>
-                                    @endif
-                                    @if($response->notes)
-                                        <span class="text-slate-500">({{ $response->notes }})</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-4">
