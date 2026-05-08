@@ -18,7 +18,7 @@
 
             <form method="POST" action="{{ route('shirt-purchases.broadcast', $purchase) }}" class="sm:ml-auto">
                 @csrf
-                <button class="btn btn-primary btn-sm w-full sm:w-auto">Keluarkan Senarai</button>
+                <button class="btn btn-sm w-full border-none bg-amber-400 text-amber-950 hover:bg-amber-500 sm:w-auto">Keluarkan Senarai</button>
             </form>
         </div>
 
