@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between gap-3">
             <div>
-                <h2 class="text-lg font-bold">Senarai Pembelian Baju</h2>
+                <h2 class="text-lg font-bold">Pembelian Baju</h2>
                 <p class="text-sm text-slate-500">{{ $purchase->title }}</p>
             </div>
             <a href="{{ route('shirt-purchases.index') }}" class="btn btn-outline btn-sm">Kembali</a>
@@ -10,70 +10,117 @@
     </x-slot>
 
     <div class="space-y-4">
-        <div class="card border-primary/10 bg-white/95">
-            <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div>
-                    <h3 class="text-base font-bold text-slate-900">{{ $purchase->title }}</h3>
-                    <p class="mt-1 whitespace-pre-wrap text-sm text-slate-600">{{ $purchase->description ?: '-' }}</p>
-                    @if($purchase->image_url)
-                        <a href="{{ $purchase->image_url }}" target="_blank" class="mt-3 block">
-                            <img src="{{ $purchase->image_url }}" alt="{{ $purchase->title }}" class="h-48 w-full max-w-md rounded-2xl border border-slate-200 object-cover">
-                        </a>
-                    @endif
-                </div>
-                <form method="POST" action="{{ route('shirt-purchases.broadcast', $purchase) }}">
-                    @csrf
-                    <button class="btn btn-primary">Keluarkan Senarai</button>
-                </form>
+        <div class="flex flex-wrap gap-2">
+            <button type="button" class="btn btn-primary btn-sm" data-tab-button data-target="buyers-tab">Senarai Pembeli</button>
+            <button type="button" class="btn btn-outline btn-sm" data-tab-button data-target="info-tab">Maklumat Baju</button>
+        </div>
+
+        <div id="buyers-tab" data-tab-panel class="space-y-4">
+            <div class="grid gap-3">
+                @forelse($submittedResponses as $response)
+                    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" data-shirt-response-card data-response-id="{{ $response->id }}">
+                        <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div>
+                                <h4 class="text-sm font-extrabold text-slate-800">{{ $response->guru?->display_name ?? '-' }}</h4>
+                                <p class="text-xs text-slate-500">{{ __('messages.pasti') }}: {{ $response->guru?->pasti?->name ?? '-' }}</p>
+                                <div class="mt-2 grid gap-1 text-sm text-slate-700">
+                                    <p>Saiz: <span class="font-bold">{{ $response->size ?? '-' }}</span></p>
+                                    <p>Kuantiti: <span class="font-bold">{{ $response->quantity }}</span></p>
+                                    <p>Catatan: <span class="font-bold">{{ $response->notes ?: '-' }}</span></p>
+                                </div>
+                            </div>
+
+                            <div class="w-full max-w-xs space-y-2">
+                                <div class="flex flex-wrap gap-2 text-xs">
+                                    <span data-paid-badge class="rounded-full {{ $response->paid_at ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700' }} px-3 py-1 font-semibold">
+                                        {{ $response->paid_at ? 'Dah Bayar' : 'Belum Bayar' }}
+                                    </span>
+                                    <span data-approved-badge class="rounded-full {{ $response->approved_at ? 'bg-primary/10 text-primary' : 'bg-amber-100 text-amber-700' }} px-3 py-1 font-semibold">
+                                        {{ $response->approved_at ? 'Diluluskan' : 'Belum Approve' }}
+                                    </span>
+                                </div>
+
+                                <form method="POST" action="{{ route('shirt-purchases.responses.mark-paid', $response) }}" data-mark-paid-form>
+                                    @csrf
+                                    <button data-mark-paid-button class="btn btn-outline btn-sm w-full" @disabled($response->paid_at !== null)>Tandakan Manual Dah Bayar</button>
+                                </form>
+
+                                <form method="POST" action="{{ route('shirt-purchases.responses.approve', $response) }}" data-approve-form>
+                                    @csrf
+                                    <button data-approve-button class="btn btn-primary btn-sm w-full" @disabled($response->paid_at === null || $response->approved_at !== null)>Approve Bayaran</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="rounded-xl border-2 border-dashed border-slate-100 p-8 text-center text-slate-400">
+                        Belum ada guru yang submit pembelian baju ini.
+                    </div>
+                @endforelse
             </div>
         </div>
 
-        <div class="grid gap-3">
-            @forelse($submittedResponses as $response)
-                <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" data-shirt-response-card data-response-id="{{ $response->id }}">
-                    <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div id="info-tab" data-tab-panel class="hidden">
+            <div class="card border-primary/10 bg-white/95">
+                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div class="space-y-3">
                         <div>
-                            <h4 class="text-sm font-extrabold text-slate-800">{{ $response->guru?->display_name ?? '-' }}</h4>
-                            <p class="text-xs text-slate-500">{{ __('messages.pasti') }}: {{ $response->guru?->pasti?->name ?? '-' }}</p>
-                            <div class="mt-2 grid gap-1 text-sm text-slate-700">
-                                <p>Saiz: <span class="font-bold">{{ $response->size ?? '-' }}</span></p>
-                                <p>Kuantiti: <span class="font-bold">{{ $response->quantity }}</span></p>
-                                <p>Catatan: <span class="font-bold">{{ $response->notes ?: '-' }}</span></p>
-                            </div>
+                            <h3 class="text-base font-bold text-slate-900">{{ $purchase->title }}</h3>
+                            <p class="mt-1 whitespace-pre-wrap text-sm text-slate-600">{{ $purchase->description ?: '-' }}</p>
                         </div>
 
-                        <div class="w-full max-w-xs space-y-2">
-                            <div class="flex flex-wrap gap-2 text-xs">
-                                <span data-paid-badge class="rounded-full {{ $response->paid_at ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700' }} px-3 py-1 font-semibold">
-                                    {{ $response->paid_at ? 'Dah Bayar' : 'Belum Bayar' }}
-                                </span>
-                                <span data-approved-badge class="rounded-full {{ $response->approved_at ? 'bg-primary/10 text-primary' : 'bg-amber-100 text-amber-700' }} px-3 py-1 font-semibold">
-                                    {{ $response->approved_at ? 'Diluluskan' : 'Belum Approve' }}
-                                </span>
+                        @if($purchase->image_url)
+                            <a href="{{ $purchase->image_url }}" target="_blank" class="block">
+                                <img src="{{ $purchase->image_url }}" alt="{{ $purchase->title }}" class="h-48 w-full max-w-md rounded-2xl border border-slate-200 object-cover">
+                            </a>
+                        @endif
+
+                        <div class="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Jumlah Pembeli</p>
+                                <p class="mt-1 text-lg font-bold text-slate-900">{{ $submittedResponses->count() }}</p>
                             </div>
-
-                            <form method="POST" action="{{ route('shirt-purchases.responses.mark-paid', $response) }}" data-mark-paid-form>
-                                @csrf
-                                <button data-mark-paid-button class="btn btn-outline btn-sm w-full" @disabled($response->paid_at !== null)>Tandakan Manual Dah Bayar</button>
-                            </form>
-
-                            <form method="POST" action="{{ route('shirt-purchases.responses.approve', $response) }}" data-approve-form>
-                                @csrf
-                                <button data-approve-button class="btn btn-primary btn-sm w-full" @disabled($response->paid_at === null || $response->approved_at !== null)>Approve Bayaran</button>
-                            </form>
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Jumlah Kuantiti</p>
+                                <p class="mt-1 text-lg font-bold text-slate-900">{{ $submittedResponses->sum('quantity') }}</p>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="w-full max-w-xs">
+                        <form method="POST" action="{{ route('shirt-purchases.broadcast', $purchase) }}">
+                            @csrf
+                            <button class="btn btn-primary w-full">Keluarkan Senarai</button>
+                        </form>
+                    </div>
                 </div>
-            @empty
-                <div class="rounded-xl border-2 border-dashed border-slate-100 p-8 text-center text-slate-400">
-                    Belum ada guru yang submit pembelian baju ini.
-                </div>
-            @endforelse
+            </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const tabButtons = document.querySelectorAll('[data-tab-button]');
+            const tabPanels = document.querySelectorAll('[data-tab-panel]');
+
+            const activateTab = (targetId) => {
+                tabButtons.forEach((button) => {
+                    const isActive = button.dataset.target === targetId;
+                    button.classList.toggle('btn-primary', isActive);
+                    button.classList.toggle('btn-outline', !isActive);
+                });
+
+                tabPanels.forEach((panel) => {
+                    panel.classList.toggle('hidden', panel.id !== targetId);
+                });
+            };
+
+            tabButtons.forEach((button) => {
+                button.addEventListener('click', () => activateTab(button.dataset.target));
+            });
+
+            activateTab('buyers-tab');
+
             document.querySelectorAll('[data-mark-paid-form]').forEach((form) => {
                 form.addEventListener('submit', async (event) => {
                     event.preventDefault();

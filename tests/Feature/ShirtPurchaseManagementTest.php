@@ -492,6 +492,8 @@ class ShirtPurchaseManagementTest extends TestCase
         $this->actingAs($payload['admin'])
             ->get(route('shirt-purchases.show', $purchaseId))
             ->assertOk()
+            ->assertSee('Senarai Pembeli')
+            ->assertSee('Maklumat Baju')
             ->assertSee('Cikgu A')
             ->assertDontSee('Cikgu B');
     }
