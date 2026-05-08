@@ -23,7 +23,7 @@
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold text-slate-600">Nama</th>
                                 <th class="px-4 py-3 text-left font-semibold text-slate-600">Saiz</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Tindakan</th>
+                                <th class="px-4 py-3 text-right font-semibold text-slate-600">Tindakan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -55,16 +55,16 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-4">
-                                    <div class="w-full max-w-sm space-y-2">
+                                    <div class="ml-auto w-full max-w-sm space-y-2 text-right">
                                         @if($response->approved_at)
-                                            <div class="flex flex-wrap gap-2 text-xs">
+                                            <div class="flex flex-wrap justify-end gap-2 text-xs">
                                                 <span data-approved-badge class="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">
                                                     Diluluskan
                                                 </span>
                                             </div>
                                         @endif
 
-                                        <div class="flex flex-wrap gap-2">
+                                        <div class="flex flex-wrap justify-end gap-2">
                                             <form method="POST" action="{{ route('shirt-purchases.responses.mark-paid', $response) }}" data-mark-paid-form @class(['hidden' => $response->paid_at !== null])>
                                                 @csrf
                                                 <button
