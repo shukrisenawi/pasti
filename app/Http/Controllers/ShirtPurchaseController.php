@@ -49,7 +49,7 @@ class ShirtPurchaseController extends Controller
             ->withCount('responses')
             ->withCount([
                 'responses as submitted_count' => fn (Builder $query) => $query->whereNotNull('size'),
-                'responses as paid_count' => fn (Builder $query) => $query->whereNotNull('paid_at'),
+                'responses as payment_notice_count' => fn (Builder $query) => $query->whereNotNull('paid_at'),
                 'responses as approved_count' => fn (Builder $query) => $query->whereNotNull('approved_at'),
             ])
             ->when(
@@ -190,6 +190,7 @@ class ShirtPurchaseController extends Controller
                 'quantity' => (int) $data['quantity'],
                 'submitted_at' => now(),
                 'paid_at' => $isPaid ? ($response->paid_at ?? now()) : null,
+                'paid_marked_by' => $isPaid ? $response->paid_marked_by : null,
                 'approved_at' => $isPaid ? $response->approved_at : null,
                 'approved_by' => $isPaid ? $response->approved_by : null,
             ]);
@@ -222,7 +223,8 @@ class ShirtPurchaseController extends Controller
                 'message' => __('messages.saved'),
                 'response' => [
                     'id' => $response->id,
-                    'paid' => $response->paid_at !== null,
+                    'payment_notice' => $response->paid_at !== null,
+                    'paid' => $response->approved_at !== null,
                     'approved' => $response->approved_at !== null,
                 ],
             ]);
@@ -263,7 +265,9 @@ class ShirtPurchaseController extends Controller
             ->filter(fn (ShirtPurchaseResponse $response): bool => filled($response->size))
             ->values()
             ->map(function (ShirtPurchaseResponse $response, int $index): string {
-                $statusBayar = $response->paid_at ? 'Dah bayar' : 'Belum bayar';
+                $statusBayar = $response->approved_at
+                    ? 'Dah bayar'
+                    : ($response->paid_at ? 'Menunggu pengesahan admin' : 'Belum bayar');
 
                 return ($index + 1) . '. '
                     . ($response->guru?->display_name ?? '-')

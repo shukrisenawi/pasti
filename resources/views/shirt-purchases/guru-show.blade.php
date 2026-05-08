@@ -26,14 +26,14 @@
                         Sudah Isi
                     </span>
                 @endif
-                @if($response->paid_at)
-                    <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
-                        Dah Bayar
+                @if($response->paid_at && ! $response->approved_at)
+                    <span class="rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-700">
+                        Maklum Dah Bayar
                     </span>
                 @endif
                 @if($response->approved_at)
-                    <span class="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">
-                        Diluluskan
+                    <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
+                        Dah Bayar
                     </span>
                 @endif
             </div>
@@ -63,8 +63,12 @@
 
             <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
                 <input type="checkbox" name="is_paid" value="1" class="rounded border-slate-300 text-primary" @checked(old('is_paid', $response->paid_at !== null))>
-                <span>Dah bayar</span>
+                <span>Saya sudah bayar</span>
             </label>
+
+            <p class="-mt-2 text-xs text-slate-500 md:col-span-2">
+                Tanda ini hanya sebagai makluman kepada admin. Status bayaran hanya dikira sah selepas admin approve.
+            </p>
 
             <div class="md:col-span-2">
                 <button class="btn btn-primary">Simpan</button>

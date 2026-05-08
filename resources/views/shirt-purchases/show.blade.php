@@ -35,7 +35,7 @@
                                         <p class="font-extrabold text-slate-800">{{ $response->guru?->display_name ?? '-' }}</p>
                                         <span
                                             data-paid-icon
-                                            class="{{ $response->paid_at ? 'inline-flex' : 'hidden' }} h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"
+                                            class="{{ $response->approved_at ? 'inline-flex' : 'hidden' }} h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"
                                             title="Dah Bayar"
                                             aria-label="Dah Bayar"
                                         >

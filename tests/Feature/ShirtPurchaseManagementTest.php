@@ -285,7 +285,7 @@ class ShirtPurchaseManagementTest extends TestCase
         ]);
     }
 
-    public function test_guru_response_updates_default_size_and_paid_status(): void
+    public function test_guru_response_updates_default_size_and_payment_notice_status(): void
     {
         $payload = $this->seedAdminAndGurus();
 
@@ -321,6 +321,7 @@ class ShirtPurchaseManagementTest extends TestCase
             'notes' => 'Potongan slim fit',
         ]);
         $this->assertNotNull(\DB::table('shirt_purchase_responses')->where('id', $responseId)->value('paid_at'));
+        $this->assertNull(\DB::table('shirt_purchase_responses')->where('id', $responseId)->value('approved_at'));
         $this->assertSame('XL', Guru::query()->findOrFail($payload['eligibleGuru']->id)->default_baju_size);
     }
 
@@ -389,7 +390,8 @@ class ShirtPurchaseManagementTest extends TestCase
                 'message' => __('messages.saved'),
                 'response' => [
                     'id' => $responseId,
-                    'paid' => true,
+                    'payment_notice' => true,
+                    'paid' => false,
                     'approved' => false,
                 ],
             ]);
@@ -444,6 +446,7 @@ class ShirtPurchaseManagementTest extends TestCase
                 N8nWebhookService::KEY_TEXT_SHIRT_PURCHASE_LIST,
                 \Mockery::on(fn (array $variables): bool => $variables['tajuk'] === 'Baju Korporat'
                     && str_contains($variables['senarai'], 'Cikgu A')
+                    && str_contains($variables['senarai'], 'Menunggu pengesahan admin')
                     && ! str_contains($variables['senarai'], 'Cikgu B')),
                 'https://example.test/pembelian-baju/1'
             );
@@ -531,6 +534,37 @@ class ShirtPurchaseManagementTest extends TestCase
             ->assertDontSee('Kuantiti')
             ->assertDontSee('Belum Bayar')
             ->assertDontSee('Belum Approve');
+    }
+
+    public function test_guru_payment_notice_is_not_counted_as_paid_before_admin_approval(): void
+    {
+        $payload = $this->seedAdminAndGurus();
+
+        $purchaseId = \DB::table('shirt_purchases')->insertGetId([
+            'title' => 'Baju Korporat',
+            'description' => 'Sila isi.',
+            'created_by' => $payload['admin']->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        \DB::table('shirt_purchase_responses')->insert([
+            'shirt_purchase_id' => $purchaseId,
+            'guru_id' => $payload['eligibleGuru']->id,
+            'size' => 'M',
+            'quantity' => 1,
+            'submitted_at' => now(),
+            'paid_at' => now(),
+            'approved_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($payload['eligibleGuruUser'])
+            ->get(route('shirt-purchases.index'))
+            ->assertOk()
+            ->assertSee('Maklum Dah Bayar')
+            ->assertDontSee('Diluluskan');
     }
 
     public function test_guru_can_open_purchase_detail_to_view_and_edit_submitted_information(): void

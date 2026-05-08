@@ -42,14 +42,14 @@
                                     Sudah Isi
                                 </span>
                             @endif
-                            @if($purchaseResponse->paid_at)
-                                <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
-                                    Dah Bayar
+                            @if($purchaseResponse->paid_at && ! $purchaseResponse->approved_at)
+                                <span class="rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-700">
+                                    Maklum Dah Bayar
                                 </span>
                             @endif
                             @if($purchaseResponse->approved_at)
-                                <span class="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">
-                                    Diluluskan
+                                <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
+                                    Dah Bayar
                                 </span>
                             @endif
                         </div>
