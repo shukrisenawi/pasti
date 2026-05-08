@@ -193,6 +193,20 @@ class DashboardGuruProgramsTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('financial_transactions', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('pasti_id')->nullable();
+            $table->date('transaction_date');
+            $table->string('transaction_type');
+            $table->string('credit_debit')->nullable();
+            $table->string('payment_method')->nullable();
+            $table->decimal('amount', 12, 2);
+            $table->string('amount_remark')->nullable();
+            $table->text('transaction_remark')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('ajk_positions', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
@@ -228,6 +242,7 @@ class DashboardGuruProgramsTest extends TestCase
 
         \DB::table('roles')->insert([
             ['name' => 'guru', 'guard_name' => 'web'],
+            ['name' => 'admin', 'guard_name' => 'web'],
         ]);
 
         DB::connection()->getPdo()->sqliteCreateFunction('DATE_FORMAT', function (?string $value, string $format): ?string {
@@ -268,6 +283,7 @@ class DashboardGuruProgramsTest extends TestCase
         Schema::dropIfExists('leave_notices');
         Schema::dropIfExists('kpi_snapshots');
         Schema::dropIfExists('guru_salary_requests');
+        Schema::dropIfExists('financial_transactions');
         Schema::dropIfExists('pasti_information_requests');
         Schema::dropIfExists('announcement_user');
         Schema::dropIfExists('announcements');
@@ -441,6 +457,128 @@ class DashboardGuruProgramsTest extends TestCase
             ->assertSee(route('programs.teachers.status.update', [$firstPendingProgram, $guru->id]), false)
             ->assertSee(route('programs.teachers.status.update', [$secondPendingProgram, $guru->id]), false)
             ->assertDontSee(route('programs.teachers.status.update', [$submittedProgram, $guru->id]), false);
+    }
+
+    public function test_dashboard_admin_orders_top_kpi_by_lowest_leave_when_score_is_tied(): void
+    {
+        $admin = User::query()->create([
+            'name' => 'Admin Dashboard',
+            'nama_samaran' => 'Admin Dashboard',
+            'email' => 'admin-dashboard@example.test',
+        ]);
+        $this->attachRole($admin, 'admin');
+
+        $pasti = Pasti::query()->create([
+            'name' => 'PASTI Ranking',
+        ]);
+
+        \DB::table('admin_pasti')->insert([
+            'user_id' => $admin->id,
+            'pasti_id' => $pasti->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $lowLeaveUser = User::query()->create([
+            'name' => 'Aina',
+            'nama_samaran' => 'Aina',
+            'email' => 'aina@example.test',
+        ]);
+        $highLeaveUser = User::query()->create([
+            'name' => 'Bella',
+            'nama_samaran' => 'Bella',
+            'email' => 'bella@example.test',
+        ]);
+
+        $lowLeaveGuru = Guru::query()->create([
+            'user_id' => $lowLeaveUser->id,
+            'pasti_id' => $pasti->id,
+            'name' => $lowLeaveUser->name,
+            'active' => true,
+        ]);
+        $highLeaveGuru = Guru::query()->create([
+            'user_id' => $highLeaveUser->id,
+            'pasti_id' => $pasti->id,
+            'name' => $highLeaveUser->name,
+            'active' => true,
+        ]);
+
+        $program = Program::query()->create([
+            'pasti_id' => $pasti->id,
+            'title' => 'Program Ranking',
+            'program_date' => now()->addDay()->toDateString(),
+            'created_by' => $admin->id,
+        ]);
+
+        \DB::table('program_teacher')->insert([
+            [
+                'program_id' => $program->id,
+                'guru_id' => $lowLeaveGuru->id,
+                'program_status_id' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'program_id' => $program->id,
+                'guru_id' => $highLeaveGuru->id,
+                'program_status_id' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        \DB::table('kpi_snapshots')->insert([
+            [
+                'guru_id' => $lowLeaveGuru->id,
+                'total_invited' => 10,
+                'total_hadir' => 9,
+                'score' => 90,
+                'calculated_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'guru_id' => $highLeaveGuru->id,
+                'total_invited' => 10,
+                'total_hadir' => 9,
+                'score' => 90,
+                'calculated_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        \DB::table('leave_notices')->insert([
+            [
+                'guru_id' => $lowLeaveGuru->id,
+                'leave_date' => now()->toDateString(),
+                'leave_until' => now()->toDateString(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'guru_id' => $highLeaveGuru->id,
+                'leave_date' => now()->subDays(2)->toDateString(),
+                'leave_until' => now()->toDateString(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $request = Request::create('/dashboard', 'GET');
+        $request->setUserResolver(fn () => $admin);
+
+        $response = app(DashboardController::class)($request);
+
+        $this->assertInstanceOf(View::class, $response);
+
+        $topKpiGurus = $response->getData()['topKpiGurus'];
+
+        $this->assertInstanceOf(Collection::class, $topKpiGurus);
+        $this->assertSame(
+            ['Aina', 'Bella'],
+            $topKpiGurus->pluck('display_name')->all()
+        );
     }
 
     private function attachRole(User $user, string $roleName): void

@@ -86,8 +86,9 @@ class DashboardController extends Controller
 
                 $topKpiGurus = $topScoreGurus
                     ->sortBy([
-                        fn (Guru $guru) => (int) ($guru->leave_notices_current_year_count ?? 0),
-                        fn (Guru $guru) => $guru->display_name,
+                        fn (Guru $left, Guru $right) => ((int) ($left->leave_notices_current_year_count ?? 0))
+                            <=> ((int) ($right->leave_notices_current_year_count ?? 0)),
+                        fn (Guru $left, Guru $right) => strcmp($left->display_name, $right->display_name),
                     ])
                     ->values();
             }
