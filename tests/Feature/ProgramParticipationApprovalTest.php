@@ -667,8 +667,9 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertSee('Cikgu Program')
             ->assertSee('Hadir')
             ->assertSee('Sakit.')
-            ->assertSee('approve')
+            ->assertSee('data-testid="program-complete-review-badge-approved"', false)
             ->assertDontSee('Semakan Alasan')
+            ->assertDontSee('>approve<', false)
             ->assertDontSee('Alasan Tidak Hadir: -');
     }
 
@@ -693,7 +694,8 @@ class ProgramParticipationApprovalTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Tidak Hadir')
-            ->assertSee('xapprove');
+            ->assertSee('data-testid="program-complete-review-badge-rejected"', false)
+            ->assertDontSee('xapprove');
     }
 
     public function test_program_show_page_for_guru_does_not_display_approval_badge(): void

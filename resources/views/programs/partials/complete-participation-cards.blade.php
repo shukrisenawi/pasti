@@ -2,9 +2,9 @@
     @forelse($participations as $participation)
         @php
             $completeAbsenceReviewStatus = $participation->absence_reason_status;
-            $completeAbsenceReviewLabel = match ($completeAbsenceReviewStatus) {
-                \App\Services\ProgramParticipationService::ABSENCE_REASON_APPROVED => 'approve',
-                \App\Services\ProgramParticipationService::ABSENCE_REASON_REJECTED => 'xapprove',
+            $completeAbsenceReviewTestId = match ($completeAbsenceReviewStatus) {
+                \App\Services\ProgramParticipationService::ABSENCE_REASON_APPROVED => 'program-complete-review-badge-approved',
+                \App\Services\ProgramParticipationService::ABSENCE_REASON_REJECTED => 'program-complete-review-badge-rejected',
                 default => null,
             };
             $completeAbsenceReviewClass = match ($completeAbsenceReviewStatus) {
@@ -36,10 +36,21 @@
                             @if(
                                 ($canManage ?? false)
                                 && $participation->status?->code === 'TIDAK_HADIR'
-                                && filled($completeAbsenceReviewLabel)
+                                && filled($completeAbsenceReviewTestId)
                             )
-                                <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold {{ $completeAbsenceReviewClass }}">
-                                    {{ $completeAbsenceReviewLabel }}
+                                <span
+                                    data-testid="{{ $completeAbsenceReviewTestId }}"
+                                    class="inline-flex h-7 w-7 items-center justify-center rounded-full {{ $completeAbsenceReviewClass }}"
+                                >
+                                    @if($completeAbsenceReviewStatus === \App\Services\ProgramParticipationService::ABSENCE_REASON_APPROVED)
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" aria-label="Diluluskan">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    @elseif($completeAbsenceReviewStatus === \App\Services\ProgramParticipationService::ABSENCE_REASON_REJECTED)
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" aria-label="Ditolak">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    @endif
                                 </span>
                             @endif
                         </div>
