@@ -50,6 +50,9 @@ class ShirtPurchaseController extends Controller
             ->withCount([
                 'responses as submitted_count' => fn (Builder $query) => $query->whereNotNull('size'),
                 'responses as payment_notice_count' => fn (Builder $query) => $query->whereNotNull('paid_at'),
+                'responses as pending_confirmation_count' => fn (Builder $query) => $query
+                    ->whereNotNull('paid_at')
+                    ->whereNull('approved_at'),
                 'responses as approved_count' => fn (Builder $query) => $query->whereNotNull('approved_at'),
             ])
             ->when(

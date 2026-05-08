@@ -519,6 +519,51 @@ class ShirtPurchaseManagementTest extends TestCase
             ->assertDontSee('Cikgu B');
     }
 
+    public function test_admin_index_shows_pending_payment_confirmation_badge_count(): void
+    {
+        $payload = $this->seedAdminAndGurus();
+
+        $purchaseId = \DB::table('shirt_purchases')->insertGetId([
+            'title' => 'Baju Korporat',
+            'description' => 'Sila isi.',
+            'created_by' => $payload['admin']->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        \DB::table('shirt_purchase_responses')->insert([
+            [
+                'shirt_purchase_id' => $purchaseId,
+                'guru_id' => $payload['eligibleGuru']->id,
+                'size' => 'L',
+                'quantity' => 1,
+                'submitted_at' => now(),
+                'paid_at' => now(),
+                'approved_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'shirt_purchase_id' => $purchaseId,
+                'guru_id' => $payload['secondEligibleGuru']->id,
+                'size' => 'M',
+                'quantity' => 1,
+                'submitted_at' => now(),
+                'paid_at' => now(),
+                'approved_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $this->actingAs($payload['admin'])
+            ->get(route('shirt-purchases.index'))
+            ->assertOk()
+            ->assertSee('Perlu sahkan bayaran: 1')
+            ->assertSee('Maklum bayar: 2')
+            ->assertSee('Bayar sah: 1');
+    }
+
     public function test_guru_index_hides_negative_payment_badges(): void
     {
         $payload = $this->seedAdminAndGurus();
