@@ -667,8 +667,33 @@ class ProgramParticipationApprovalTest extends TestCase
             ->assertSee('Cikgu Program')
             ->assertSee('Hadir')
             ->assertSee('Sakit.')
+            ->assertSee('approve')
             ->assertDontSee('Semakan Alasan')
             ->assertDontSee('Alasan Tidak Hadir: -');
+    }
+
+    public function test_program_show_page_for_admin_displays_xapprove_badge_for_rejected_absence_in_complete_tab(): void
+    {
+        Notification::fake();
+
+        [$program, $guruUser, $absentStatus, $admin] = $this->createProgramFixtures();
+
+        \DB::table('program_teacher')
+            ->where('program_id', $program->id)
+            ->where('guru_id', $guruUser->guru->id)
+            ->update([
+                'program_status_id' => $absentStatus->id,
+                'absence_reason' => 'Ada urusan kecemasan.',
+                'absence_reason_status' => 'rejected',
+            ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('programs.show', $program));
+
+        $response
+            ->assertOk()
+            ->assertSee('Tidak Hadir')
+            ->assertSee('xapprove');
     }
 
     public function test_admin_status_update_from_complete_tab_redirects_back_to_complete_tab(): void

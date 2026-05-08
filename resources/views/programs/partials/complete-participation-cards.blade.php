@@ -1,5 +1,18 @@
 <div class="grid items-start gap-3 md:grid-cols-2">
     @forelse($participations as $participation)
+        @php
+            $completeAbsenceReviewStatus = $participation->absence_reason_status;
+            $completeAbsenceReviewLabel = match ($completeAbsenceReviewStatus) {
+                \App\Services\ProgramParticipationService::ABSENCE_REASON_APPROVED => 'approve',
+                \App\Services\ProgramParticipationService::ABSENCE_REASON_REJECTED => 'xapprove',
+                default => null,
+            };
+            $completeAbsenceReviewClass = match ($completeAbsenceReviewStatus) {
+                \App\Services\ProgramParticipationService::ABSENCE_REASON_APPROVED => 'bg-emerald-100 text-emerald-700',
+                \App\Services\ProgramParticipationService::ABSENCE_REASON_REJECTED => 'bg-rose-100 text-rose-700',
+                default => '',
+            };
+        @endphp
         <article data-testid="program-complete-card" class="self-start rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
             <div class="flex items-start gap-3">
                 <div class="shrink-0">
@@ -16,9 +29,19 @@
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center justify-between gap-3">
                         <h3 class="truncate text-sm font-black text-slate-900">{{ $participation->guru->display_name }}</h3>
-                        <span class="inline-flex shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700">
-                            {{ $participation->status?->name ?? '-' }}
-                        </span>
+                        <div class="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                            <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700">
+                                {{ $participation->status?->name ?? '-' }}
+                            </span>
+                            @if(
+                                $participation->status?->code === 'TIDAK_HADIR'
+                                && filled($completeAbsenceReviewLabel)
+                            )
+                                <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold {{ $completeAbsenceReviewClass }}">
+                                    {{ $completeAbsenceReviewLabel }}
+                                </span>
+                            @endif
+                        </div>
                     </div>
 
                     @if($participation->status?->code !== 'HADIR')
