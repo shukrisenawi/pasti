@@ -33,7 +33,7 @@
 
         <div>
             <x-input-label for="password" :value="__('messages.password')" />
-            <x-text-input id="password" class="mt-1 block w-full" type="password" name="password" required autocomplete="current-password" autofocus />
+            <x-text-input id="password" class="mt-1 block w-full" type="password" name="password" required autocomplete="current-password" :autofocus="(bool) (!empty($lastLoginUser))" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 

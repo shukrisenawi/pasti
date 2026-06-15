@@ -57,6 +57,6 @@ class EnsureGuruWebOnboardingCompleted
 
         return redirect()
             ->route('profile.edit')
-            ->with('onboarding_notice', 'Sila lengkapkan profil, pilih PASTI dan tukar kata laluan dahulu sebelum menggunakan fungsi lain.');
+            ->with('onboarding_notice', 'Sila lengkapkan profil, pilih PASTI dan tukar kata laluan anda dahulu sebelum menggunakan fungsi lain.');
     }
 }
