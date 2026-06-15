@@ -26,6 +26,10 @@ class EnsureGuruWebOnboardingCompleted
             return $next($request);
         }
 
+        if ($request->header('X-Livewire')) {
+            return $next($request);
+        }
+
         $allowed = [
             'profile.edit',
             'profile.update',
