@@ -55,7 +55,7 @@ class ProgramIndex extends Component
                         ->orWhere('location', 'like', $keyword);
                 })
             )
-            ->latest('program_date');
+            ->latest('id');
 
         return view('livewire.program-index', [
             'programs' => $query->paginate(9),
