@@ -246,6 +246,12 @@
                         'participations' => $adminPendingReviewParticipations,
                         'hideActions' => false,
                         'emptyMessage' => 'Tiada semakan yang menunggu pada masa ini.',
+                        'canManage' => $canManage,
+                        'canUpdateOwn' => $canUpdateOwn,
+                        'currentGuruId' => $currentGuruId,
+                        'program' => $program,
+                        'statusCodeById' => $statusCodeById,
+                        'statuses' => $statuses,
                     ])
                 </div>
 
@@ -254,6 +260,9 @@
                         'participations' => $adminCompletedParticipations,
                         'emptyMessage' => 'Tiada rekod complete untuk dipaparkan.',
                         'statusCodeById' => $statusCodeById,
+                        'canManage' => $canManage,
+                        'program' => $program,
+                        'statuses' => $statuses,
                     ])
                 </div>
             </section>
