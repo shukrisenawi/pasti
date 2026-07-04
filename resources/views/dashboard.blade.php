@@ -256,7 +256,7 @@
     @if($latestPrograms->isNotEmpty())
         <section class="mb-8">
             <div class="flex items-center justify-between mb-4">
-               <h3 class="text-sm font-black uppercase tracking-[0.24em] text-slate-400">{{ __('messages.upcoming_programs') }}</h3>
+               <h3 class="text-sm font-black uppercase tracking-[0.24em] text-slate-400">{{ auth()->user()->isOperatingAsGuru() ? __('messages.programs_need_action') : __('messages.upcoming_programs') }}</h3>
                <a href="{{ route('programs.index') }}" wire:navigate class="text-xs font-bold text-primary hover:underline">Lihat Semua</a>
             </div>
             

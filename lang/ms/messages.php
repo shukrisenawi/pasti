@@ -242,6 +242,7 @@ return [
     'skim_pas_expiring_soon' => 'Lagi seminggu lagi skim PAS akan tamat tempoh',
     'skim_pas_expired_list' => 'Skim PAS Expired',
     'upcoming_programs' => 'Program Akan Datang',
+    'programs_need_action' => 'Program yang perlu tindakan',
     'featured_event' => 'Program Utama',
     'marital_status' => 'Status Perkahwinan',
     'single' => 'Bujang',

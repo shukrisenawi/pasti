@@ -180,7 +180,7 @@ class DashboardController extends Controller
                 $isGuruOnly,
                 fn ($query) => $query->where(function($q) use ($guruIds) {
                     $q->whereHas('gurus', fn ($vg) => $vg->whereIn('gurus.id', $guruIds))
-                      ->orWhereNull('pasti_id'); // Show assigned OR global programs
+                      ->orWhereNull('pasti_id');
                 })->whereDoesntHave('participations', function ($participationQuery) use ($guruIds): void {
                     $participationQuery
                         ->whereIn('guru_id', $guruIds)
@@ -188,26 +188,30 @@ class DashboardController extends Controller
                 })
             );
 
-        // Get 3 upcoming programs (closest first)
-        $latestPrograms = (clone $programsQuery)
-            ->whereDate('program_date', '>=', now()->toDateString())
-            ->oldest('program_date')
-            ->oldest('program_time')
-            ->oldest('id')
-            ->limit(3)
-            ->get();
-
-        // If fewer than 3 upcoming, pad with recent past programs
-        if ($latestPrograms->count() < 3) {
-            $pastPrograms = (clone $programsQuery)
-                ->whereDate('program_date', '<', now()->toDateString())
-                ->latest('program_date')
-                ->latest('program_time')
+        if ($isGuruOnly) {
+            $latestPrograms = $programsQuery
                 ->latest('id')
-                ->limit(3 - $latestPrograms->count())
                 ->get();
-            
-            $latestPrograms = $latestPrograms->concat($pastPrograms);
+        } else {
+            $latestPrograms = (clone $programsQuery)
+                ->whereDate('program_date', '>=', now()->toDateString())
+                ->oldest('program_date')
+                ->oldest('program_time')
+                ->oldest('id')
+                ->limit(3)
+                ->get();
+
+            if ($latestPrograms->count() < 3) {
+                $pastPrograms = (clone $programsQuery)
+                    ->whereDate('program_date', '<', now()->toDateString())
+                    ->latest('program_date')
+                    ->latest('program_time')
+                    ->latest('id')
+                    ->limit(3 - $latestPrograms->count())
+                    ->get();
+
+                $latestPrograms = $latestPrograms->concat($pastPrograms);
+            }
         }
 
         $latestProgram = $latestPrograms->first();
