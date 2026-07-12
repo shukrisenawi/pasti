@@ -37,7 +37,7 @@ class N8nWebhookService
     public const KEY_TEXT_SHIRT_PURCHASE_REQUEST = 'n8n_text_shirt_purchase_request';
     public const KEY_TEXT_SHIRT_PURCHASE_LIST = 'n8n_text_shirt_purchase_list';
 
-    private const DEFAULT_TEXT_PROGRAM_CREATED = '{tajuk} akan diadakan pada {tarikh} ({hari}){masa}{lokasi}.';
+    private const DEFAULT_TEXT_PROGRAM_CREATED = '{tajuk} diadakan pada {tarikh} ({hari}){masa}{lokasi}.';
     private const DEFAULT_TEXT_SALARY_REQUEST = 'Permintaan kemaskini elaun guru telah dihantar pada {tarikh}. Sila kemaskini elaun, elaun transit dan elaun lain semasa.';
     private const DEFAULT_TEXT_PASTI_INFO_REQUEST = 'Permintaan kemaskini maklumat PASTI telah dihantar pada {tarikh}. Sila lengkapkan maklumat terkini PASTI.';
     private const DEFAULT_TEXT_PASTI_INFO_RESPONSE_REMINDER = "Sila hantar respon maklumat PASTI segera.\n\nPASTI yang belum respon:\n{senarai_pasti}";
@@ -172,7 +172,7 @@ class N8nWebhookService
         $packageName = trim((string) config('services.n8n.android_app_package', ''));
         $fingerprints = array_values(array_filter(
             (array) config('services.n8n.android_sha256_cert_fingerprints', []),
-            static fn ($value) => is_string($value) && trim($value) !== ''
+            static fn($value) => is_string($value) && trim($value) !== ''
         ));
 
         if ($packageName === '' || $fingerprints === []) {
